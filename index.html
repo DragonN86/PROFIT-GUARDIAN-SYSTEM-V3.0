@@ -3,54 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vo Will - Crypto Exit System</title>
+    <title>Vo Will - Crypto Profit Exit System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #0d1117; color: #c9d1d9; }
-        .card-container { background: #161b22; border: 1px solid #30363d; border-radius: 12px; overflow: hidden; }
-        .card-header { padding: 12px 20px; border-bottom: 1px solid #30363d; font-weight: bold; color: #58a6ff; display: flex; justify-content: space-between; }
-        iframe { width: 100%; border: none; }
+        .card-container { background: #161b22; border: 1px solid #30363d; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+        .card-header { padding: 12px 20px; border-bottom: 1px solid #30363d; font-weight: bold; color: #58a6ff; display: flex; justify-content: space-between; align-items: center; background: #1c2128; }
+        iframe { width: 100%; border: none; flex-grow: 1; }
+        .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; background-color: #3fb950; margin-right: 8px; box-shadow: 0 0 8px #3fb950; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <header class="text-center mb-10">
-        <h1 class="text-3xl font-bold text-yellow-500">HỆ THỐNG GIÁM SÁT REAL-TIME</h1>
-        <p class="text-gray-400 mt-2">Vo Will | Cấu trúc Modular (Dễ chỉnh sửa)</p>
+    <header class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-[#30363d] pb-6">
+        <div>
+            <h1 class="text-3xl font-extrabold text-yellow-500 uppercase tracking-tighter">Hệ thống Giám sát Chốt lời</h1>
+            <p class="text-gray-400 text-sm mt-1">Dữ liệu hợp nhất cho: <span class="text-white font-semibold">Vo Will | will.eth</span></p>
+        </div>
+        <div class="mt-4 md:mt-0 px-4 py-2 bg-[#21262d] rounded-full border border-[#30363d]">
+            <span class="status-dot"></span><span class="text-xs font-mono">LIVE MARKET DATA 2026</span>
+        </div>
     </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
         
-        <div class="card-container">
-            <div class="card-header"><span>📊 1. Tâm Lý Thị Trường</span><a href="fear-greed.html" class="text-xs text-gray-500 underline">Sửa file</a></div>
-            <iframe src="fear-greed.html" height="420"></iframe>
+        <div class="card-container h-[480px]">
+            <div class="card-header"><span>📊 1. Tâm Lý Thị Trường</span><a href="fear-greed.html" target="_blank" class="text-[10px] text-gray-500 hover:text-white transition uppercase">Edit File</a></div>
+            <iframe src="fear-greed.html"></iframe>
         </div>
 
-        <div class="card-container">
-            <div class="card-header"><span>📈 2. Phân Tích Kỹ Thuật (W1)</span><a href="technical-analysis.html" class="text-xs text-gray-500 underline">Sửa file</a></div>
-            <iframe src="technical-analysis.html" height="420"></iframe>
+        <div class="card-container h-[480px]">
+            <div class="card-header"><span>📈 2. Phân Tích Kỹ Thuật (W1)</span><a href="technical-analysis.html" target="_blank" class="text-[10px] text-gray-500 hover:text-white transition uppercase">Edit File</a></div>
+            <iframe src="technical-analysis.html"></iframe>
         </div>
 
-        <div class="card-container">
-            <div class="card-header"><span>🔥 3. Tín Hiệu Đòn Bẩy</span><a href="funding-rate.html" class="text-xs text-gray-500 underline">Sửa file</a></div>
-            <iframe src="funding-rate.html" height="420"></iframe>
+        <div class="card-container h-[480px]">
+            <div class="card-header"><span>🔥 3. Tín Hiệu Đòn Bẩy</span><a href="funding-rate.html" target="_blank" class="text-[10px] text-gray-500 hover:text-white transition uppercase">Edit File</a></div>
+            <iframe src="funding-rate.html"></iframe>
         </div>
 
-        <div class="card-container">
-            <div class="card-header"><span>🌍 4. Tỷ Trọng Bitcoin BTC Dominance (BTC.D ↑ or BTC.D ↓</span><a href="btc-dominance.html" class="text-xs text-gray-500 underline">Sửa file</a></div>
-            <iframe src="btc-dominance.html" height="420"></iframe>
+        <div class="card-container h-[480px]">
+            <div class="card-header"><span>🌍 4. Tỷ Trọng Bitcoin (BTC.D)</span><a href="btc-dominance.html" target="_blank" class="text-[10px] text-gray-500 hover:text-white transition uppercase">Edit File</a></div>
+            <iframe src="btc-dominance.html"></iframe>
         </div>
 
     </div>
 
-    <div class="bg-[#161b22] border border-[#30363d] rounded-xl p-6 text-center">
-        <h2 class="text-yellow-500 font-bold mb-4">🛠 CÔNG CỤ NGOẠI VI</h2>
-        <div class="flex flex-wrap justify-center gap-4">
-            <a href="https://farside.in/bitcoin-etf/" target="_blank" class="px-4 py-2 bg-blue-900/20 border border-blue-800 rounded hover:bg-blue-800 transition text-sm">ETF Flows</a>
-            <a href="https://whale-alert.io/" target="_blank" class="px-4 py-2 bg-purple-900/20 border border-purple-800 rounded hover:bg-purple-800 transition text-sm">Whale Alert</a>
-            <a href="https://cryptoquant.com/" target="_blank" class="px-4 py-2 bg-green-900/20 border border-green-800 rounded hover:bg-green-800 transition text-sm">CryptoQuant</a>
-        </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <a href="https://farside.in/bitcoin-etf/" target="_blank" class="p-4 bg-[#161b22] border border-[#30363d] rounded-xl text-center hover:border-blue-500 transition group">
+            <span class="block text-blue-400 font-bold group-hover:scale-110 transition">🏦 ETF Flows</span>
+            <span class="text-[10px] text-gray-500 uppercase">Dòng tiền Wall St</span>
+        </a>
+        <a href="https://whale-alert.io/" target="_blank" class="p-4 bg-[#161b22] border border-[#30363d] rounded-xl text-center hover:border-purple-500 transition group">
+            <span class="block text-purple-400 font-bold group-hover:scale-110 transition">🐋 Whale Alert</span>
+            <span class="text-[10px] text-gray-500 uppercase">Theo dõi Cá mập</span>
+        </a>
+        <a href="https://cryptoquant.com/" target="_blank" class="p-4 bg-[#161b22] border border-[#30363d] rounded-xl text-center hover:border-green-500 transition group">
+            <span class="block text-green-400 font-bold group-hover:scale-110 transition">🔗 CryptoQuant</span>
+            <span class="text-[10px] text-gray-500 uppercase">Dữ liệu On-chain</span>
+        </a>
+        <a href="https://dexscreener.com/" target="_blank" class="p-4 bg-[#161b22] border border-[#30363d] rounded-xl text-center hover:border-yellow-500 transition group">
+            <span class="block text-yellow-500 font-bold group-hover:scale-110 transition">💎 DexScreener</span>
+            <span class="text-[10px] text-gray-500 uppercase">Săn Gem & Meme</span>
+        </a>
     </div>
+
+    <footer class="mt-12 text-center text-gray-600 text-xs tracking-widest uppercase">
+        &copy; 2026 Crypto Exit System by Vo Will - Kỷ luật là sức mạnh
+    </footer>
 
 </body>
 </html>
