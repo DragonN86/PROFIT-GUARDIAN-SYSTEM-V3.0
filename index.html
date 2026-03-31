@@ -3,81 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Take Profit Dashboard 2026</title>
+    <title>Vo Will - Crypto Profit Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .card { background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
-        iframe { border-radius: 8px; background: white; }
+        .card { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 20px; transition: 0.3s; }
+        .card:hover { border-color: #fbbf24; }
+        .risk-high { color: #ef4444; font-weight: bold; }
     </style>
 </head>
-<body class="bg-black text-white p-5">
+<body class="bg-black text-gray-200 p-6">
 
-    <h1 class="text-3xl font-bold text-center text-yellow-500 mb-8">DASHBOARD CHỐT LỜI CRYPTO</h1>
+    <header class="text-center mb-10">
+        <h1 class="text-4xl font-extrabold text-yellow-500 uppercase tracking-widest">Dashboard Chốt Lời 2026</h1>
+        <p class="text-gray-400 mt-2">Dành riêng cho: Vo Will | Chiến thuật Kỷ luật - Bảo toàn Lợi nhuận</p>
+    </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         
         <div class="card">
-            <h2 class="text-xl font-semibold mb-4 text-orange-400">1. Tâm Lý Đám Đông</h2>
-            <img src="https://alternative.me/crypto/fear-and-greed-index.png" alt="Fear and Greed Index" class="w-full">
-            <p class="text-sm mt-2 italic text-gray-400">*Nếu kim chỉ về sát 100: Cực kỳ nguy hiểm.</p>
+            <h2 class="text-xl font-bold mb-4 text-orange-400 border-b border-gray-700 pb-2">1. Tâm Lý Đám Đông</h2>
+            <img src="https://alternative.me/crypto/fear-and-greed-index.png" alt="Fear and Greed" class="w-full mb-4">
+            <div class="bg-gray-900 p-3 rounded-lg text-sm">
+                <p><strong>💡 Giải thích:</strong> Đo lường sự tham lam. Khi kim chỉ mức <strong>> 85 (Cực độ)</strong> liên tục, đó là lúc đám đông đang Fomo mù quáng. </p>
+                <p class="mt-2 risk-high">➔ Hành động: Bắt đầu chốt 20% vốn.</p>
+            </div>
         </div>
 
         <div class="card">
-            <h2 class="text-xl font-semibold mb-4 text-blue-400">2. Bitcoin Dominance (BTC.D)</h2>
-            <div style="height:250px;">
-                <iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_762ae&symbol=CRYPTOCAP%3ABTC.D&interval=D&hidesidetoolbar=1&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=%5B%5D&theme=dark&style=1&timezone=Etc%2FUTC" width="100%" height="100%" frameborder="0"></iframe>
+            <h2 class="text-xl font-bold mb-4 text-blue-400 border-b border-gray-700 pb-2">2. Bitcoin Dominance</h2>
+            <div class="h-[250px] mb-4">
+                <iframe src="https://s.tradingview.com/widgetembed/?symbol=CRYPTOCAP%3ABTC.D&interval=D&theme=dark" width="100%" height="100%" frameborder="0"></iframe>
             </div>
-            <p class="text-sm mt-2 italic text-gray-400">*BTC.D giảm mạnh + Altcoin bay = Sắp kết thúc chu kỳ.</p>
+            <div class="bg-gray-900 p-3 rounded-lg text-sm">
+                <p><strong>💡 Giải thích:</strong> Tỷ trọng BTC. Nếu <strong>BTC.D giảm</strong> mà giá Altcoin bay vọt, dòng tiền đang ở cuối chu kỳ.</p>
+                <p class="mt-2 risk-high">➔ Hành động: Thoát Altcoin sang Stablecoin.</p>
+            </div>
         </div>
 
         <div class="card">
-            <h2 class="text-xl font-semibold mb-4 text-green-400">3. Biểu đồ BTC & RSI (W1)</h2>
-            <div style="height:250px;">
-                <iframe src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_762ae&symbol=BINANCE%3ABTCUSDT&interval=W&hidesidetoolbar=1&symboledit=1&saveimage=1&toolbarbg=f1f3f6&studies=%5B%22RSI%40tv-basicstudies%22%5D&theme=dark&style=1&timezone=Etc%2FUTC" width="100%" height="100%" frameborder="0"></iframe>
+            <h2 class="text-xl font-bold mb-4 text-green-400 border-b border-gray-700 pb-2">3. RSI Khung Tuần (W1)</h2>
+            <div class="h-[250px] mb-4">
+                <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE%3ABTCUSDT&interval=W&theme=dark&studies=%5B%22RSI%40tv-basicstudies%22%5D" width="100%" height="100%" frameborder="0"></iframe>
             </div>
-            <p class="text-sm mt-2 italic text-gray-400">*Check RSI > 85 trên khung tuần.</p>
+            <div class="bg-gray-900 p-3 rounded-lg text-sm">
+                <p><strong>💡 Giải thích:</strong> Sức mạnh thị trường. Nếu <strong>RSI > 85</strong> trên khung tuần, BTC đã rơi vào vùng quá mua cực đại.</p>
+                <p class="mt-2 risk-high">➔ Hành động: Tuyệt đối không mua thêm, chỉ bán.</p>
+            </div>
         </div>
 
     </div>
 
-    <div class="mt-10 card overflow-x-auto">
-        <h2 class="text-2xl font-bold mb-5 text-yellow-500 text-center">BẢNG TỔNG HỢP NHANH</h2>
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-gray-800">
-                    <th class="p-3 border border-gray-700">Dấu hiệu quan trọng</th>
-                    <th class="p-3 border border-gray-700">Link Check Nhanh</th>
-                    <th class="p-3 border border-gray-700">Ngưỡng Chốt Lời</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="p-3 border border-gray-700">Funding Rate (Phí vay)</td>
-                    <td class="p-3 border border-gray-700"><a href="https://www.coinglass.com/FundingRate" target="_blank" class="text-blue-400 underline">Xem Coinglass</a></td>
-                    <td class="p-3 border border-gray-700 text-red-500">> 0.05% (Dương quá cao)</td>
-                </tr>
-                <tr>
-                    <td class="p-3 border border-gray-700">Cá mập nạp sàn</td>
-                    <td class="p-3 border border-gray-700"><a href="https://whale-alert.io/" target="_blank" class="text-blue-400 underline">Xem Whale Alert</a></td>
-                    <td class="p-3 border border-gray-700 text-red-500">Lượng BTC nạp sàn tăng vọt</td>
-                </tr>
-                <tr>
-                    <td class="p-3 border border-gray-700">Dòng tiền ETF</td>
-                    <td class="p-3 border border-gray-700"><a href="https://farside.in/bitcoin-etf/" target="_blank" class="text-blue-400 underline">Xem Farside</a></td>
-                    <td class="p-3 border border-gray-700 text-red-500">ETF Outflow liên tục (Âm)</td>
-                </tr>
-                <tr>
-                    <td class="p-3 border border-gray-700">Kimchi Premium</td>
-                    <td class="p-3 border border-gray-700"><a href="https://cryptoquant.com/asset/btc/chart/market-indicator/korea-premium-index" target="_blank" class="text-blue-400 underline">Xem CryptoQuant</a></td>
-                    <td class="p-3 border border-gray-700 text-red-500">> 10% (Fomo Hàn Quốc)</td>
-                </tr>
-            </tbody>
-        </table>
+    <div class="mt-12 card shadow-2xl">
+        <h2 class="text-2xl font-bold mb-6 text-yellow-500 text-center">BẢNG CHECKLIST & CÔNG CỤ NHANH</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <a href="https://www.coinglass.com/FundingRate" target="_blank" class="p-4 bg-gray-800 rounded-lg hover:bg-yellow-600 transition">Funding Rate</a>
+            <a href="https://whale-alert.io/" target="_blank" class="p-4 bg-gray-800 rounded-lg hover:bg-yellow-600 transition">Whale Alert</a>
+            <a href="https://farside.in/bitcoin-etf/" target="_blank" class="p-4 bg-gray-800 rounded-lg hover:bg-yellow-600 transition">ETF Flows</a>
+            <a href="https://cryptoquant.com/" target="_blank" class="p-4 bg-gray-800 rounded-lg hover:bg-yellow-600 transition">On-chain Data</a>
+        </div>
     </div>
-
-    <footer class="text-center mt-10 text-gray-500">
-        <p>© 2026 Crypto Checklist Dashboard - Luôn giữ kỷ luật chốt lời!</p>
-    </footer>
 
 </body>
 </html>
