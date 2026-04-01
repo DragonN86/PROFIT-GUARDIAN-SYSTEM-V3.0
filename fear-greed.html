@@ -20,13 +20,11 @@
       --note-border: #1f6feb;
       --header-title: #7dd3fc;
     }
-
     *,
     *::before,
     *::after {
       box-sizing: border-box;
     }
-
     html, body {
       height: 100%;
       margin: 0;
@@ -38,14 +36,12 @@
       color: var(--text);
       -webkit-font-smoothing: antialiased;
     }
-
     body {
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 24px 16px;
     }
-
     .wrap {
       width: 100%;
       max-width: 520px;
@@ -58,7 +54,6 @@
         0 24px 48px -12px rgba(0, 0, 0, 0.45);
       overflow: hidden;
     }
-
     .section-head {
       display: flex;
       align-items: center;
@@ -68,7 +63,6 @@
       border-bottom: 1px solid var(--border);
       background: linear-gradient(180deg, rgba(22, 27, 34, 0.98) 0%, rgba(13, 17, 23, 0.4) 100%);
     }
-
     .section-head h1 {
       margin: 0;
       font-size: 1rem;
@@ -79,7 +73,6 @@
       align-items: center;
       gap: 8px;
     }
-
     .section-head .badge {
       font-size: 0.7rem;
       font-weight: 600;
@@ -91,7 +84,6 @@
       background: rgba(139, 148, 158, 0.12);
       border: 1px solid rgba(139, 148, 158, 0.2);
     }
-
     .card {
       margin: 20px;
       margin-top: 0;
@@ -102,7 +94,6 @@
         0 4px 24px rgba(0, 0, 0, 0.12),
         0 0 0 1px rgba(0, 0, 0, 0.04);
     }
-
     .card img {
       width: 100%;
       height: auto;
@@ -110,11 +101,9 @@
       border-radius: 12px;
       transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
-
     .card img:hover {
       transform: scale(1.015);
     }
-
     .note {
       margin: 0 20px 20px;
       text-align: left;
@@ -127,7 +116,6 @@
       border-radius: 0 12px 12px 0;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     }
-
     .note strong {
       display: flex;
       align-items: center;
@@ -136,28 +124,23 @@
       font-weight: 600;
       margin-bottom: 8px;
     }
-
     .note p {
       margin: 0 0 10px;
       color: #adbac7;
     }
-
     .note p:last-child {
       margin-bottom: 0;
     }
-
     @media (max-width: 420px) {
       .section-head {
         flex-direction: column;
         align-items: flex-start;
       }
-
       .card {
         margin: 16px;
         margin-top: 0;
         padding: 16px;
       }
-
       .note {
         margin: 0 16px 16px;
       }
