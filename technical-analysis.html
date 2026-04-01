@@ -1,55 +1,132 @@
-<style>
-    /* Hiệu ứng hào quang đỏ cho tín hiệu nguy hiểm */
-    .emergency-glow {
-        color: #ff4444;
-        font-weight: 900;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        text-shadow: 0 0 15px rgba(255, 68, 68, 0.8);
-        animation: danger-pulse 1s infinite alternate;
-    }
-
-    @keyframes danger-pulse {
-        from { opacity: 1; transform: scale(1); }
-        to { opacity: 0.6; transform: scale(1.02); }
-    }
-
-    .risk-bar-bg {
-        width: 100%;
-        height: 6px;
-        background: #21262d;
-        border-radius: 10px;
-        margin-top: 8px;
-        overflow: hidden;
-    }
-
-    .risk-bar-fill {
-        height: 100%;
-        width: 95%; /* Mức độ rủi ro Rất Cao */
-        background: linear-gradient(90deg, #ff8a00, #ff0000);
-        box-shadow: 0 0 10px #ff0000;
-    }
-</style>
-
-<div class="row-item py-6">
-    <div class="flex flex-col w-full">
-        <div class="flex justify-between items-center mb-2">
-            <span class="label-sub text-red-500 font-bold">⚠️ DIVERGENCE ALERT</span>
-            <span class="badge badge-red bg-red-600 text-white px-3 py-1 animate-bounce">RẤT CAO</span>
-        </div>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: transparent; color: #c9d1d9; font-family: -apple-system, system-ui, sans-serif; padding: 15px; margin: 0; overflow-x: hidden; }
         
-        <div class="flex items-center justify-between">
-            <div>
-                <span class="main-value emergency-glow text-2xl">RSI / MACD Bearish</span>
-                <p class="text-[10px] text-gray-500 mt-1">Phát hiện phân kỳ âm - Lực mua đang suy kiệt</p>
-            </div>
-            <div class="text-right">
-                <span class="text-[10px] text-red-400 font-mono">DANGER LEVEL: 95%</span>
-            </div>
-        </div>
+        /* Cấu trúc hàng */
+        .row-item { border-bottom: 1px solid #30363d; padding: 18px 0; display: flex; flex-direction: column; gap: 8px; }
+        .row-header { display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Typography */
+        .label-sub { font-size: 10px; color: #8b949e; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+        .main-value { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight: 800; font-size: 1.5rem; color: #fff; }
+        
+        /* Hiệu ứng EMERGENCY (Divergence) */
+        .emergency-glow {
+            color: #f85149;
+            text-shadow: 0 0 15px rgba(248, 81, 73, 0.7);
+            animation: danger-pulse 1s infinite alternate;
+        }
+        @keyframes danger-pulse {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0.7; transform: scale(1.01); }
+        }
 
-        <div class="risk-bar-bg">
-            <div class="risk-bar-fill"></div>
+        /* Badge Styles */
+        .badge { padding: 4px 12px; border-radius: 6px; font-size: 10px; font-weight: 900; text-transform: uppercase; border: 1px solid transparent; }
+        .badge-red { background: rgba(248,81,73,0.2); color: #f85149; border-color: #f85149; }
+        .badge-orange { background: rgba(210,153,34,0.2); color: #d29922; border-color: #d29922; }
+        .badge-green { background: rgba(63,185,80,0.2); color: #3fb950; border-color: #3fb950; }
+
+        /* Risk Bar */
+        .risk-bar-bg { width: 100%; height: 6px; background: #21262d; border-radius: 10px; margin-top: 4px; overflow: hidden; }
+        .risk-bar-fill { height: 100%; transition: width 1s ease-in-out; background: linear-gradient(90deg, #d29922, #f85149); box-shadow: 0 0 10px rgba(248,81,73,0.5); }
+
+        .live-dot { width: 6px; height: 6px; background: #3fb950; border-radius: 50%; display: inline-block; margin-left: 6px; box-shadow: 0 0 5px #3fb950; animation: blink 1.5s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    </style>
+</head>
+<body>
+
+    <div class="row-item">
+        <div class="row-header">
+            <span class="label-sub">RSI Weekly (W1) <span class="live-dot"></span></span>
+            <span id="rsi-status" class="badge badge-green">Calculating...</span>
+        </div>
+        <div class="flex justify-between items-baseline">
+            <span id="rsi-val" class="main-value text-blue-400">--.--</span>
+            <span class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Ngưỡng rủi ro: 85+</span>
         </div>
     </div>
-</div>
+
+    <div class="row-item bg-red-900/5 p-2 rounded-lg border-x border-red-900/20">
+        <div class="row-header">
+            <span class="label-sub text-red-500 font-bold">⚠️ Divergence Alert</span>
+            <span class="badge badge-red animate-bounce">Rất Cao</span>
+        </div>
+        <div class="flex flex-col">
+            <span class="main-value emergency-glow">RSI / MACD Bearish</span>
+            <div class="flex justify-between items-center mt-1">
+                <span class="text-[10px] text-gray-400">Tín hiệu đảo chiều xác nhận</span>
+                <span class="text-[10px] text-red-500 font-black">DANGER: 95%</span>
+            </div>
+        </div>
+        <div class="risk-bar-bg">
+            <div id="risk-bar" class="risk-bar-fill" style="width: 95%;"></div>
+        </div>
+    </div>
+
+    <div class="row-item border-none">
+        <div class="row-header">
+            <span class="label-sub">ETH Gas Tracker <span class="live-dot"></span></span>
+            <span id="gas-status" class="badge badge-orange">Medium</span>
+        </div>
+        <div class="flex justify-between items-baseline">
+            <span id="gas-val" class="main-value text-orange-400">-- Gwei</span>
+            <span class="text-[10px] text-gray-500 font-bold uppercase">Network Load</span>
+        </div>
+    </div>
+
+    <div class="mt-2 rounded-xl border border-[#30363d] overflow-hidden h-[160px]">
+        <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE%3ABTCUSDT&interval=W&theme=dark&style=3" style="width:100%; height:100%;"></iframe>
+    </div>
+
+    <script>
+        // API BINANCE - RSI W1
+        async function updateRSI() {
+            try {
+                const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=100');
+                const data = await res.json();
+                const closes = data.map(d => parseFloat(d[4]));
+                let rsi = calculateRSI(closes, 14);
+                
+                document.getElementById('rsi-val').innerText = rsi.toFixed(2);
+                const status = document.getElementById('rsi-status');
+                
+                if(rsi >= 85) { status.className="badge badge-red"; status.innerText="Cực Nguy Hiểm"; }
+                else if(rsi >= 70) { status.className="badge badge-orange"; status.innerText="Quá Mua"; }
+                else { status.className="badge badge-green"; status.innerText="An Toàn"; }
+            } catch (e) { console.error("RSI Error"); }
+        }
+
+        function calculateRSI(prices, period) {
+            let gains = 0, losses = 0;
+            for (let i = prices.length - period; i < prices.length; i++) {
+                let diff = prices[i] - prices[i - 1];
+                if (diff >= 0) gains += diff; else losses -= diff;
+            }
+            return 100 - (100 / (1 + (gains/period)/(losses/period)));
+        }
+
+        // API BEACONCHA - GAS
+        async function updateGas() {
+            try {
+                const res = await fetch('https://beaconcha.in/api/v1/execution/gasnow');
+                const json = await res.json();
+                const gwei = Math.floor(json.data.standard / 1e9);
+                document.getElementById('gas-val').innerText = gwei + " Gwei";
+                const status = document.getElementById('gas-status');
+                if(gwei > 80) { status.className="badge badge-red"; status.innerText="High"; }
+                else { status.className="badge badge-orange"; status.innerText="Normal"; }
+            } catch (e) { console.error("Gas Error"); }
+        }
+
+        // Loop cập nhật 30s
+        setInterval(() => { updateRSI(); updateGas(); }, 30000);
+        updateRSI(); updateGas();
+    </script>
+</body>
+</html>
