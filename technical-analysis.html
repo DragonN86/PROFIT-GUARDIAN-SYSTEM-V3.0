@@ -129,11 +129,13 @@
                 analyzeDivergence(prices, rsiValues);
 
                 // 4. Lấy dữ liệu Gas ETH
-                const gasRes = await fetch('https://api.etherscan.io/api?module=gastracker&action=gasoracle&apikey=YourApiKeyToken'); // Bạn có thể thay API key nếu có
-                const gasData = await gasRes.json();
-                if (gasData.result && gasData.result.ProposeGasPrice) {
-                    document.getElementById('gas-val').innerText = gasData.result.ProposeGasPrice + " Gwei";
-                }
+async function updateGas() {
+    try {
+        // Sử dụng nguồn API của Beaconcha (miễn phí, không cần Key)
+        const res = await fetch('https://beaconcha.in/api/v1/execution/gasnow');
+        const json = await res.json();
+        const gwei = Math.floor(json.data.standard / 1e9);
+        document.getElementById('gas-val').innerText = gwei + " Gwei";
             } catch (error) {
                 console.error("Data Fetch Error:", error);
             }
