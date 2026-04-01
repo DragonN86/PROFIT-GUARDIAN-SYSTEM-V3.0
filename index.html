@@ -3,93 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vo Will - Crypto Profit Exit System</title>
+    <title>Vo Will - Crypto Exit System 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #0d1117; color: #c9d1d9; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-        .card-container { background: #161b22; border: 1px solid #30363d; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: border 0.3s; }
-        .card-header { padding: 10px 16px; border-bottom: 1px solid #30363d; font-weight: bold; background: #1c2128; display: flex; justify-content: space-between; align-items: center; }
-        .widget-box { height: 350px; width: 100%; background: #0d1117; position: relative; }
-        .status-dot { height: 8px; width: 8px; border-radius: 50%; background-color: #3fb950; display: inline-block; margin-right: 8px; box-shadow: 0 0 8px #3fb950; }
+        .card-container { background: #161b22; border: 1px solid #30363d; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; height: 100%; transition: border 0.3s ease; }
+        .card-container:hover { border-color: #58a6ff; }
+        .card-header { padding: 10px 16px; border-bottom: 1px solid #30363d; font-weight: 700; background: #1c2128; font-size: 0.85rem; }
+        .widget-box { flex-grow: 1; width: 100%; min-height: 350px; background: #0d1117; position: relative; }
         iframe { width: 100%; height: 100%; border: none; }
+        .status-dot { height: 8px; width: 8px; border-radius: 50%; background-color: #3fb950; display: inline-block; margin-right: 8px; box-shadow: 0 0 8px #3fb950; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
         
-        /* Màu sắc tiêu đề cho từng loại */
-        .title-etf { color: #58a6ff; }
-        .title-whale { color: #a855f7; }
-        .title-onchain { color: #3fb950; }
-        .title-gem { color: #d29922; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #0d1117; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 10px; }
     </style>
 </head>
-<body class="p-4 md:p-6">
+<body class="p-4 md:p-6 lg:p-10">
 
-    <header class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-[#30363d] pb-6">
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b border-[#30363d] pb-6">
         <div>
-            <h1 class="text-2xl font-extrabold text-white uppercase tracking-tight">Hệ thống Giám sát Chốt lời <span class="text-yellow-500">2026</span></h1>
-            <p class="text-gray-400 text-xs mt-1">Dữ liệu nguồn: <span class="text-blue-400">Wall St, On-chain & Whale Tracker</span></p>
+            <h1 class="text-3xl font-black text-white uppercase tracking-tighter">HỆ THỐNG GIÁM SÁT CHỐT LỜI <span class="text-yellow-500">2026</span></h1>
+            <p class="text-gray-500 text-xs mt-1 font-medium">Dữ liệu nguồn: <span class="text-blue-400">Wall St, On-chain & Whale Tracker</span> | User: <span class="text-white">will.eth</span></p>
         </div>
-        <div class="mt-4 md:mt-0 px-3 py-1 bg-[#21262d] rounded-full border border-[#30363d]">
-            <span class="status-dot"></span><span class="text-[10px] font-mono">CONNECTION STABLE</span>
+        <div class="mt-4 md:mt-0 px-4 py-2 bg-[#1c2128] rounded-md border border-[#30363d] flex items-center">
+            <span class="status-dot"></span><span class="text-[10px] font-mono text-gray-300 tracking-widest uppercase">Connection Stable</span>
         </div>
     </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-10">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-12">
         
-        <div class="card-container border-blue-900/50">
-            <div class="card-header title-etf"><span>🏦 ETF Flows (Live)</span></div>
+        <div class="card-container border-blue-900/30">
+            <div class="card-header text-blue-400 flex justify-between">
+                <span>🏦 ETF Flows (Live)</span>
+                <span class="text-[9px] text-gray-500 font-normal">REAL-TIME</span>
+            </div>
             <div class="widget-box">
                 <iframe src="https://bitbo.io/embed/etf-flows/"></iframe>
             </div>
-            <div class="p-2 text-[10px] text-center text-gray-500">Nguồn: Bitbo - Theo dõi dòng tiền tổ chức</div>
         </div>
 
-        <div class="card-container border-purple-900/50">
-            <div class="card-header title-whale"><span>🐋 Whale Alert Feed</span></div>
-            <div class="widget-box overflow-y-auto bg-black">
-                <div class="p-4 text-xs font-mono">
-                    <div class="mb-2 text-purple-400 border-b border-gray-800 pb-1">🚨 5,000 #BTC ($350M) moved from Unknown to #Coinbase</div>
-                    <div class="mb-2 text-green-400 border-b border-gray-800 pb-1">💰 150,000,000 #USDC minted at Treasury</div>
-                    <div class="mb-2 text-red-400 border-b border-gray-800 pb-1">🐋 2,500 #ETH ($10M) sent to Kraken</div>
-                    <div class="text-gray-500 italic">Hệ thống đang quét lệnh chuyển từ ví cá voi...</div>
+        <div class="card-container border-purple-900/30 text-xs font-mono">
+            <div class="card-header text-purple-400"><span>🐋 Whale Alert Feed</span></div>
+            <div class="widget-box p-4 overflow-y-auto leading-relaxed">
+                <div class="mb-3 pb-2 border-b border-gray-800">
+                    <span class="text-purple-400 font-bold">[WHALE]</span> 4,500 #BTC <span class="text-gray-500">($310M)</span> transferred from <span class="text-blue-400">Unknown</span> to <span class="text-green-400">Coinbase</span>
                 </div>
-            </div>
-            <a href="https://whale-alert.io/" target="_blank" class="p-2 text-[10px] text-center text-purple-400 hover:bg-purple-900/20">Mở Whale Alert Chi tiết →</a>
-        </div>
-
-        <div class="card-container border-green-900/50">
-            <div class="card-header title-onchain"><span>🔗 On-chain: Exchange Reserve</span></div>
-            <div class="widget-box">
-                <div class="p-4 flex flex-col justify-center h-full text-center">
-                    <span class="text-3xl font-bold text-green-500 text-white">-2.5%</span>
-                    <span class="text-xs text-gray-400 mt-2 uppercase tracking-widest">Dự trữ sàn đang giảm (Bullish)</span>
+                <div class="mb-3 pb-2 border-b border-gray-800 text-green-500">
+                    <span class="font-bold">[PRINT]</span> 250,000,000 #USDC minted at Treasury
                 </div>
+                <div class="mb-3 pb-2 border-b border-gray-800 text-red-500">
+                    <span class="font-bold">[ALERT]</span> 15,000 #ETH <span class="text-gray-500">($45M)</span> sent to <span class="text-blue-400">Binance</span>
+                </div>
+                <div class="mb-3 pb-2 border-b border-gray-800">
+                    <span class="text-purple-400 font-bold">[WHALE]</span> 1,200 #BTC moved from <span class="text-blue-400">Gemini</span> to <span class="text-gray-400">Cold Wallet</span>
+                </div>
+                <div class="text-[10px] text-gray-600 italic animate-pulse mt-4 text-center">Scanning blockchain for major movements...</div>
             </div>
-            <a href="https://cryptoquant.com/" target="_blank" class="p-2 text-[10px] text-center text-green-400 hover:bg-green-900/20">Kiểm tra Data CryptoQuant →</a>
         </div>
 
-        <div class="card-container border-yellow-900/50">
-            <div class="card-header title-gem"><span>💎 DexScreener Trends</span></div>
-            <div class="widget-box">
-                <iframe src="https://dexscreener.com/ethereum?embed=1&theme=dark&info=0"></iframe>
+        <div class="card-container border-green-900/30">
+            <div class="card-header text-green-400"><span>🔗 On-chain: Exchange Reserve</span></div>
+            <div class="widget-box flex flex-col items-center justify-center p-6 text-center">
+                <div class="text-5xl font-black text-white mb-2">-2.8%</div>
+                <div class="text-green-500 font-bold text-xs uppercase tracking-widest">Dự trữ sàn đang giảm (Bullish)</div>
+                <div class="mt-8 w-full bg-gray-800 rounded-full h-1.5">
+                    <div class="bg-green-500 h-1.5 rounded-full" style="width: 30%"></div>
+                </div>
+                <p class="text-[10px] text-gray-500 mt-4 px-4 leading-snug">Áp lực bán từ thợ đào và cá voi đang ở mức thấp nhất trong 30 ngày.</p>
             </div>
-            <div class="p-2 text-[10px] text-center text-gray-500">Săn meme & coin vốn hóa nhỏ</div>
+        </div>
+
+        <div class="card-container border-yellow-900/30">
+            <div class="card-header text-yellow-500"><span>💎 DexScreener Trends</span></div>
+            <div class="widget-box">
+                <iframe src="https://dexscreener.com/ethereum?embed=1&theme=dark&trades=0&info=0"></iframe>
+            </div>
         </div>
 
     </div>
 
-    <div class="text-gray-500 mb-4 text-xs font-bold uppercase tracking-widest px-2 border-l-2 border-yellow-500">Hệ thống Biểu đồ Phân tích Kỹ thuật</div>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div class="card-container h-[400px]">
-            <div class="card-header">📊 Tâm Lý Thị Trường</div>
-            <iframe src="fear-greed.html"></iframe>
+    <div class="border-l-4 border-yellow-500 pl-4 mb-6">
+        <h2 class="text-sm font-bold uppercase tracking-widest text-gray-300">Hệ thống Biểu đồ Phân tích Kỹ thuật</h2>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        <div class="card-container">
+            <div class="card-header"><span>📊 Tâm Lý Thị Trường</span></div>
+            <div class="widget-box h-[450px]">
+                <iframe src="https://alternative.me/crypto/fear-and-greed-index.png"></iframe>
+            </div>
         </div>
-        <div class="card-container h-[400px]">
-            <div class="card-header">🌍 BTC Dominance</div>
-            <iframe src="btc-dominance.html"></iframe>
+
+        <div class="card-container">
+            <div class="card-header"><span>🌍 BTC Dominance</span></div>
+            <div class="widget-box h-[450px]">
+                <div class="tradingview-widget-container" style="height:100%;width:100%">
+                    <iframe src="https://s.tradingview.com/widgetembed/?symbol=CRYPTOCAP%3ABTC.D&interval=D&theme=dark" style="width: 100%; height: 100%;"></iframe>
+                </div>
+            </div>
         </div>
     </div>
 
-    <footer class="text-center mt-12 text-[#30363d] text-[10px] uppercase tracking-[0.2em]">
-        © 2026 CRYPTO EXIT SYSTEM - KỶ LUẬT LÀ SỨC MẠNH
+    <footer class="text-center pb-10 border-t border-[#30363d] pt-8">
+        <div class="text-[#484f58] text-[10px] uppercase tracking-[0.4em] font-bold">
+            © 2026 CRYPTO EXIT SYSTEM - KỶ LUẬT LÀ SỨC MẠNH
+        </div>
     </footer>
 
 </body>
