@@ -3,67 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fear & Greed Index</title>
   <style>
-    /* 1. Thiết lập nền tối đồng bộ với Dashboard */
-    body, html {
+    /* 1. Xóa bỏ hoàn toàn khoảng trắng và cuộn */
+    * { box-sizing: border-box; }
+    html, body {
       margin: 0;
       padding: 0;
-      height: 100%;
       width: 100%;
-      background-color: #0d1117; /* Màu nền GitHub Dark */
+      height: 100%;
+      background-color: #0d1117; /* Màu nền tiệp với Dashboard */
+      overflow: hidden;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
       font-family: sans-serif;
-      overflow: hidden;
     }
 
-    /* 2. Container khống chế kích thước */
+    /* 2. Khung chứa ảnh */
     .container {
-      width: 95%;
-      height: 95%;
+      width: 100%;
+      height: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: #161b22;
-      border-radius: 12px;
+      padding: 10px;
     }
 
-    /* 3. Ép ảnh tự co giãn, không bao giờ to quá khổ */
-    img {
+    /* 3. ÉP ẢNH PHẢI NẰM GỌN TRONG KHUNG */
+    .gauge-img {
       max-width: 100%;
-      max-height: 75%; /* Dành chỗ cho phần text bên dưới */
-      object-fit: contain;
+      max-height: 85%; /* Dành một chút chỗ cho text bên dưới */
+      object-fit: contain; /* Quan trọng: Giữ tỷ lệ ảnh không bị bóp méo */
       border-radius: 8px;
+      filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
     }
 
-    /* 4. Phần ghi chú nhỏ gọn bên dưới */
-    .note {
-      margin-top: 10px;
+    /* 4. Text hướng dẫn nhỏ gọn bên dưới */
+    .status-text {
       color: #8b949e;
       font-size: 11px;
+      margin-top: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
       text-align: center;
-      line-height: 1.4;
-      padding: 0 10px;
     }
 
-    .highlight {
-        color: #58a6ff;
-        font-weight: bold;
-    }
+    .danger { color: #f85149; font-weight: bold; }
+    .safe { color: #3fb950; font-weight: bold; }
   </style>
 </head>
 <body>
   <div class="container">
-    <img src="https://alternative.me/crypto/fear-and-greed-index.png" alt="Fear & Greed Index">
+    <img src="https://alternative.me/crypto/fear-and-greed-index.png" 
+         alt="Fear and Greed Index" 
+         class="gauge-img">
     
-    <div class="note">
-        <span class="highlight">CÁCH XEM:</span> <br>
-        Dưới 20: Sợ hãi tột độ (Cơ hội mua) <br>
-        Trên 80: Tham lam tột độ (Cần <span style="color: #f85149;">THOÁT HÀNG</span>)
+    <div class="status-text">
+        <span class="safe">0-20: Mua</span> | <span class="danger">80-100: Thoát hàng</span>
     </div>
   </div>
 </body>
