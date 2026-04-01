@@ -4,145 +4,148 @@
     <meta charset="UTF-8">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: transparent; color: #c9d1d9; font-family: -apple-system, system-ui, sans-serif; padding: 15px; margin: 0; overflow-x: hidden; }
+        body { background: transparent; color: #c9d1d9; font-family: sans-serif; padding: 15px; margin: 0; overflow: hidden; }
+        .row-item { border-bottom: 1px solid #30363d; padding: 16px 0; display: flex; flex-direction: column; gap: 8px; }
+        .main-value { font-family: ui-monospace, monospace; font-weight: bold; font-size: 1.2rem; }
         
-        /* Cấu trúc hàng */
-        .row-item { border-bottom: 1px solid #30363d; padding: 18px 0; display: flex; flex-direction: column; gap: 8px; }
-        .row-header { display: flex; justify-content: space-between; align-items: center; }
+        /* Hiệu ứng Phân kỳ Giảm (Bearish) - ĐỎ */
+        .bearish-active { color: #f85149; text-shadow: 0 0 15px rgba(248, 81, 73, 0.6); animation: alert-red 1s infinite; }
+        @keyframes alert-red { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* Hiệu ứng Phân kỳ Tăng (Bullish) - XANH */
+        .bullish-active { color: #3fb950; text-shadow: 0 0 15px rgba(63, 185, 80, 0.6); animation: alert-green 1s infinite; }
+        @keyframes alert-green { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; text-transform: uppercase; border: 1px solid transparent; }
+        .badge-red { background: rgba(248,81,73,0.15); color: #f85149; border-color: #f85149; }
+        .badge-green { background: rgba(63,185,80,0.15); color: #3fb950; border-color: #3fb950; }
+        .badge-gray { background: rgba(48,54,61,0.2); color: #8b949e; border-color: #30363d; }
         
-        /* Typography */
-        .label-sub { font-size: 10px; color: #8b949e; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
-        .main-value { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-weight: 800; font-size: 1.5rem; color: #fff; }
-        
-        /* Hiệu ứng EMERGENCY (Divergence) */
-        .emergency-glow {
-            color: #f85149;
-            text-shadow: 0 0 15px rgba(248, 81, 73, 0.7);
-            animation: danger-pulse 1s infinite alternate;
-        }
-        @keyframes danger-pulse {
-            from { opacity: 1; transform: scale(1); }
-            to { opacity: 0.7; transform: scale(1.01); }
-        }
-
-        /* Badge Styles */
-        .badge { padding: 4px 12px; border-radius: 6px; font-size: 10px; font-weight: 900; text-transform: uppercase; border: 1px solid transparent; }
-        .badge-red { background: rgba(248,81,73,0.2); color: #f85149; border-color: #f85149; }
-        .badge-orange { background: rgba(210,153,34,0.2); color: #d29922; border-color: #d29922; }
-        .badge-green { background: rgba(63,185,80,0.2); color: #3fb950; border-color: #3fb950; }
-
-        /* Risk Bar */
-        .risk-bar-bg { width: 100%; height: 6px; background: #21262d; border-radius: 10px; margin-top: 4px; overflow: hidden; }
-        .risk-bar-fill { height: 100%; transition: width 1s ease-in-out; background: linear-gradient(90deg, #d29922, #f85149); box-shadow: 0 0 10px rgba(248,81,73,0.5); }
-
-        .live-dot { width: 6px; height: 6px; background: #3fb950; border-radius: 50%; display: inline-block; margin-left: 6px; box-shadow: 0 0 5px #3fb950; animation: blink 1.5s infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .risk-bar-bg { width: 100%; height: 6px; background: #21262d; border-radius: 10px; overflow: hidden; }
+        .risk-bar-fill { height: 100%; transition: width 1s, background 0.5s; }
     </style>
 </head>
 <body>
 
     <div class="row-item">
-        <div class="row-header">
-            <span class="label-sub">RSI Weekly (W1) <span class="live-dot"></span></span>
-            <span id="rsi-status" class="badge badge-green">Calculating...</span>
+        <div class="flex justify-between items-center text-[10px] text-gray-500 uppercase tracking-widest">
+            <span>RSI Weekly (W1)</span>
+            <span id="rsi-status" class="badge badge-gray">Syncing...</span>
         </div>
-        <div class="flex justify-between items-baseline">
-            <span id="rsi-val" class="main-value text-blue-400">--.--</span>
-            <span class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Ngưỡng rủi ro: 85+</span>
-        </div>
+        <span id="rsi-val" class="main-value text-blue-400">--.--</span>
     </div>
 
-    <div class="row-item bg-red-900/5 p-2 rounded-lg border-x border-red-900/20">
-        <div class="row-header">
-            <span class="label-sub text-red-500 font-bold">⚠️ Divergence Alert</span>
-            <span class="badge badge-red animate-bounce">Rất Cao</span>
+    <div class="row-item bg-black/20 p-3 rounded-xl border border-[#30363d]">
+        <div class="flex justify-between items-center">
+            <span class="text-[10px] font-bold text-gray-400 uppercase">Divergence Alert</span>
+            <span id="div-badge" class="badge badge-gray">No Signal</span>
         </div>
-        <div class="flex flex-col">
-            <span class="main-value emergency-glow">RSI / MACD Bearish</span>
-            <div class="flex justify-between items-center mt-1">
-                <span class="text-[10px] text-gray-400">Tín hiệu đảo chiều xác nhận</span>
-                <span class="text-[10px] text-red-500 font-black">DANGER: 95%</span>
-            </div>
+        <span id="div-text" class="main-value text-gray-700">RSI / MACD Neutral</span>
+        <div class="flex justify-between items-center text-[10px] mt-1">
+            <span id="div-desc" class="text-gray-500 font-bold uppercase">Scanning Market...</span>
+            <span id="danger-percent" class="text-gray-600 font-black">0%</span>
         </div>
-        <div class="risk-bar-bg">
-            <div id="risk-bar" class="risk-bar-fill" style="width: 95%;"></div>
+        <div class="risk-bar-bg mt-1">
+            <div id="risk-bar" class="risk-bar-fill" style="width: 0%"></div>
         </div>
     </div>
 
     <div class="row-item border-none">
-        <div class="row-header">
-            <span class="label-sub">ETH Gas Tracker <span class="live-dot"></span></span>
-            <span id="gas-status" class="badge badge-orange">Medium</span>
+        <div class="flex justify-between items-center text-[10px] text-gray-500 uppercase">
+            <span>ETH Gas Tracker</span>
+            <span id="gas-status" class="badge badge-gray">Wait</span>
         </div>
-        <div class="flex justify-between items-baseline">
-            <span id="gas-val" class="main-value text-orange-400">-- Gwei</span>
-            <span class="text-[10px] text-gray-500 font-bold uppercase">Network Load</span>
-        </div>
-    </div>
-
-    <div class="mt-2 rounded-xl border border-[#30363d] overflow-hidden h-[160px]">
-        <iframe src="https://s.tradingview.com/widgetembed/?symbol=BINANCE%3ABTCUSDT&interval=W&theme=dark&style=3" style="width:100%; height:100%;"></iframe>
+        <span id="gas-val" class="main-value text-orange-400">-- Gwei</span>
     </div>
 
     <script>
-    // 1. LẤY RSI W1 TỪ BINANCE
-    async function updateRSI() {
-        try {
-            const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=100');
-            const data = await res.json();
-            const closes = data.map(d => parseFloat(d[4]));
-            let rsi = calculateRSI(closes, 14);
-            
-            document.getElementById('rsi-val').innerText = rsi.toFixed(2);
-            const status = document.getElementById('rsi-status');
-            
-            if(rsi >= 85) { status.className="badge badge-red"; status.innerText="Cực Nguy Hiểm"; }
-            else if(rsi >= 70) { status.className="badge badge-orange"; status.innerText="Quá Mua"; }
-            else { status.className="badge badge-green"; status.innerText="An Toàn"; }
-        } catch (e) { document.getElementById('rsi-val').innerText = "68.40"; }
-    }
+        async function updateMarketData() {
+            try {
+                const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=100');
+                const candles = await res.json();
+                const prices = candles.map(c => parseFloat(c[4])); 
+                const lows = candles.map(c => parseFloat(c[3]));
+                const highs = candles.map(c => parseFloat(c[2]));
 
-    function calculateRSI(prices, period) {
-        let gains = 0, losses = 0;
-        for (let i = prices.length - period; i < prices.length; i++) {
-            let diff = prices[i] - prices[i - 1];
-            if (diff >= 0) gains += diff; else losses -= diff;
-        }
-        return 100 - (100 / (1 + (gains/period)/(losses/period)));
-    }
-
-    // 2. LẤY ETH GAS (CẬP NHẬT SOURCE MỚI)
-    async function updateGas() {
-        const gasValEl = document.getElementById('gas-val');
-        const statusEl = document.getElementById('gas-status');
-
-        try {
-            // Thử lấy từ API công khai của Zapper hoặc Etherscan (không cần key cho proxy)
-            const res = await fetch('https://api.etherscan.io/api?module=gastracker&action=gasoracle');
-            const json = await res.json();
-            
-            if (json.status === "1") {
-                const gwei = json.result.ProposeGasPrice;
-                gasValEl.innerText = gwei + " Gwei";
+                const currentRSI = calculateRSI(prices, 14);
+                document.getElementById('rsi-val').innerText = currentRSI.toFixed(2);
                 
-                if(gwei > 80) { statusEl.className="badge badge-red"; statusEl.innerText="High"; }
-                else if (gwei > 40) { statusEl.className="badge badge-orange"; statusEl.innerText="Medium"; }
-                else { statusEl.className="badge badge-green"; statusEl.innerText="Low"; }
-            } else {
-                throw new Error("API Limit");
-            }
-        } catch (e) {
-            // Nếu API chính lỗi, lấy từ nguồn dự phòng hoặc hiển thị số giả lập an toàn để không bị trống
-            const fallbackGas = Math.floor(Math.random() * (25 - 18 + 1)) + 18;
-            gasValEl.innerText = fallbackGas + " Gwei";
-            statusEl.innerText = "Normal";
-        }
-    }
+                // Logic Divergence
+                const allRSI = calculateAllRSI(prices, 14);
+                checkDivergence(prices, highs, lows, allRSI);
 
-    // Cập nhật dữ liệu ngay khi load và mỗi 30 giây
-    updateRSI();
-    updateGas();
-    setInterval(() => { updateRSI(); updateGas(); }, 30000);
-</script>
+                // Gas
+                const gasRes = await fetch('https://api.etherscan.io/api?module=gastracker&action=gasoracle');
+                const gasJson = await gasRes.json();
+                if(gasJson.result.ProposeGasPrice) {
+                    document.getElementById('gas-val').innerText = gasJson.result.ProposeGasPrice + " Gwei";
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function calculateRSI(data, period) {
+            let gains = 0, losses = 0;
+            for (let i = data.length - period; i < data.length; i++) {
+                let diff = data[i] - data[i-1];
+                diff >= 0 ? gains += diff : losses -= diff;
+            }
+            return 100 - (100 / (1 + (gains/period)/(losses/period)));
+        }
+
+        function calculateAllRSI(data, period) {
+            return data.map((_, i) => i < period ? 50 : calculateRSI(data.slice(0, i+1), period));
+        }
+
+        function checkDivergence(p, h, l, r) {
+            const divText = document.getElementById('div-text');
+            const divBadge = document.getElementById('div-badge');
+            const divDesc = document.getElementById('div-desc');
+            const riskBar = document.getElementById('risk-bar');
+            const dangerTxt = document.getElementById('danger-percent');
+
+            let lastP = p[p.length-1], prevP = p[p.length-4];
+            let lastR = r[r.length-1], prevR = r[r.length-4];
+
+            // 1. BEARISH (Giá tăng, RSI giảm) -> CẢNH BÁO GIẢM (MÀU ĐỎ)
+            if (lastP > prevP && lastR < prevR && lastR > 60) {
+                divText.innerText = "RSI / MACD BEARISH";
+                divText.className = "main-value bearish-active";
+                divBadge.className = "badge badge-red";
+                divBadge.innerText = "ĐẢO CHIỀU GIẢM";
+                divDesc.innerText = "Tín hiệu thoát hàng";
+                riskBar.style.width = "95%";
+                riskBar.style.background = "#f85149";
+                dangerTxt.innerText = "95%";
+                dangerTxt.className = "text-red-500 font-black";
+            } 
+            // 2. BULLISH (Giá giảm, RSI tăng) -> CẢNH BÁO TĂNG (MÀU XANH)
+            else if (lastP < prevP && lastR > prevR && lastR < 40) {
+                divText.innerText = "RSI / MACD BULLISH";
+                divText.className = "main-value bullish-active";
+                divBadge.className = "badge badge-green";
+                divBadge.innerText = "ĐẢO CHIỀU TĂNG";
+                divDesc.innerText = "Tín hiệu mua vào";
+                riskBar.style.width = "95%";
+                riskBar.style.background = "#3fb950";
+                dangerTxt.innerText = "BUY";
+                dangerTxt.className = "text-green-500 font-black";
+            }
+            // 3. TRẠNG THÁI ỔN ĐỊNH
+            else {
+                divText.innerText = "RSI / MACD STABLE";
+                divText.className = "main-value text-gray-600";
+                divBadge.className = "badge badge-gray";
+                divBadge.innerText = "ỔN ĐỊNH";
+                divDesc.innerText = "Chưa có tín hiệu phân kỳ";
+                riskBar.style.width = "20%";
+                riskBar.style.background = "#30363d";
+                dangerTxt.innerText = "0%";
+                dangerTxt.className = "text-gray-600";
+            }
+        }
+
+        setInterval(updateMarketData, 30000);
+        updateMarketData();
+    </script>
 </body>
 </html>
