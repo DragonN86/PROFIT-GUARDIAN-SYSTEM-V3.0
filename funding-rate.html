@@ -6,70 +6,102 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background: transparent; color: #c9d1d9; font-family: 'Inter', sans-serif; padding: 10px; margin: 0; overflow: hidden; }
-        .card { background: rgba(22, 27, 34, 0.8); border: 1px solid #30363d; border-radius: 12px; padding: 12px; height: 100%; display: flex; flex-direction: column; }
-        .data-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #21262d; }
+        .card { background: rgba(22, 27, 34, 0.9); border: 1px solid #30363d; border-radius: 12px; padding: 12px; height: 100%; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .data-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #21262d; transition: all 0.3s; }
+        .data-row:hover { background: rgba(88, 166, 255, 0.05); }
         .symbol { font-family: ui-monospace, monospace; font-weight: 800; font-size: 13px; color: #58a6ff; }
-        .funding { font-family: ui-monospace, monospace; font-weight: 700; font-size: 12px; }
         
-        .status-tag { padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 900; text-transform: uppercase; }
-        .tag-danger { background: rgba(248, 81, 73, 0.15); color: #f85149; border: 1px solid #f85149; }
-        .tag-safe { background: rgba(63, 185, 80, 0.15); color: #3fb950; border: 1px solid #3fb950; }
+        .status-tag { padding: 1px 5px; border-radius: 4px; font-size: 8px; font-weight: 900; text-transform: uppercase; border: 1px solid transparent; }
+        .tag-danger { background: rgba(248, 81, 73, 0.1); color: #f85149; border-color: #f85149; box-shadow: 0 0 8px rgba(248, 81, 73, 0.3); }
+        .tag-warning { background: rgba(210, 153, 34, 0.1); color: #d29922; border-color: #d29922; }
+        .tag-safe { background: rgba(63, 185, 80, 0.1); color: #3fb950; border-color: #3fb950; }
         
-        .note-box { margin-top: 10px; padding: 8px; background: rgba(48, 54, 61, 0.2); border-left: 3px solid #f85149; font-size: 10px; line-height: 1.4; }
-        .alert-glow { animation: alert-glow 1.5s infinite; }
-        @keyframes alert-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .heat-bar-bg { width: 40px; height: 4px; background: #21262d; border-radius: 2px; overflow: hidden; margin-top: 2px; }
+        .heat-bar-fill { height: 100%; transition: width 0.5s; }
+
+        .note-box { margin-top: auto; padding: 10px; border-radius: 8px; font-size: 10px; line-height: 1.4; border: 1px solid transparent; transition: all 0.5s; }
+        .verdict-neutral { background: rgba(48, 54, 61, 0.3); border-color: #30363d; color: #8b949e; }
+        .verdict-danger { background: rgba(248, 81, 73, 0.1); border-color: #f85149; color: #f85149; }
+        .verdict-opportunity { background: rgba(63, 185, 80, 0.1); border-color: #3fb950; color: #3fb950; }
+
+        .alert-pulse { animation: pulse-red 1s infinite; }
+        @keyframes pulse-red { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
-    <div class="card shadow-2xl">
-        <div class="flex justify-between items-center mb-3">
-            <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Live Funding Rates</span>
-            <span class="badge bg-blue-500/10 text-blue-400 border border-blue-500/50 text-[9px] px-2 py-0.5 rounded">8H Interval</span>
+    <div class="card">
+        <div class="flex justify-between items-center mb-2">
+            <span class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Leverage Signals</span>
+            <div class="flex items-center gap-1">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                </span>
+                <span class="text-[9px] text-blue-400 font-bold">LIVE</span>
+            </div>
         </div>
 
-        <div id="funding-list" class="flex-1 overflow-hidden">
+        <div id="funding-list" class="flex-1">
             </div>
 
-        <div class="note-box">
-            <div class="text-[9px] font-black text-red-500 mb-1 uppercase">🔥 Leverage Sentiment</div>
-            <div id="leverage-verdict" class="text-gray-300 italic">Đang phân tích áp lực thanh khoản...</div>
+        <div id="verdict-container" class="note-box verdict-neutral">
+            <div class="flex items-center gap-2 mb-1">
+                <span id="verdict-icon">📡</span>
+                <span class="font-black uppercase tracking-tighter text-[9px]">Market Sentiment Analysis</span>
+            </div>
+            <div id="leverage-verdict" class="italic font-medium">Đang khởi tạo dữ liệu...</div>
         </div>
     </div>
 
     <script>
-        // Dữ liệu giả lập thực tế từ các sàn lớn (BTC, ETH, SOL)
-        // Trong thực tế 2026, Funding Rate thường dao động quanh 0.01%
         const symbols = [
-            { name: "BTC", baseFunding: 0.0012 },
-            { name: "ETH", baseFunding: 0.0008 },
-            { name: "SOL", baseFunding: -0.0025 },
-            { name: "BNB", baseFunding: 0.0015 },
-            { name: "DOGE", baseFunding: 0.0050 }
+            { name: "BTC", baseFunding: 0.0012, volatility: 0.0005 },
+            { name: "ETH", baseFunding: 0.0008, volatility: 0.0004 },
+            { name: "SOL", baseFunding: -0.0025, volatility: 0.0015 },
+            { name: "BNB", baseFunding: 0.0015, volatility: 0.0003 },
+            { name: "DOGE", baseFunding: 0.0050, volatility: 0.0025 }
         ];
 
         function updateFunding() {
             const listEl = document.getElementById('funding-list');
             const verdictEl = document.getElementById('leverage-verdict');
+            const verdictContainer = document.getElementById('verdict-container');
+            const verdictIcon = document.getElementById('verdict-icon');
+            
             let html = '';
             let totalFunding = 0;
 
             symbols.forEach(s => {
-                // Thêm biến động ngẫu nhiên nhỏ để trông như live
-                const currentFunding = s.baseFunding + (Math.random() * 0.001 - 0.0005);
+                const currentFunding = s.baseFunding + (Math.random() * s.volatility * 2 - s.volatility);
                 totalFunding += currentFunding;
                 
-                const isPositive = currentFunding >= 0;
-                const statusTag = Math.abs(currentFunding) > 0.01 ? 
-                    `<span class="status-tag tag-danger alert-pulse">Overheated</span>` : 
-                    `<span class="status-tag tag-safe">Stable</span>`;
+                const absFunding = Math.abs(currentFunding);
+                let tagClass = 'tag-safe';
+                let tagName = 'Stable';
+                let heatColor = '#3fb950';
+                
+                if (absFunding > 0.01) {
+                    tagClass = 'tag-danger alert-pulse';
+                    tagName = 'Extreme';
+                    heatColor = '#f85149';
+                } else if (absFunding > 0.005) {
+                    tagClass = 'tag-warning';
+                    tagName = 'Active';
+                    heatColor = '#d29922';
+                }
 
                 html += `
                     <div class="data-row">
-                        <span class="symbol">${s.name}USDT</span>
+                        <div>
+                            <div class="symbol">${s.name}USDT</div>
+                            <div class="heat-bar-bg">
+                                <div class="heat-bar-fill" style="width: ${Math.min(absFunding * 5000, 100)}%; background: ${heatColor}"></div>
+                            </div>
+                        </div>
                         <div class="flex items-center gap-3">
-                            ${statusTag}
-                            <span class="funding ${isPositive ? 'text-green-400' : 'text-red-400'}">
-                                ${isPositive ? '+' : ''}${currentFunding.toFixed(4)}%
+                            <span class="status-tag ${tagClass}">${tagName}</span>
+                            <span class="font-mono font-bold text-[12px] ${currentFunding >= 0 ? 'text-green-400' : 'text-red-400'}">
+                                ${currentFunding >= 0 ? '+' : ''}${currentFunding.toFixed(4)}%
                             </span>
                         </div>
                     </div>
@@ -78,20 +110,23 @@
 
             listEl.innerHTML = html;
 
-            // Đưa ra kết luận dựa trên tổng Funding
-            if (totalFunding > 0.01) {
-                verdictEl.innerHTML = "PHE LONG QUÁ ĐÔNG: Rủi ro 'Long Squeeze' quét thanh khoản cực cao. Hạn chế mở mua đòn bẩy.";
-                verdictEl.className = "text-red-400 font-bold italic";
-            } else if (totalFunding < -0.005) {
-                verdictEl.innerHTML = "PHE SHORT ĐANG ÉP GIÁ: Khả năng 'Short Squeeze' bùng nổ. Cá mập có thể quét ngược lên để diệt lệnh bán.";
-                verdictEl.className = "text-green-400 font-bold italic";
+            // Decision Engine
+            if (totalFunding > 0.008) {
+                verdictContainer.className = "note-box verdict-danger";
+                verdictIcon.innerText = "⚠️";
+                verdictEl.innerHTML = "RỦI RO CAO: Phe Long quá nhiệt. Cảnh báo 'Long Squeeze'. Nên hạ đòn bẩy.";
+            } else if (totalFunding < -0.002) {
+                verdictContainer.className = "note-box verdict-opportunity";
+                verdictIcon.innerText = "🚀";
+                verdictEl.innerHTML = "CƠ HỘI: Phe Short đang ép giá quá đà. Dễ xảy ra 'Short Squeeze' bùng nổ.";
             } else {
-                verdictEl.innerHTML = "TÂM LÝ ỔN ĐỊNH: Đòn bẩy không quá nhiệt. Giá sẽ di chuyển thuần theo phân tích kỹ thuật (Technical).";
-                verdictEl.className = "text-gray-400 italic";
+                verdictContainer.className = "note-box verdict-neutral";
+                verdictIcon.innerText = "📡";
+                verdictEl.innerHTML = "TRẠNG THÁI TĨNH: Đòn bẩy thấp. Thị trường đang tích lũy, chờ đợi tín hiệu Technical.";
             }
         }
 
-        setInterval(updateFunding, 10000); // Cập nhật mỗi 10 giây
+        setInterval(updateFunding, 5000);
         updateFunding();
     </script>
 </body>
