@@ -20,11 +20,14 @@
         .bar-bg { width: 100%; height: 6px; background: #21262d; border-radius: 10px; overflow: hidden; position: relative; }
         .bar-fill { height: 100%; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1), background 0.5s; width: 0%; }
 
-        #verdict-box { 
-            margin-top: 10px; padding: 10px; border-radius: 8px; font-size: 10px; 
-            font-weight: 800; text-align: center; border: 1px dashed #30363d; 
-            transition: all 0.5s ease; background: rgba(0,0,0,0.1);
+        /* VÙNG KẾT LUẬN CHIẾN LƯỢC THEO BẢN VẼ */
+        #strategic-verdict { 
+            margin-top: 12px; padding: 10px; border-radius: 10px; 
+            border: 2px dashed #30363d; background: rgba(48, 54, 61, 0.1);
+            transition: all 0.5s ease;
         }
+        .verdict-title { font-size: 9px; font-weight: 900; color: #8b949e; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px; }
+        .verdict-content { font-size: 10px; line-height: 1.4; font-weight: 500; color: #c9d1d9; }
 
         .alert-pulse { animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
@@ -68,15 +71,18 @@
         <div class="bar-bg mt-1">
             <div id="risk-bar" class="bar-fill"></div>
         </div>
-
-        <div id="verdict-box">SCANNING MARKET VERDICT...</div>
     </div>
 
-    <div class="row-item border-none">
+    <div class="row-item border-none pb-0">
         <div class="flex justify-between items-center text-[10px] text-gray-500 font-bold uppercase">
             <span>Network Gas</span>
             <span id="gas-val" class="text-orange-400 font-black">-- Gwei</span>
         </div>
+    </div>
+
+    <div id="strategic-verdict">
+        <div class="verdict-title">Kết luận, chiến lược</div>
+        <div id="verdict-text" class="verdict-content italic text-gray-500 text-center">Đang tổng hợp dữ liệu chiến thuật...</div>
     </div>
 
     <script>
@@ -102,17 +108,16 @@
             const stratBadge = document.getElementById('strat-badge');
             const stratDesc = document.getElementById('strat-desc');
             const riskBar = document.getElementById('risk-bar');
-            const verdictBox = document.getElementById('verdict-box');
             const powerTxt = document.getElementById('signal-power');
+            const verdictText = document.getElementById('verdict-text');
+            const verdictBox = document.getElementById('strategic-verdict');
             
-            // 1. Phân tích Volume
             const currentVol = volumes[volumes.length - 1];
             const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
             const volRatio = (currentVol / avgVol) * 100;
             document.getElementById('vol-bar').style.width = Math.min(100, volRatio) + "%";
             document.getElementById('vol-status').innerText = volRatio.toFixed(0) + "% OF AVG";
 
-            // 2. Phân tích Price Action (Nến do dự)
             const lastCandle = candles[candles.length - 1];
             const open = parseFloat(lastCandle[1]), high = parseFloat(lastCandle[2]), low = parseFloat(lastCandle[3]), close = parseFloat(lastCandle[4]);
             const bodySize = Math.abs(close - open);
@@ -123,25 +128,27 @@
             const gap = Math.abs(currentMacd - signalLine);
             const prevGap = Math.abs(prevMacd - signalLine);
 
-            // 3. Logic Quyết định (Verdict Engine)
+            // LOGIC QUYẾT ĐỊNH & CHIẾN LƯỢC
             if (rsi < 40 && macdCrossUp && volRatio > 110) {
                 stratText.innerText = "CONFIRMED BUY";
                 stratText.className = "main-value text-green-500 glow-green alert-pulse";
                 stratBadge.className = "badge badge-green"; stratBadge.innerText = "ACCUMULATED";
                 stratDesc.innerText = "Whale Inflow Detected";
                 riskBar.style.width = "100%"; riskBar.style.background = "#3fb950";
-                verdictBox.innerText = "VERDICT: STRONG BUY - BULLISH REVERSAL";
-                verdictBox.style.color = "#3fb950"; verdictBox.style.borderColor = "#3fb950";
                 powerTxt.innerText = "MAX";
+                verdictText.innerText = "XÁC NHẬN ĐẢO CHIỀU: Dòng tiền lớn nhập cuộc. Chiến lược: Mở vị thế Long hoặc mua Spot mạnh tay. Target vùng kháng cự tuần gần nhất.";
+                verdictText.className = "verdict-content text-green-400";
+                verdictBox.style.borderColor = "#3fb950";
             } else if (isIndecision && rsi < 35) {
                 stratText.innerText = "BOTTOMING OUT";
                 stratText.className = "main-value text-blue-400 glow-green";
                 stratBadge.className = "badge badge-blue"; stratBadge.innerText = "DOJI FOUND";
                 stratDesc.innerText = "Sellers Exhausted";
                 riskBar.style.width = "80%"; riskBar.style.background = "#58a6ff";
-                verdictBox.innerText = "VERDICT: INDECISION AT BOTTOM - DCA ZONE";
-                verdictBox.style.color = "#58a6ff"; verdictBox.style.borderColor = "#58a6ff";
                 powerTxt.innerText = "WAITING VOL";
+                verdictText.innerText = "DÒ ĐÁY: Phe bán đã kiệt sức (Doji). Chiến lược: Chia vốn gom Spot (DCA Zone). Chưa nên dùng đòn bẩy cao do thiếu Volume xác nhận.";
+                verdictText.className = "verdict-content text-blue-300";
+                verdictBox.style.borderColor = "#58a6ff";
             } else if (rsi < 35) {
                 const progress = Math.min(95, Math.max(20, (1 - (gap / (prevGap * 1.1))) * 100));
                 stratText.innerText = "STABLE MARKET";
@@ -149,38 +156,36 @@
                 stratBadge.className = "badge badge-gray"; stratBadge.innerText = "NEUTRAL";
                 stratDesc.innerText = "MACD Convergence...";
                 riskBar.style.width = progress + "%"; riskBar.style.background = "#3fb950";
-                verdictBox.innerText = "VERDICT: OVERSOLD - LOOK FOR VOL SPIKE";
-                verdictBox.style.color = "#d29922"; verdictBox.style.borderColor = "#d29922";
                 powerTxt.innerText = "ACCUMULATING";
+                verdictText.innerText = "QUÁ BÁN: Giá đang ở vùng chiết khấu sâu. Chiến lược: Quan sát nến Doji hoặc Volume đột biến. Kiên nhẫn đợi giao cắt MACD để vào lệnh.";
+                verdictText.className = "verdict-content text-orange-300";
+                verdictBox.style.borderColor = "#d29922";
             } else {
                 stratText.innerText = "STABLE MARKET";
-                stratText.className = "main-value text-gray-600";
+                stratText.className = "main-value text-gray-600 text-sm";
                 stratBadge.className = "badge badge-gray"; stratBadge.innerText = "NEUTRAL";
                 stratDesc.innerText = "Sideways Consolidation";
                 riskBar.style.width = "15%"; riskBar.style.background = "#30363d";
-                verdictBox.innerText = "VERDICT: NO ACTION - STAND BY";
-                verdictBox.style.color = "#8b949e"; verdictBox.style.borderColor = "#30363d";
                 powerTxt.innerText = "0%";
+                verdictText.innerText = "TRUNG LẬP: Thị trường chưa rõ xu hướng. Chiến lược: Đứng ngoài quan sát. Không nên giao dịch ở giữa vùng RSI 45-60 để tránh nhiễu.";
+                verdictText.className = "verdict-content text-gray-500";
+                verdictBox.style.borderColor = "#30363d";
             }
         }
 
         async function updateData() {
             try {
-                // Lấy Price Change 24h
                 const tRes = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT');
                 const tData = await tRes.json();
                 const pChange = parseFloat(tData.priceChangePercent);
-                const pChangeEl = document.getElementById('price-change');
-                pChangeEl.innerText = (pChange >= 0 ? "+" : "") + pChange.toFixed(2) + "%";
-                pChangeEl.className = pChange >= 0 ? "text-green-500 font-black" : "text-red-500 font-black";
+                document.getElementById('price-change').innerText = (pChange >= 0 ? "+" : "") + pChange.toFixed(2) + "%";
+                document.getElementById('price-change').className = pChange >= 0 ? "text-green-500 font-black" : "text-red-500 font-black";
 
-                // Lấy Nến Tuần
                 const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=100');
                 const candles = await res.json();
                 const prices = candles.map(c => parseFloat(c[4])); 
                 const volumes = candles.map(c => parseFloat(c[5]));
                 
-                // RSI Manual Calculation
                 const subset = prices.slice(-15);
                 let g = 0, l = 0;
                 for(let i=1; i<subset.length; i++) {
