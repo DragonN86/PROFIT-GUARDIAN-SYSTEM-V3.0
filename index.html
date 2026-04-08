@@ -137,38 +137,42 @@
         }
 
         async function updateStrategy() {
-            let rsi = 50, fear = 50;
+    let rsi = 50, fear = 50, btcd = 50;
 
-            // 1. Lấy RSI từ tech-frame
-            try {
-                const techFrame = document.getElementById('tech-frame');
-                const techDoc = techFrame.contentDocument || techFrame.contentWindow.document;
-                const rsiElement = techDoc.getElementById('rsi-val');
-                if (rsiElement) rsi = parseFloat(rsiElement.innerText) || 50;[cite: 2]
-            } catch(e) { console.warn("Tech Frame chưa sẵn sàng"); }
+    // 1. Lấy RSI từ tech-frame
+    try {
+        const techDoc = document.getElementById('tech-frame').contentDocument || document.getElementById('tech-frame').contentWindow.document;
+        rsi = parseFloat(techDoc.getElementById('rsi-val')?.innerText) || 50;
+    } catch(e) { console.warn("Tech Frame error"); }
 
-            // 2. Lấy Fear Index từ fear-greed.html (Cập nhật từ ID: fear-val)
-            try {
-                const fearFrame = document.getElementById('fear-frame');
-                const fearDoc = fearFrame.contentDocument || fearFrame.contentWindow.document;
-                const fearElement = fearDoc.getElementById('fear-val');
-                if (fearElement) {
-                    fear = parseFloat(fearElement.innerText) || 50;[cite: 2]
-                    console.log("WinTrack Sync: Fear Index =", fear);
-                }
-            } catch(e) { console.warn("Fear Frame chưa sẵn sàng. Chạy trên Live Server để đồng bộ."); }[cite: 2]
+    // 2. Lấy Fear từ fear-frame
+    try {
+        const fearDoc = document.getElementById('fear-frame').contentDocument || document.getElementById('fear-frame').contentWindow.document;
+        fear = parseFloat(fearDoc.getElementById('fear-val')?.innerText) || 50;
+    } catch(e) { console.warn("Fear Frame error"); }
 
-            // 3. Logic kích hoạt Phase
-            if (rsi < 32 && fear < 30) {
-                activatePhase(0);[cite: 2]
-            } else if (rsi > 72 || fear > 75) {
-                activatePhase(2);[cite: 2]
-            } else if (rsi > 55) {
-                activatePhase(1);[cite: 2]
-            } else if (fear > 70) {
-                activatePhase(3);[cite: 2]
-            }
-        }
+    // 3. Lấy BTC.D (Lưu ý: Nếu dùng Widget TradingView, bạn có thể phải cập nhật btcd thủ công hoặc qua API khác)
+    // Ở đây ta giả định có giá trị btcd để tính toán logic
+    
+    // --- LOGIC HÀNH ĐỘNG WINTRACK 2026 ---
+
+    // Ưu tiên 1: Vùng mua an toàn (GOM DẦN - DCA)
+    if (rsi < 32 && fear < 28) {
+        activatePhase(0);
+    } 
+    // Ưu tiên 2: Vùng nguy hiểm (Chốt lời mạnh - Chống Fomo)
+    else if (rsi > 72 || fear > 80) {
+        activatePhase(2);
+    }
+    // Ưu tiên 3: Vùng hưng phấn tột độ (Gồng lãi cuối)
+    else if (fear > 85) {
+        activatePhase(3);
+    }
+    // Ưu tiên 4: Vùng chốt lời từng phần (Thoát gốc)
+    else if (rsi > 55) {
+        activatePhase(1);
+    }
+}
 
         function updateDuration() {
             const minutes = Math.floor((Date.now() - phaseStartTime) / 60000);
