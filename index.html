@@ -138,28 +138,46 @@
             document.getElementById('current-phase').textContent = `PHASE 0${id} - ${phaseConfig[id].status}`;
         }
 
-        async function updateStrategy() {
-            let rsi = 50, fear = 50;
+async function updateStrategy() {
+    let rsi = 50, fear = 50;
 
-            try {
-                const tech = document.getElementById('tech-frame').contentWindow;
-                rsi = parseFloat(tech.document.getElementById('rsi-val')?.innerText) || 50;
-            } catch(e) {}
+    // 1. Lấy dữ liệu RSI từ iframe Technical Analysis
+    try {
+        const techFrame = document.getElementById('tech-frame');
+        if (techFrame && techFrame.contentDocument) {
+            const rsiElement = techFrame.contentDocument.getElementById('rsi-val');
+            rsi = parseFloat(rsiElement?.innerText) || 50;
+        }
+    } catch(e) {
+        console.warn("Không thể truy cập tech-frame:", e);
+    }
 
-            try {
-                fear = 17;
-            } catch(e) {}
-
-            if (rsi < 32 && fear < 30) {
-                activatePhase(0);
-            } else if (rsi > 72 || fear > 75) {
-                activatePhase(2);
-            } else if (rsi > 55) {
-                activatePhase(1);
-            } else if (fear > 70) {
-                activatePhase(3);
+    // 2. Lấy dữ liệu FEAR từ iframe Fear-Greed (PHẦN BẠN CẦN SỬA)
+    try {
+        const fearFrame = document.getElementById('fear-frame');
+        if (fearFrame && fearFrame.contentDocument) {
+            // Tìm phần tử có id="fear-val" trong file fear-greed.html
+            const fearElement = fearFrame.contentDocument.getElementById('fear-val');
+            if (fearElement) {
+                fear = parseFloat(fearElement.innerText) || 50;
+                console.log("Fear hiện tại từ file:fear-greed.html", fear);
             }
         }
+    } catch(e) {
+        console.warn("Không thể truy cập fear-frame. Lưu ý: Cần chạy trên Live Server (http://) thay vì mở file trực tiếp (file://)", e);
+    }
+
+    // 3. Logic kích hoạt Phase dựa trên dữ liệu thật
+    if (rsi < 32 && fear < 30) {
+        activatePhase(0); // Tích lũy
+    } else if (rsi > 72 || fear > 75) {
+        activatePhase(2); // Chốt mạnh
+    } else if (rsi > 55) {
+        activatePhase(1); // Chốt một phần
+    } else if (fear > 70) {
+        activatePhase(3); // Gồng lãi
+    }
+}
 
         function updateDuration() {
             const minutes = Math.floor((Date.now() - phaseStartTime) / 60000);
