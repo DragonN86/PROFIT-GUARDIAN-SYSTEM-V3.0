@@ -175,4 +175,71 @@
             return {
                 text: "TÍCH LŨY - KIÊN NHẪN",
                 color: "text-gray-400",
-                verdict: `Thị trường đang sideway hoặc chưa rõ xu hướng. Quan sát và chờ tín hiệu
+                verdict: `Thị trường đang sideway hoặc chưa rõ xu hướng. Quan sát và chờ tín hiệu mạnh hơn.`,
+                confidence: 45,
+                flash: false
+            };
+        }
+
+        async function updateData() {
+            try {
+                const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${currentTF}&limit=200`);
+                const candles = await res.json();
+                const prices = candles.map(c => parseFloat(c[4]));
+
+                const rsi = calculateRSI(prices);
+                const macd = calculateMACD(prices);
+                const bb = calculateBB(prices);
+                const price = prices[prices.length - 1];
+
+                // Cập nhật UI
+                document.getElementById('rsi-val').innerText = rsi.toFixed(2);
+                const rsiEl = document.getElementById('rsi-status');
+                rsiEl.innerText = rsi < 35 ? "OVERSOLD" : rsi > 70 ? "OVERBOUGHT" : "NEUTRAL";
+                rsiEl.className = `badge ${rsi < 35 ? 'bg-green-900 text-green-400' : rsi > 70 ? 'bg-red-900 text-red-400' : 'bg-gray-700 text-gray-400'}`;
+
+                document.getElementById('macd-val').innerText = macd.current.toFixed(2);
+                document.getElementById('macd-val').className = macd.current >= 0 ? "text-green-400" : "text-red-400";
+
+                document.getElementById('bb-upper').innerText = bb.upper.toLocaleString();
+                document.getElementById('bb-lower').innerText = bb.lower.toLocaleString();
+
+                // Áp dụng chiến lược
+                const strat = getStrategy(rsi, macd, bb, price, currentTF);
+
+                document.getElementById('strat-text').innerText = strat.text;
+                document.getElementById('strat-text').className = `text-xl font-black uppercase tracking-tighter ${strat.color} ${strat.flash ? 'alert-flash' : ''}`;
+                document.getElementById('verdict-text').innerHTML = strat.verdict;
+
+                const bar = document.getElementById('risk-bar');
+                bar.style.width = strat.confidence + "%";
+                bar.style.background = strat.confidence > 80 ? "#22c55e" : strat.confidence > 60 ? "#3b82f6" : "#eab308";
+
+                document.getElementById('confidence-val').innerText = strat.confidence + "%";
+
+            } catch (e) {
+                console.error("Lỗi tải dữ liệu:", e);
+            }
+        }
+
+        // Timeframe Switch
+        document.getElementById('btn-weekly').addEventListener('click', () => {
+            currentTF = '1w';
+            document.getElementById('btn-weekly').classList.add('active', 'bg-blue-600');
+            document.getElementById('btn-daily').classList.remove('active', 'bg-blue-600');
+            updateData();
+        });
+
+        document.getElementById('btn-daily').addEventListener('click', () => {
+            currentTF = '1d';
+            document.getElementById('btn-daily').classList.add('active', 'bg-blue-600');
+            document.getElementById('btn-weekly').classList.remove('active', 'bg-blue-600');
+            updateData();
+        });
+
+        // Auto refresh
+        setInterval(updateData, 30000);
+        updateData();
+    </script>
+</body>
+</html>
