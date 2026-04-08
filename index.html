@@ -3,195 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vo Will - WinTrack 2026</title>
+    <title>Vo Will - WinTrack 2026 | Crypto Exit System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .phase-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .phase-card-active { border-color: #f2cc60 !important; background: rgba(242, 204, 96, 0.12) !important; transform: translateY(-4px); }
-        .phase-card-accumulate { border-color: #3fb950 !important; background: rgba(63, 185, 80, 0.15) !important; transform: translateY(-4px); }
-        .status-badge-active { animation: pulse 2s infinite; }
-        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+        body { font-family: 'Inter', sans-serif; background-color: #0d1117; color: #c9d1d9; }
+        
+        /* Hiệu ứng Card */
+        .phase-card { 
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+            border: 1px solid #30363d;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Trạng thái Active cho Phase chốt lời (Vàng) */
+        .phase-card-active { 
+            border-color: #f2cc60 !important; 
+            background: rgba(242, 204, 96, 0.08) !important; 
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px -10px rgba(242, 204, 96, 0.2);
+        }
+
+        /* Trạng thái Active cho Phase tích lũy (Xanh) */
+        .phase-card-accumulate { 
+            border-color: #3fb950 !important; 
+            background: rgba(63, 185, 80, 0.1) !important; 
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px -10px rgba(63, 185, 80, 0.2);
+        }
+
+        .glow-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
     </style>
 </head>
-<body class="bg-[#0d1117] text-[#c9d1d9] min-h-screen p-6 lg:p-10">
+<body class="min-h-screen p-4 lg:p-8">
 
-    <!-- HEADER -->
-    <header class="flex flex-col md:flex-row justify-between items-center mb-10 pb-8 border-b border-[#30363d]">
-        <div>
-            <h1 class="text-4xl font-black text-white uppercase tracking-tighter">WinTrack <span class="text-[#f2cc60]">2026</span></h1>
-            <p class="text-gray-400 text-sm mt-1">
-                Chiến lược: <span class="text-[#58a6ff] font-bold">"KỶ LUẬT LÀ SỨC MẠNH"</span>[cite: 2]
-                | User: <span class="text-white font-semibold">vowill</span>[cite: 2]
+    <!-- HEADER SECTION -->
+    <header class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center mb-10 pb-8 border-b border-[#30363d]">
+        <div class="text-center md:text-left">
+            <h1 class="text-5xl font-black text-white uppercase tracking-tighter">WinTrack <span class="text-[#f2cc60]">2026</span></h1>
+            <p class="text-gray-400 text-sm mt-2 font-medium">
+                Chiến lược: <span class="text-[#58a6ff]">"KỶ LUẬT LÀ SỨC MẠNH"</span> 
+                <span class="mx-2 text-gray-600">|</span> 
+                Vị thế: <span class="text-white">SPOT & LONG-TERM</span>
             </p>
         </div>
-        <div class="mt-4 md:mt-0 flex items-center gap-3 bg-[#1c2128] px-5 py-2.5 rounded-2xl border border-[#30363d]">
-            <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
-            <span class="text-xs font-mono uppercase tracking-widest">LIVE MULTI-FACTOR ANALYSIS</span>[cite: 2]
+        <div class="mt-6 md:mt-0 flex items-center gap-4 bg-[#161b22] px-6 py-3 rounded-2xl border border-[#30363d]">
+            <div class="flex flex-col items-end">
+                <span class="text-[10px] text-gray-500 font-bold tracking-widest uppercase">System Status</span>
+                <span class="text-xs font-mono text-green-400">LIVE ANALYSIS ACTIVE</span>
+            </div>
+            <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#3fb950]"></span>
         </div>
     </header>
 
-    <!-- DASHBOARD GRID -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
-            <div class="bg-[#1c2128] p-4 border-b border-[#30363d] font-bold text-sm">📈 BTC Spot Technical Analysis</div>[cite: 2]
-            <div class="h-[360px]"><iframe id="tech-frame" src="technical-analysis.html" class="w-full h-full border-none"></iframe></div>[cite: 2]
-        </div>
-        <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
-            <div class="bg-[#1c2128] p-4 border-b border-[#30363d] font-bold text-sm">📊 Market Sentiment</div>[cite: 2]
-            <div class="h-[360px]"><iframe id="fear-frame" src="fear-greed.html" class="w-full h-full border-none"></iframe></div>[cite: 2]
-        </div>
-        <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
-            <div class="bg-[#1c2128] p-4 border-b border-[#30363d] font-bold text-sm">🌍 BTC Dominance</div>[cite: 2]
-            <div class="h-[360px]"><iframe src="https://s.tradingview.com/widgetembed/?symbol=CRYPTOCAP%3ABTC.D&interval=D&theme=dark" class="w-full h-full border-none"></iframe></div>[cite: 2]
-        </div>
-        <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
-            <div class="bg-[#1c2128] p-4 border-b border-[#30363d] font-bold text-sm">🔥 Leverage & Funding Signals</div>[cite: 2]
-            <div class="h-[360px]"><iframe src="leverage-signals.html" class="w-full h-full border-none"></iframe></div>[cite: 2]
-        </div>
-    </div>
+    <!-- MONITORING DASHBOARD -->
+    <main class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <!-- BTC Technical -->
+            <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
+                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] flex justify-between items-center">
+                    <span class="text-xs font-bold text-gray-300">📈 BTC RSI (D1)</span>
+                </div>
+                <div class="h-[320px]"><iframe id="tech-frame" src="technical-analysis.html" class="w-full h-full border-none"></iframe></div>
+            </div>
 
-    <!-- KẾ HOẠCH HÀNH ĐỘNG -->
-    <section>
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold uppercase tracking-tight">KẾ HOẠCH HÀNH ĐỘNG</h2>[cite: 2]
-            <div id="phase-info" class="text-sm font-mono bg-[#1c2128] px-5 py-2 rounded-2xl flex items-center gap-3">
-                <span class="text-emerald-400">●</span>
-                <span id="current-phase">PHASE 00 - ACCUMULATING</span>[cite: 2]
-                <span id="phase-duration" class="text-gray-400">0 phút</span>[cite: 2]
+            <!-- Market Sentiment -->
+            <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
+                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] flex justify-between items-center">
+                    <span class="text-xs font-bold text-gray-300">📊 FEAR & GREED INDEX</span>
+                </div>
+                <div class="h-[320px]"><iframe id="fear-frame" src="fear-greed.html" class="w-full h-full border-none"></iframe></div>
+            </div>
+
+            <!-- BTC Dominance -->
+            <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
+                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] flex justify-between items-center">
+                    <span class="text-xs font-bold text-gray-300">🌍 BTC DOMINANCE</span>
+                </div>
+                <div class="h-[320px]"><iframe src="https://s.tradingview.com/widgetembed/?symbol=CRYPTOCAP%3ABTC.D&interval=D&theme=dark" class="w-full h-full border-none"></iframe></div>
+            </div>
+
+            <!-- Market Signals (Static Reference) -->
+            <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
+                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] flex justify-between items-center">
+                    <span class="text-xs font-bold text-gray-300">🔥 LEVERAGE SIGNALS</span>
+                </div>
+                <div class="h-[320px]"><iframe src="leverage-signals.html" class="w-full h-full border-none"></iframe></div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5" id="phases-grid"></div>
-    </section>
+        <!-- ACTION PLAN SECTION -->
+        <section class="mb-10">
+            <div class="flex flex-col md:flex-row justify-between items-end md:items-center mb-8 gap-4">
+                <div>
+                    <h2 class="text-3xl font-black text-white uppercase tracking-tight">KẾ HOẠCH HÀNH ĐỘNG</h2>
+                    <p class="text-gray-500 text-sm mt-1">Hệ thống tự động quét tín hiệu mỗi 10 giây</p>
+                </div>
+                <div id="phase-info" class="bg-[#1c2128] border border-[#30363d] px-6 py-3 rounded-2xl flex items-center gap-4">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Current Status</span>
+                        <span id="current-phase-text" class="text-sm font-bold text-white uppercase">Initializing...</span>
+                    </div>
+                    <div class="h-8 w-[1px] bg-[#30363d]"></div>
+                    <div class="flex flex-col">
+                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Duration</span>
+                        <span id="phase-duration" class="text-sm font-mono text-[#58a6ff]">0 phút</span>
+                    </div>
+                </div>
+            </div>
 
-    <footer class="text-center mt-16 text-[#484f58] text-xs tracking-widest">
-        © 2026 CRYPTO EXIT SYSTEM BY VO WILL — KỶ LUẬT LÀ SỨC MẠNH[cite: 2]
+            <!-- Phases Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="phases-grid"></div>
+        </section>
+    </main>
+
+    <footer class="max-w-7xl mx-auto text-center mt-12 pt-8 border-t border-[#30363d] text-[#484f58] text-[10px] tracking-[0.3em] uppercase">
+        © 2026 WinTrack System by Vo Will — Discipline equals freedom
     </footer>
 
     <script>
-        let currentPhaseId = 0;
+        let currentPhaseId = -1;
         let phaseStartTime = Date.now();
-        const STORAGE_KEY = "wintrack_phase_state";
-
-        function loadPhaseState() {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                const data = JSON.parse(saved);
-                currentPhaseId = data.phaseId || 0;
-                phaseStartTime = data.startTime || Date.now();
-            }
-        }
-
-        function savePhaseState() {
-            const data = { phaseId: currentPhaseId, startTime: phaseStartTime };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        }
+        const STORAGE_KEY = "wintrack_2026_state";
 
         const phaseConfig = [
-            { id: 0, title: "Tích lũy (DCA)", desc: "RSI < 32 + Extreme Fear", status: "ACCUMULATING" },
-            { id: 1, title: "Chốt 20-30%", desc: "RSI > 55 hoặc Profit > 25%", status: "WAITING" },
-            { id: 2, title: "Chốt 30-50%", desc: "RSI > 70 hoặc Profit > 60%", status: "WAITING" },
-            { id: 3, title: "Gồng lãi cuối", desc: "Extreme Greed + Trailing Stop", status: "WAITING" }
+            { id: 0, title: "Tích lũy (GOM DẦN)", desc: "RSI < 32 & Extreme Fear. VSA cạn cung. Mua khi mọi người sợ hãi.", status: "ACCUMULATING", color: "text-emerald-400" },
+            { id: 1, title: "Chốt 20-30%", desc: "RSI > 55. Bảo toàn vốn gốc. Hạ tỷ trọng khi thị trường ấm lại.", status: "TAKE PROFIT 1", color: "text-blue-400" },
+            { id: 2, title: "Chốt 30-50%", desc: "RSI > 72 hoặc Fear > 80. Vùng hưng phấn cao. Chốt lời mạnh tay.", status: "TAKE PROFIT 2", color: "text-yellow-400" },
+            { id: 3, title: "Gồng lãi cuối", desc: "Extreme Greed (>85). Dịch Trailing Stop chặt chẽ. Đợi tín hiệu đảo chiều.", status: "TRAILING STOP", color: "text-red-400" }
         ];
 
         function initPhases() {
             const container = document.getElementById('phases-grid');
             container.innerHTML = phaseConfig.map(p => `
-                <div id="phase-card-${p.id}" class="phase-card border border-[#30363d] p-6 rounded-3xl bg-[#1c2128]">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-xs font-black uppercase tracking-widest text-gray-500">PHASE 0${p.id}</span>
-                        <span id="badge-${p.id}" class="text-[10px] font-bold px-4 py-1 rounded-full bg-[#21262d]">${p.status}</span>
+                <div id="phase-card-${p.id}" class="phase-card p-8 rounded-[2rem] bg-[#161b22]">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="text-[10px] font-black tracking-[0.2em] text-gray-500 uppercase">Phase 0${p.id}</span>
+                        <span id="badge-${p.id}" class="text-[9px] font-black px-3 py-1 rounded-lg bg-[#0d1117] border border-[#30363d] text-gray-400 uppercase tracking-tighter">${p.status}</span>
                     </div>
-                    <h3 class="font-bold text-lg text-white">${p.title}</h3>
-                    <p class="text-xs text-gray-400 mt-3">${p.desc}</p>
+                    <h3 class="font-bold text-xl text-white mb-3">${p.title}</h3>
+                    <p class="text-xs leading-relaxed text-gray-400">${p.desc}</p>
                 </div>
             `).join('');
         }
 
         function activatePhase(id) {
-            if (currentPhaseId === id && document.getElementById(`phase-card-${id}`).classList.contains('phase-card-active')) return;
+            if (currentPhaseId === id) return;
 
+            // Reset all cards
             phaseConfig.forEach((_, i) => {
                 const card = document.getElementById(`phase-card-${i}`);
-                if (card) card.classList.remove('phase-card-active', 'phase-card-accumulate');
+                const badge = document.getElementById(`badge-${i}`);
+                if (card) card.className = "phase-card p-8 rounded-[2rem] bg-[#161b22]";
+                if (badge) badge.className = "text-[9px] font-black px-3 py-1 rounded-lg bg-[#0d1117] border border-[#30363d] text-gray-400 uppercase tracking-tighter";
             });
 
-            const card = document.getElementById(`phase-card-${id}`);
-            const badge = document.getElementById(`badge-${id}`);
-
-            if (card) {
-                card.classList.add(id === 0 ? 'phase-card-accumulate' : 'phase-card-active');
-                badge.textContent = id === 0 ? "ACCUMULATING" : "ACTIVE";
-                badge.className = `text-[10px] font-bold px-4 py-1 rounded-full ${id === 0 ? 'bg-emerald-500 text-black' : 'bg-[#f2cc60] text-black'}`;
+            // Activate new card
+            const activeCard = document.getElementById(`phase-card-${id}`);
+            const activeBadge = document.getElementById(`badge-${id}`);
+            
+            if (id === 0) {
+                activeCard.classList.add('phase-card-accumulate');
+                activeBadge.className = "text-[9px] font-black px-3 py-1 rounded-lg bg-emerald-500 text-black uppercase tracking-tighter";
+            } else {
+                activeCard.classList.add('phase-card-active');
+                activeBadge.className = "text-[9px] font-black px-3 py-1 rounded-lg bg-[#f2cc60] text-black uppercase tracking-tighter";
             }
 
-            if (currentPhaseId !== id) {
-                currentPhaseId = id;
-                phaseStartTime = Date.now();
-                savePhaseState();
-            }
-
-            document.getElementById('current-phase').textContent = `PHASE 0${id} - ${id === 0 ? "ACCUMULATING" : "ACTIVE"}`;
+            currentPhaseId = id;
+            phaseStartTime = Date.now();
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({ id, time: phaseStartTime }));
+            
+            document.getElementById('current-phase-text').textContent = `PHASE 0${id} - ${phaseConfig[id].status}`;
+            document.getElementById('current-phase-text').className = `text-sm font-bold uppercase ${phaseConfig[id].color}`;
         }
 
         async function updateStrategy() {
-    let rsi = 50, fear = 50, btcd = 50;
+            let rsi = 50, fear = 50;
 
-    // 1. Lấy RSI từ tech-frame
-    try {
-        const techDoc = document.getElementById('tech-frame').contentDocument || document.getElementById('tech-frame').contentWindow.document;
-        rsi = parseFloat(techDoc.getElementById('rsi-val')?.innerText) || 50;
-    } catch(e) { console.warn("Tech Frame error"); }
+            try {
+                const techDoc = document.getElementById('tech-frame').contentDocument || document.getElementById('tech-frame').contentWindow.document;
+                rsi = parseFloat(techDoc.getElementById('rsi-val')?.innerText) || 50;
 
-    // 2. Lấy Fear từ fear-frame
-    try {
-        const fearDoc = document.getElementById('fear-frame').contentDocument || document.getElementById('fear-frame').contentWindow.document;
-        fear = parseFloat(fearDoc.getElementById('fear-val')?.innerText) || 50;
-    } catch(e) { console.warn("Fear Frame error"); }
+                const fearDoc = document.getElementById('fear-frame').contentDocument || document.getElementById('fear-frame').contentWindow.document;
+                fear = parseFloat(fearDoc.getElementById('fear-val')?.innerText) || 50;
+                
+                console.log(`Sync Data: RSI=${rsi} | Fear=${fear}`);
+            } catch(e) { 
+                console.warn("Đang chờ Iframe tải dữ liệu..."); 
+                return;
+            }
 
-    // 3. Lấy BTC.D (Lưu ý: Nếu dùng Widget TradingView, bạn có thể phải cập nhật btcd thủ công hoặc qua API khác)
-    // Ở đây ta giả định có giá trị btcd để tính toán logic
-    
-    // --- LOGIC HÀNH ĐỘNG WINTRACK 2026 ---
-
-    // Ưu tiên 1: Vùng mua an toàn (GOM DẦN - DCA)
-    if (rsi < 32 && fear < 28) {
-        activatePhase(0);
-    } 
-    // Ưu tiên 2: Vùng nguy hiểm (Chốt lời mạnh - Chống Fomo)
-    else if (rsi > 72 || fear > 80) {
-        activatePhase(2);
-    }
-    // Ưu tiên 3: Vùng hưng phấn tột độ (Gồng lãi cuối)
-    else if (fear > 85) {
-        activatePhase(3);
-    }
-    // Ưu tiên 4: Vùng chốt lời từng phần (Thoát gốc)
-    else if (rsi > 55) {
-        activatePhase(1);
-    }
-}
+            // --- CHIẾN LƯỢC QUYẾT ĐỊNH ---
+            if (rsi < 32 && fear < 30) {
+                activatePhase(0); // Tích lũy
+            } else if (rsi > 72 || fear > 80) {
+                activatePhase(2); // Chốt mạnh
+            } else if (fear > 85) {
+                activatePhase(3); // Gồng lãi cuối
+            } else if (rsi > 55) {
+                activatePhase(1); // Chốt gốc
+            }
+        }
 
         function updateDuration() {
             const minutes = Math.floor((Date.now() - phaseStartTime) / 60000);
-            document.getElementById('phase-duration').textContent = `${minutes} phút`;[cite: 2]
+            document.getElementById('phase-duration').textContent = `${minutes} phút`;
         }
 
-        // Khởi chạy
-        loadPhaseState();
-        initPhases();
-        
-        // Cần độ trễ nhỏ để iframe kịp load trước khi scan lần đầu
-        setTimeout(() => {
-            activatePhase(currentPhaseId); // Khôi phục giao diện từ storage
-            updateStrategy();
-            updateDuration();
-        }, 1000);
+        // Khởi động hệ thống
+        window.onload = () => {
+            initPhases();
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const data = JSON.parse(saved);
+                currentPhaseId = data.id;
+                phaseStartTime = data.time;
+            }
+            
+            // Chạy kiểm tra sau 1.5s để iframe kịp load nội dung
+            setTimeout(() => {
+                updateStrategy();
+                updateDuration();
+            }, 1500);
 
-        setInterval(updateStrategy, 10000); // Check mỗi 10 giây
-        setInterval(updateDuration, 30000); // Update phút mỗi 30 giây
+            setInterval(updateStrategy, 10000); // 10 giây quét 1 lần
+            setInterval(updateDuration, 30000); // 30 giây cập nhật đồng hồ
+        };
     </script>
 </body>
 </html>
