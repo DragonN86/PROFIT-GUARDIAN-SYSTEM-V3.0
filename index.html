@@ -8,74 +8,96 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0d1117; color: #c9d1d9; }
-        
-        .phase-card { 
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
+
+        .phase-card {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid #30363d;
             position: relative;
             overflow: hidden;
         }
-        
-        .phase-card-active { 
-            border-color: #f2cc60 !important; 
-            background: rgba(242, 204, 96, 0.08) !important; 
+
+        .phase-card-active {
+            border-color: #f2cc60 !important;
+            background: rgba(242, 204, 96, 0.08) !important;
             transform: translateY(-5px);
             box-shadow: 0 10px 30px -10px rgba(242, 204, 96, 0.2);
         }
 
-        .phase-card-accumulate { 
-            border-color: #3fb950 !important; 
-            background: rgba(63, 185, 80, 0.1) !important; 
+        .phase-card-accumulate {
+            border-color: #3fb950 !important;
+            background: rgba(63, 185, 80, 0.1) !important;
             transform: translateY(-5px);
             box-shadow: 0 10px 30px -10px rgba(63, 185, 80, 0.2);
         }
     </style>
 </head>
 <body class="min-h-screen p-4 lg:p-8">
-
+    <!-- HEADER -->
     <header class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center mb-10 pb-8 border-b border-[#30363d]">
         <div>
-            <h1 class="text-5xl font-black text-white uppercase tracking-tighter">WinTrack <span class="text-[#f2cc60]">2026</span></h1>
+            <h1 class="text-5xl font-black text-white uppercase tracking-tighter">
+                WinTrack <span class="text-[#f2cc60]">2026</span>
+            </h1>
             <p class="text-gray-400 text-sm mt-2 font-medium">
-                Chiến lược: <span class="text-[#58a6ff]">"KỶ LUẬT LÀ SỨC MẠNH"</span> 
-                <span class="mx-2 text-gray-600">|</span> 
-                Vị thế: <span class="text-white">SPOT & LONG-TERM</span>
+                Chiến lược: <span class="text-[#58a6ff]">"KỶ LUẬT LÀ SỨC MẠNH"</span>
+                <span class="mx-2 text-gray-600">|</span>
+                Vị thế: <span class="text-white">SPOT &amp; LONG-TERM</span>
             </p>
         </div>
         <div class="mt-6 md:mt-0 flex items-center gap-4 bg-[#161b22] px-6 py-3 rounded-2xl border border-[#30363d]">
             <div class="flex flex-col items-end">
                 <span class="text-[10px] text-gray-500 font-bold tracking-widest uppercase">System Status</span>
-                <span class="text-xs font-mono text-green-400">LIVE ANALYSIS ACTIVE</span>
+                <span id="system-status" class="text-xs font-mono text-yellow-400">WAITING IFRAMES...</span>
             </div>
-            <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#3fb950]"></span>
+            <span id="status-dot" class="w-3 h-3 bg-yellow-500 rounded-full animate-pulse shadow-[0_0_10px_#facc15]"></span>
         </div>
     </header>
 
+    <!-- MAIN -->
     <main class="max-w-7xl mx-auto">
+        <!-- WIDGET GRID -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
                 <div class="bg-[#1c2128] p-4 border-b border-[#30363d] flex justify-between items-center">
-                    <span class="text-xs font-bold text-gray-300">📈 BTC RSI (D1)</span>
+                    <span class="text-xs font-bold text-gray-300">📈 BTC RSI (D1/W1)</span>
                 </div>
-                <div class="h-[400px]"><iframe id="tech-frame" src="technical-analysis.html" class="w-full h-full border-none"></iframe></div>
+                <div class="h-[400px]">
+                    <!-- Đảm bảo file này nằm cùng thư mục -->
+                    <iframe id="tech-frame" src="technical-analysis.html" class="w-full h-full border-none"></iframe>
+                </div>
             </div>
 
             <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
-                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] flex justify-between items-center text-xs font-bold text-gray-300">📊 FEAR & GREED INDEX</div>
-                <div class="h-[400px]"><iframe id="fear-frame" src="fear-greed.html" class="w-full h-full border-none"></iframe></div>
+                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] flex justify-between items-center text-xs font-bold text-gray-300">
+                    📊 FEAR &amp; GREED INDEX
+                </div>
+                <div class="h-[400px]">
+                    <!-- Đảm bảo file này nằm cùng thư mục -->
+                    <iframe id="fear-frame" src="fear-greed.html" class="w-full h-full border-none"></iframe>
+                </div>
             </div>
 
             <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
-                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] flex justify-between items-center text-xs font-bold text-gray-300">🌍 BTC DOMINANCE</div>
-                <div class="h-[400px]"><iframe src="https://s.tradingview.com/widgetembed/?symbol=CRYPTOCAP%3ABTC.D&interval=D&theme=dark" class="w-full h-full border-none"></iframe></div>
+                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] flex justify-between items-center text-xs font-bold text-gray-300">
+                    🌍 BTC DOMINANCE
+                </div>
+                <div class="h-[400px]">
+                    <iframe src="https://s.tradingview.com/widgetembed/?symbol=CRYPTOCAP%3ABTC.D&interval=D&theme=dark"
+                            class="w-full h-full border-none"></iframe>
+                </div>
             </div>
 
             <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
-                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] flex justify-between items-center text-xs font-bold text-gray-300">🔥 LEVERAGE SIGNALS</div>
-                <div class="h-[400px]"><iframe src="leverage-signals.html" class="w-full h-full border-none"></iframe></div>
+                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] flex justify-between items-center text-xs font-bold text-gray-300">
+                    🔥 LEVERAGE SIGNALS
+                </div>
+                <div class="h-[400px]">
+                    <iframe src="leverage-signals.html" class="w-full h-full border-none"></iframe>
+                </div>
             </div>
         </div>
 
+        <!-- KẾ HOẠCH HÀNH ĐỘNG -->
         <section class="mb-10">
             <div class="flex flex-col md:flex-row justify-between items-end md:items-center mb-8 gap-4">
                 <div>
@@ -125,7 +147,7 @@
         }
 
         function activatePhase(id) {
-            if (currentPhaseId === id) return;
+            if (currentPhaseId === id || id == null) return;
 
             phaseConfig.forEach((_, i) => {
                 const card = document.getElementById(`phase-card-${i}`);
@@ -136,21 +158,35 @@
 
             const activeCard = document.getElementById(`phase-card-${id}`);
             const activeBadge = document.getElementById(`badge-${id}`);
-            
-            if (id === 0) {
-                activeCard.classList.add('phase-card-accumulate');
-                activeBadge.className = "text-[9px] font-black px-3 py-1 rounded-lg bg-emerald-500 text-black uppercase tracking-tighter";
-            } else {
-                activeCard.classList.add('phase-card-active');
-                activeBadge.className = "text-[9px] font-black px-3 py-1 rounded-lg bg-[#f2cc60] text-black uppercase tracking-tighter";
+
+            if (activeCard && activeBadge) {
+                if (id === 0) {
+                    activeCard.classList.add('phase-card-accumulate');
+                    activeBadge.className = "text-[9px] font-black px-3 py-1 rounded-lg bg-emerald-500 text-black uppercase tracking-tighter";
+                } else {
+                    activeCard.classList.add('phase-card-active');
+                    activeBadge.className = "text-[9px] font-black px-3 py-1 rounded-lg bg-[#f2cc60] text-black uppercase tracking-tighter";
+                }
             }
 
             currentPhaseId = id;
             phaseStartTime = Date.now();
             localStorage.setItem(STORAGE_KEY, JSON.stringify({ id, time: phaseStartTime }));
-            
-            document.getElementById('current-phase-text').textContent = `PHASE 0${id} - ${phaseConfig[id].status}`;
-            document.getElementById('current-phase-text').className = `text-sm font-bold uppercase ${phaseConfig[id].color}`;
+
+            const phaseText = document.getElementById('current-phase-text');
+            phaseText.textContent = `PHASE 0${id} - ${phaseConfig[id].status}`;
+            phaseText.className = `text-sm font-bold uppercase ${phaseConfig[id].color}`;
+        }
+
+        function updateDuration() {
+            const minutes = Math.floor((Date.now() - phaseStartTime) / 60000);
+            document.getElementById('phase-duration').textContent = `${minutes} phút`;
+        }
+
+        function extractNumber(text) {
+            if (!text) return NaN;
+            const match = text.replace(',', '.').match(/-?\d+(\.\d+)?/);
+            return match ? parseFloat(match[0]) : NaN;
         }
 
         async function updateStrategy() {
@@ -159,7 +195,7 @@
             try {
                 const techFrame = document.getElementById('tech-frame');
                 const fearFrame = document.getElementById('fear-frame');
-                
+
                 const techDoc = techFrame.contentDocument || techFrame.contentWindow.document;
                 const fearDoc = fearFrame.contentDocument || fearFrame.contentWindow.document;
 
@@ -167,56 +203,78 @@
                 const fearTxt = fearDoc.getElementById('fear-val')?.innerText;
 
                 if (!rsiTxt || !fearTxt) {
-                    console.log("Chưa tìm thấy thẻ rsi-val hoặc fear-val");
+                    console.log("Chưa tìm thấy rsi-val hoặc fear-val", { rsiTxt, fearTxt });
                     return;
                 }
 
-                rsi = parseFloat(rsiTxt);
-                fear = parseFloat(fearTxt);
-                
-                console.log(`Dữ liệu thực: RSI=${rsi} | Fear=${fear}`);
-            } catch(e) { 
-                console.error("Lỗi truy cập Iframe: Hãy chạy bằng Live Server!"); 
+                rsi = extractNumber(rsiTxt);
+                fear = extractNumber(fearTxt);
+
+                if (Number.isNaN(rsi) || Number.isNaN(fear)) {
+                    console.warn("RSI/Fear không phải số hợp lệ", { rsiTxt, fearTxt, rsi, fear });
+                    return;
+                }
+
+                console.log(`WinTrack Strategy: RSI=${rsi} | Fear=${fear}`);
+            } catch (e) {
+                console.error("Lỗi truy cập iframe (hãy chạy bằng Live Server & cùng domain):", e);
                 return;
             }
 
-            // --- CHIẾN LƯỢC QUYẾT ĐỊNH (FIXED LOGIC) ---
+            // LOGIC QUYẾT ĐỊNH
             if (rsi <= 35 && fear <= 30) {
-                activatePhase(0); // Tích lũy
+                activatePhase(0);
             } else if (rsi >= 70 || fear >= 80) {
-                activatePhase(2); // Chốt mạnh
+                activatePhase(2);
             } else if (fear > 85) {
-                activatePhase(3); // Gồng lãi cuối
+                activatePhase(3);
             } else if (rsi > 55 || fear > 60) {
-                activatePhase(1); // Chốt gốc / Đợi chốt
+                activatePhase(1);
             } else {
-                // Vùng trung lập (Neutral): Nếu chưa có phase nào thì mặc định 1
                 if (currentPhaseId === -1) activatePhase(1);
             }
         }
 
-        function updateDuration() {
-            const minutes = Math.floor((Date.now() - phaseStartTime) / 60000);
-            document.getElementById('phase-duration').textContent = `${minutes} phút`;
+        function markSystemLive() {
+            const statusText = document.getElementById('system-status');
+            const dot = document.getElementById('status-dot');
+            statusText.textContent = "LIVE ANALYSIS ACTIVE";
+            statusText.className = "text-xs font-mono text-green-400";
+            dot.className = "w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#3fb950]";
         }
 
         window.onload = () => {
             initPhases();
+
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
                 const data = JSON.parse(saved);
                 currentPhaseId = data.id;
                 phaseStartTime = data.time;
-                activatePhase(currentPhaseId); // Khôi phục phase cũ ngay lập tức
+                if (currentPhaseId != null) activatePhase(currentPhaseId);
             }
-            
-            setTimeout(() => {
-                updateStrategy();
-                updateDuration();
-            }, 3000); // Đợi 3 giây để API trong Iframe kịp trả kết quả
 
-            setInterval(updateStrategy, 10000);
-            setInterval(updateDuration, 30000);
+            const techFrame = document.getElementById('tech-frame');
+            const fearFrame = document.getElementById('fear-frame');
+            let loaded = 0;
+
+            function iframeLoaded() {
+                loaded++;
+                if (loaded === 2) {
+                    markSystemLive();
+                    // Cho 2 iframe thêm chút thời gian để fetch API
+                    setTimeout(() => {
+                        updateStrategy();
+                        updateDuration();
+                    }, 3000);
+
+                    setInterval(updateStrategy, 10000);
+                    setInterval(updateDuration, 30000);
+                }
+            }
+
+            techFrame.addEventListener('load', iframeLoaded);
+            fearFrame.addEventListener('load', iframeLoaded);
         };
     </script>
 </body>
