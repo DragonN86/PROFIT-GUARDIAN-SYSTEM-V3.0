@@ -42,7 +42,7 @@
         <div class="bg-blue-900/20 border border-blue-500/30 rounded-2xl p-4 mb-6">
             <div class="flex justify-between items-center mb-3">
                 <span class="text-[10px] font-black text-blue-400 uppercase tracking-widest">DCA Tracker</span>
-                <button onclick="setEntryPrice()" class="text-[10px] bg-blue-500/30 hover:bg-blue-500/50 px-3 py-1 rounded-lg">Sửa giá gom</button>
+                <button onclick="setEntryPrice()" class="text-[10px] bg-blue-500/30 hover:bg-blue-500/50 px-3 py-1 rounded-lg transition-colors">Sửa giá gom</button>
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
@@ -92,16 +92,16 @@
             </div>
         </div>
 
-        <!-- VERDICT -->
+        <!-- STRATEGIC VERDICT -->
         <div id="verdict-box" class="rounded-3xl p-6 border border-emerald-500/30 bg-emerald-950/20">
             <div class="flex items-center gap-3 mb-3">
                 <div id="signal-dot" class="w-3 h-3 bg-emerald-500 rounded-full animate-ping"></div>
                 <h2 id="strat-text" class="text-xl font-black tracking-tighter uppercase">Analyzing</h2>
             </div>
-            <p id="verdict-text" class="text-sm leading-relaxed text-slate-300">Đang tổng hợp dữ liệu...</p>
+            <p id="verdict-text" class="text-sm leading-relaxed text-slate-300">Đang phân tích đa chỉ báo...</p>
             <div class="mt-6">
                 <div class="flex justify-between text-[10px] font-black text-slate-500 uppercase mb-2">
-                    <span>Độ tin cậy</span>
+                    <span>Độ tin cậy chiến thuật</span>
                     <span id="confidence-val">0%</span>
                 </div>
                 <div class="bar-bg">
@@ -146,62 +146,113 @@
                 const lastPrice = prices[prices.length - 1];
                 const lastVol = volumes[volumes.length - 1];
 
-                if (prices.length < 30) throw new Error("Not enough data");
+                if (prices.length < 30) return;
 
+                // === TÍNH CÁC CHỈ SỐ ===
                 // RSI
                 let gains = 0, losses = 0;
-                for (let i = Math.max(14, prices.length - 14); i < prices.length; i++) {
+                for (let i = prices.length - 14; i < prices.length; i++) {
                     const diff = prices[i] - prices[i-1];
                     diff > 0 ? gains += diff : losses -= diff;
                 }
                 const rsi = Math.min(100, Math.max(0, 100 - (100 / (1 + (gains/14) / (losses/14 || 0.001)))));
-                
+
                 // MACD (đã scale)
                 const ema12 = calculateEMA(prices, 12);
                 const ema26 = calculateEMA(prices, 26);
                 const macdLine = ema12.map((v, i) => v - ema26[i]);
                 const signalLine = calculateEMA(macdLine, 9);
                 let hist = macdLine[macdLine.length-1] - signalLine[signalLine.length-1];
-                hist = hist / 10; // Scale để đẹp hơn
+                const prevHist = macdLine[macdLine.length-2] - signalLine[signalLine.length-2];
+                hist = hist / 10; // scale để dễ đọc
 
-                // BB
+                // Bollinger Bands
                 const slice = prices.slice(-20);
                 const sma = slice.reduce((a,b)=>a+b,0)/20;
                 const stdDev = Math.sqrt(slice.reduce((a,b)=>a+(b-sma)**2,0)/20);
+                const bbUpper = sma + 2*stdDev;
+                const bbLower = sma - 2*stdDev;
 
-                // Update UI
+                // Volume VSA
+                const avgVol = volumes.slice(-20).reduce((a,b)=>a+b,0)/20;
+                const volRatio = (lastVol / avgVol) * 100;
+
+                // === CẬP NHẬT UI ===
                 document.getElementById('rsi-val').textContent = rsi.toFixed(2);
-                const rsiStatus = document.getElementById('rsi-status');
-                if (rsi < 35) { rsiStatus.textContent = "OVERSOLD"; rsiStatus.className = "inline-block mt-3 px-3 py-1 text-[9px] font-black rounded-lg bg-emerald-600 text-white"; }
-                else if (rsi > 70) { rsiStatus.textContent = "OVERBOUGHT"; rsiStatus.className = "inline-block mt-3 px-3 py-1 text-[9px] font-black rounded-lg bg-red-600 text-white"; }
-                else { rsiStatus.textContent = "NEUTRAL"; rsiStatus.className = "inline-block mt-3 px-3 py-1 text-[9px] font-black rounded-lg bg-slate-800"; }
+                // RSI status
+                const rsiEl = document.getElementById('rsi-status');
+                if (rsi < 35) rsiEl.innerHTML = `<span class="bg-emerald-600 text-white">OVERSOLD</span>`;
+                else if (rsi > 70) rsiEl.innerHTML = `<span class="bg-red-600 text-white">OVERBOUGHT</span>`;
+                else rsiEl.innerHTML = `<span class="bg-slate-800">NEUTRAL</span>`;
 
                 document.getElementById('macd-val').textContent = hist.toFixed(2);
                 document.getElementById('macd-val').className = `main-value ${hist >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
 
-                document.getElementById('bb-upper').textContent = Math.round(sma + 2*stdDev).toLocaleString();
-                document.getElementById('bb-lower').textContent = Math.round(sma - 2*stdDev).toLocaleString();
+                document.getElementById('bb-upper').textContent = Math.round(bbUpper).toLocaleString();
+                document.getElementById('bb-lower').textContent = Math.round(bbLower).toLocaleString();
 
-                // VSA
-                const avgVol = volumes.slice(-20).reduce((a,b)=>a+b,0)/20;
-                const volRatio = Math.min(300, (lastVol / avgVol) * 100);
                 document.getElementById('vol-ratio').textContent = volRatio.toFixed(0) + "% AVG";
                 document.getElementById('vol-bar').style.width = Math.min(100, volRatio) + "%";
 
-                // Strategy
-                let strat = "KIÊN NHẪN", col = "text-slate-400", conf = 45, verd = "Thị trường đang sideway.";
-                if (rsi < 35) { strat = "VÙNG GOM DCA"; col = "text-emerald-400"; conf = 93; verd = "Điều kiện lý tưởng để mua Spot dài hạn."; }
-                else if (rsi > 72) { strat = "CHỐT LỜI"; col = "text-red-400"; conf = 85; verd = "Vùng quá mua, nên rebalance."; }
-                else if (hist > -5) { strat = "PHỤC HỒI"; col = "text-sky-400"; conf = 70; verd = "Xung lực bán đang yếu."; }
+                // DCA Profit
+                if (entryPrice > 0) {
+                    const profit = ((lastPrice - entryPrice) / entryPrice) * 100;
+                    const pEl = document.getElementById('profit-pct');
+                    pEl.textContent = (profit >= 0 ? "+" : "") + profit.toFixed(2) + "%";
+                    pEl.className = `font-mono font-bold text-xl ${profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
+                }
 
+                // === LOGIC KẾT HỢP HOÀN HẢO ===
+                let score = 0;
+                let reasons = [];
+
+                // 1. RSI (40 điểm)
+                if (rsi < 35) { score += 40; reasons.push("RSI Oversold"); }
+                else if (rsi > 72) { score -= 35; reasons.push("RSI Overbought"); }
+
+                // 2. Bollinger Bands (30 điểm)
+                const priceVsBB = (lastPrice - bbLower) / (bbUpper - bbLower);
+                if (priceVsBB < 0.22) { score += 30; reasons.push("Giá sát Lower Band"); }
+                else if (priceVsBB > 0.78) { score -= 25; reasons.push("Giá sát Upper Band"); }
+
+                // 3. MACD (20 điểm)
+                if (hist > prevHist && hist < 30) { score += 20; reasons.push("MACD Histogram dốc lên"); }
+
+                // 4. Volume VSA (15 điểm)
+                if (volRatio > 140) { score += 15; reasons.push("Volume cao - Smart Money"); }
+                else if (volRatio < 65) { score += 10; reasons.push("No Supply"); }
+
+                // Normalize confidence
+                let confidence = Math.max(30, Math.min(98, Math.round(score)));
+
+                // Quyết định chiến lược
+                let strat = "KIÊN NHẪN - QUAN SÁT";
+                let col = "text-slate-400";
+                let verdict = "Thị trường đang tích lũy, chưa có tín hiệu rõ ràng.";
+
+                if (score >= 75) {
+                    strat = "VÙNG GOM DCA";
+                    col = "text-emerald-400";
+                    verdict = "Tín hiệu cực mạnh: RSI oversold + giá rẻ + volume xác nhận. Nên DCA Spot dài hạn.";
+                } else if (score <= -40) {
+                    strat = "CHỐT LỜI / REBALANCE";
+                    col = "text-red-400";
+                    verdict = "Vùng quá mua mạnh. Nên chốt lời một phần hoặc tái cấu trúc danh mục.";
+                } else if (score >= 45) {
+                    strat = "PHỤC HỒI - NẮM GIỮ";
+                    col = "text-sky-400";
+                    verdict = "Áp lực bán suy yếu, xu hướng phục hồi đang hình thành.";
+                }
+
+                // Hiển thị
                 document.getElementById('strat-text').textContent = strat;
-                document.getElementById('strat-text').className = `text-xl font-black tracking-tighter ${col} ${conf > 85 ? 'alert-flash' : ''}`;
-                document.getElementById('verdict-text').textContent = verd;
-                document.getElementById('confidence-val').textContent = conf + "%";
-                document.getElementById('risk-bar').style.width = conf + "%";
-            } catch (e) {
-                console.error(e);
-            }
+                document.getElementById('strat-text').className = `text-xl font-black tracking-tighter ${col} ${confidence > 85 ? 'alert-flash' : ''}`;
+                document.getElementById('verdict-text').textContent = verdict;
+                document.getElementById('confidence-val').textContent = confidence + "%";
+                document.getElementById('risk-bar').style.width = confidence + "%";
+                document.getElementById('risk-bar').style.background = col.includes('emerald') ? "#10b981" : col.includes('red') ? "#ef4444" : "#38bdf8";
+
+            } catch (e) { console.error(e); }
         }
 
         // Timeframe switch
