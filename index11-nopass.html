@@ -86,7 +86,7 @@
             }
         }
 
-        // Lưu trạng thái vào localStorage
+        // Lưu trạng thái
         function savePhaseState() {
             const data = {
                 phaseId: currentPhaseId,
@@ -119,7 +119,6 @@
         function activatePhase(id) {
             if (currentPhaseId === id) return;
 
-            // Reset tất cả
             for (let i = 0; i < 4; i++) {
                 const card = document.getElementById(`phase-card-${i}`);
                 if (card) card.classList.remove('phase-card-active', 'phase-card-accumulate');
@@ -139,7 +138,6 @@
             document.getElementById('current-phase').textContent = `PHASE 0${id} - ${phaseConfig[id].status}`;
         }
 
-        // Logic phân tích
         async function updateStrategy() {
             let rsi = 50, fear = 50;
 
@@ -149,7 +147,7 @@
             } catch(e) {}
 
             try {
-                fear = 17; // Bạn có thể thay bằng dữ liệu thật từ fear-frame
+                fear = 17;
             } catch(e) {}
 
             if (rsi < 32 && fear < 30) {
@@ -169,16 +167,15 @@
         }
 
         // Khởi chạy
-        loadPhaseState();        // Load trạng thái cũ
+        loadPhaseState();
         initPhases();
         setInterval(updateStrategy, 7000);
         setInterval(updateDuration, 30000);
         
-        // Khởi động lần đầu
         setTimeout(() => {
             updateStrategy();
             updateDuration();
-        }, 1000);
+        }, 800);
     </script>
 </body>
 </html>
