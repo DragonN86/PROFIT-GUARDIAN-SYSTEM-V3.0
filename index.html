@@ -8,105 +8,52 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #0d1117; color: #c9d1d9; }
-
-        .phase-card {
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid #30363d;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .phase-card-active {
-            border-color: #f2cc60 !important;
-            background: rgba(242, 204, 96, 0.08) !important;
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px -10px rgba(242, 204, 96, 0.2);
-        }
-
-        .phase-card-accumulate {
-            border-color: #3fb950 !important;
-            background: rgba(63, 185, 80, 0.1) !important;
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px -10px rgba(63, 185, 80, 0.2);
-        }
+        .phase-card { transition: all 0.5s ease; border: 1px solid #30363d; }
+        .phase-card-active { border-color: #f2cc60 !important; background: rgba(242, 204, 96, 0.08) !important; transform: translateY(-5px); }
+        .phase-card-accumulate { border-color: #3fb950 !important; background: rgba(63, 185, 80, 0.1) !important; transform: translateY(-5px); }
     </style>
 </head>
 <body class="min-h-screen p-4 lg:p-8">
     <!-- HEADER -->
     <header class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center mb-10 pb-8 border-b border-[#30363d]">
         <div>
-            <h1 class="text-5xl font-black text-white uppercase tracking-tighter">
-                WinTrack <span class="text-[#f2cc60]">2026</span>
-            </h1>
-            <p class="text-gray-400 text-sm mt-2 font-medium">
-                Chiến lược: <span class="text-[#58a6ff]">"KỶ LUẬT LÀ SỨC MẠNH"</span>
-                <span class="mx-2 text-gray-600">|</span>
-                Vị thế: <span class="text-white">SPOT &amp; LONG-TERM</span>
-            </p>
+            <h1 class="text-5xl font-black text-white uppercase tracking-tighter">WinTrack <span class="text-[#f2cc60]">2026</span></h1>
+            <p class="text-gray-400 text-sm mt-2 font-medium">Chiến lược: <span class="text-[#58a6ff]">"KỶ LUẬT LÀ SỨC MẠNH"</span></p>
         </div>
         <div class="mt-6 md:mt-0 flex items-center gap-4 bg-[#161b22] px-6 py-3 rounded-2xl border border-[#30363d]">
             <div class="flex flex-col items-end">
                 <span class="text-[10px] text-gray-500 font-bold tracking-widest uppercase">System Status</span>
-                <span id="system-status" class="text-xs font-mono text-yellow-400">WAITING DATA...</span>
+                <span id="system-status" class="text-xs font-mono text-yellow-400">CONNECTING...</span>
             </div>
-            <span id="status-dot" class="w-3 h-3 bg-yellow-500 rounded-full animate-pulse shadow-[0_0_10px_#facc15]"></span>
+            <span id="status-dot" class="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></span>
         </div>
     </header>
 
-    <!-- MAIN -->
     <main class="max-w-7xl mx-auto">
-        <!-- WIDGET GRID -->
+        <!-- IFRAMES -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            <!-- Frame 1: Technical Analysis -->
-            <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
-                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] text-xs font-bold text-gray-300">📈 BTC RSI (D1/W1)</div>
-                <div class="h-[400px]">
-                    <iframe id="tech-frame" src="technical-analysis.html" class="w-full h-full border-none"></iframe>
-                </div>
+            <div class="border border-[#30363d] rounded-3xl overflow-hidden h-[400px] bg-[#161b22]">
+                <iframe id="tech-frame" src="technical-analysis.html" class="w-full h-full border-none"></iframe>
             </div>
-
-            <!-- Frame 2: Fear & Greed -->
-            <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
-                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] text-xs font-bold text-gray-300">📊 FEAR &amp; GREED</div>
-                <div class="h-[400px]">
-                    <iframe id="fear-frame" src="fear-greed.html" class="w-full h-full border-none"></iframe>
-                </div>
+            <div class="border border-[#30363d] rounded-3xl overflow-hidden h-[400px] bg-[#161b22]">
+                <iframe id="fear-frame" src="fear-greed.html" class="w-full h-full border-none"></iframe>
             </div>
-
-            <!-- Frame 3: BTC Dominance (TradingView) -->
-            <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
-                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] text-xs font-bold text-gray-300">🌍 BTC DOMINANCE</div>
-                <div class="h-[400px]">
-                    <iframe src="https://s.tradingview.com/widgetembed/?symbol=CRYPTOCAP%3ABTC.D&interval=D&theme=dark" class="w-full h-full border-none"></iframe>
-                </div>
+            <div class="border border-[#30363d] rounded-3xl overflow-hidden h-[400px] bg-[#161b22]">
+                <iframe src="https://s.tradingview.com/widgetembed/?symbol=CRYPTOCAP%3ABTC.D&theme=dark" class="w-full h-full border-none"></iframe>
             </div>
-
-            <!-- Frame 4: Leverage Signals -->
-            <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
-                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] text-xs font-bold text-gray-300">🔥 MARKET SIGNALS</div>
-                <div class="h-[400px]">
-                    <iframe src="leverage-signals.html" class="w-full h-full border-none"></iframe>
-                </div>
+            <div class="border border-[#30363d] rounded-3xl overflow-hidden h-[400px] bg-[#161b22]">
+                <iframe src="leverage-signals.html" class="w-full h-full border-none"></iframe>
             </div>
         </div>
 
         <!-- ACTION PLAN -->
-        <section class="mb-10">
-            <div class="flex flex-col md:flex-row justify-between items-end md:items-center mb-8 gap-4">
-                <div>
-                    <h2 class="text-3xl font-black text-white uppercase tracking-tight">KẾ HOẠCH HÀNH ĐỘNG</h2>
-                    <p class="text-gray-500 text-sm mt-1">Hệ thống tự động đồng bộ dữ liệu đa tầng</p>
-                </div>
-                <div id="phase-info" class="bg-[#1c2128] border border-[#30363d] px-6 py-3 rounded-2xl flex items-center gap-4">
-                    <div class="flex flex-col">
-                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Current Status</span>
-                        <span id="current-phase-text" class="text-sm font-bold text-white uppercase">Waiting for Data...</span>
-                    </div>
+        <section>
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                <h2 class="text-3xl font-black text-white uppercase">KẾ HOẠCH HÀNH ĐỘNG</h2>
+                <div class="bg-[#1c2128] border border-[#30363d] px-6 py-3 rounded-2xl flex items-center gap-4">
+                    <span id="current-phase-text" class="text-sm font-bold text-white uppercase">WAITING...</span>
                     <div class="h-8 w-[1px] bg-[#30363d]"></div>
-                    <div class="flex flex-col">
-                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">In Phase</span>
-                        <span id="phase-duration" class="text-sm font-mono text-[#58a6ff]">0 phút</span>
-                    </div>
+                    <span id="phase-duration" class="text-sm font-mono text-[#58a6ff]">0 phút</span>
                 </div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="phases-grid"></div>
@@ -114,134 +61,89 @@
     </main>
 
     <script>
+        const STORAGE_KEY = "wintrack_2026_state";
         let currentPhaseId = -1;
         let phaseStartTime = Date.now();
-        const STORAGE_KEY = "wintrack_2026_state";
-        
-        // Biến lưu trữ data từ các iframe gửi về
-        let marketData = {
-            rsi: null,
-            fear: null
-        };
+        let marketData = { rsi: null, fear: null };
 
         const phaseConfig = [
-            { id: 0, title: "Tích lũy (GOM DẦN)", desc: "RSI < 35 & Extreme Fear. VSA cạn cung. Mua khi mọi người sợ hãi.", status: "ACCUMULATING", color: "text-emerald-400" },
-            { id: 1, title: "Bảo toàn vị thế", desc: "Thị trường ổn định. Giữ danh mục. Chốt lời nhẹ 20% nếu RSI > 55.", status: "HOLDING", color: "text-blue-400" },
-            { id: 2, title: "Chốt lời mạnh", desc: "RSI > 72 hoặc Fear > 80. Vùng hưng phấn cao. Thoát 50% hàng.", status: "TAKE PROFIT", color: "text-yellow-400" },
-            { id: 3, title: "Thoát hàng / Short", desc: "Extreme Greed (>85). Dịch Trailing Stop chặt chẽ hoặc thoát hết.", status: "EXIT STRATEGY", color: "text-red-400" }
+            { id: 0, title: "Tích lũy (GOM DẦN)", status: "ACCUMULATING", color: "text-emerald-400", desc: "RSI < 35 & Fear < 30. Mua mạnh tay." },
+            { id: 1, title: "Bảo toàn vị thế", status: "HOLDING", color: "text-blue-400", desc: "Thị trường ổn định. Giữ hàng." },
+            { id: 2, title: "Chốt lời mạnh", status: "TAKE PROFIT", color: "text-yellow-400", desc: "Hưng phấn cao. Thoát 50% hàng." },
+            { id: 3, title: "Thoát hàng / Short", status: "EXIT STRATEGY", color: "text-red-400", desc: "Cực kỳ hưng phấn. Thoát hết." }
         ];
 
         function initPhases() {
-            const container = document.getElementById('phases-grid');
-            container.innerHTML = phaseConfig.map(p => `
+            document.getElementById('phases-grid').innerHTML = phaseConfig.map(p => `
                 <div id="phase-card-${p.id}" class="phase-card p-8 rounded-[2rem] bg-[#161b22]">
-                    <div class="flex justify-between items-start mb-6">
-                        <span class="text-[10px] font-black tracking-[0.2em] text-gray-500 uppercase">Phase 0${p.id}</span>
-                        <span id="badge-${p.id}" class="text-[9px] font-black px-3 py-1 rounded-lg bg-[#0d1117] border border-[#30363d] text-gray-400 uppercase tracking-tighter">${p.status}</span>
-                    </div>
-                    <h3 class="font-bold text-xl text-white mb-3">${p.title}</h3>
-                    <p class="text-xs leading-relaxed text-gray-400">${p.desc}</p>
+                    <span class="text-[10px] text-gray-500 uppercase font-black">Phase 0${p.id}</span>
+                    <h3 class="font-bold text-xl text-white my-3">${p.title}</h3>
+                    <p class="text-xs text-gray-400">${p.desc}</p>
                 </div>
             `).join('');
         }
 
-        // LẮNG NGHE TIN NHẮN TỪ IFRAME (Bảo mật & Hiệu quả)
+        // LẮNG NGHE DỮ LIỆU TỪ CÁC FILE CON
         window.addEventListener('message', function(event) {
-            // Nhận từ technical-analysis.html
+            console.log("Dữ liệu nhận được:", event.data); // Để kiểm tra trong F12 Console
+            
             if (event.data.type === 'WINTRACK_UPDATE') {
                 marketData.rsi = event.data.rsi;
             }
-            // Nhận từ fear-greed.html
             if (event.data.type === 'WINTRACK_FEAR_UPDATE') {
                 marketData.fear = event.data.value;
             }
 
-            // Khi có đủ dữ liệu thì chạy logic quyết định
-            if (marketData.rsi !== null && marketData.fear !== null) {
-                updateStrategyLogic();
-            }
+            // CHẠY LOGIC NGAY KHI CÓ BẤT KỲ DỮ LIỆU NÀO
+            updateStrategyLogic();
         });
 
         function updateStrategyLogic() {
-            const { rsi, fear } = marketData;
-            let targetPhase = 1; // Mặc định là Phase 1
+            const rsi = marketData.rsi || 50;  // Mặc định 50 nếu chưa có
+            const fear = marketData.fear || 50; // Mặc định 50 nếu chưa có
 
-            // LOGIC QUYẾT ĐỊNH WINTRACK 2026
-            if (rsi <= 35 && fear <= 30) {
-                targetPhase = 0;
-            } else if (fear >= 85) {
-                targetPhase = 3;
-            } else if (rsi >= 72 || fear >= 78) {
-                targetPhase = 2;
-            } else if (rsi >= 55 || fear >= 55) {
-                targetPhase = 1;
-            }
+            let target = 1; // Mặc định Phase 1
+            if (fear <= 30 || rsi <= 38) target = 0;
+            else if (fear >= 85) target = 3;
+            else if (fear >= 78 || rsi >= 70) target = 2;
 
-            activatePhase(targetPhase);
-            updateSystemStatus(rsi, fear);
+            activatePhase(target);
+            
+            // Cập nhật status bar
+            const statusText = document.getElementById('system-status');
+            statusText.textContent = `LIVE: RSI ${Math.round(rsi)} | F&G ${fear}`;
+            statusText.className = "text-xs font-mono text-green-400";
+            document.getElementById('status-dot').className = "w-3 h-3 bg-green-500 rounded-full animate-pulse";
         }
 
         function activatePhase(id) {
             if (currentPhaseId === id) return;
-
-            // Reset UI các card
+            currentPhaseId = id;
+            
+            // Reset cards
             phaseConfig.forEach((_, i) => {
-                const card = document.getElementById(`phase-card-${i}`);
-                const badge = document.getElementById(`badge-${i}`);
-                if (card) card.className = "phase-card p-8 rounded-[2rem] bg-[#161b22]";
-                if (badge) badge.className = "text-[9px] font-black px-3 py-1 rounded-lg bg-[#0d1117] border border-[#30363d] text-gray-400 uppercase tracking-tighter";
+                document.getElementById(`phase-card-${i}`).className = "phase-card p-8 rounded-[2rem] bg-[#161b22]";
             });
 
-            // Active card được chọn
+            // Active card
             const activeCard = document.getElementById(`phase-card-${id}`);
-            const activeBadge = document.getElementById(`badge-${id}`);
+            activeCard.classList.add(id === 0 ? 'phase-card-accumulate' : 'phase-card-active');
 
-            if (activeCard && activeBadge) {
-                if (id === 0) {
-                    activeCard.classList.add('phase-card-accumulate');
-                    activeBadge.className = "text-[9px] font-black px-3 py-1 rounded-lg bg-emerald-500 text-black uppercase tracking-tighter";
-                } else {
-                    activeCard.classList.add('phase-card-active');
-                    activeBadge.className = "text-[9px] font-black px-3 py-1 rounded-lg bg-[#f2cc60] text-black uppercase tracking-tighter";
-                }
-            }
-
-            currentPhaseId = id;
-            phaseStartTime = Date.now();
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({ id, time: phaseStartTime }));
-
-            const phaseText = document.getElementById('current-phase-text');
-            phaseText.textContent = `PHASE 0${id} - ${phaseConfig[id].status}`;
-            phaseText.className = `text-sm font-bold uppercase ${phaseConfig[id].color}`;
-        }
-
-        function updateSystemStatus(rsi, fear) {
-            const statusText = document.getElementById('system-status');
-            const dot = document.getElementById('status-dot');
-            statusText.textContent = `LIVE: RSI ${Math.round(rsi)} | F&G ${fear}`;
-            statusText.className = "text-xs font-mono text-green-400";
-            dot.className = "w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#3fb950]";
-        }
-
-        function updateDuration() {
-            const minutes = Math.floor((Date.now() - phaseStartTime) / 60000);
-            document.getElementById('phase-duration').textContent = `${minutes} phút`;
+            // Cập nhật text status
+            const info = phaseConfig[id];
+            const textEl = document.getElementById('current-phase-text');
+            textEl.textContent = `PHASE 0${id} - ${info.status}`;
+            textEl.className = `text-sm font-bold uppercase ${info.color}`;
         }
 
         window.onload = () => {
             initPhases();
-
-            // Khôi phục trạng thái từ LocalStorage
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                const data = JSON.parse(saved);
-                currentPhaseId = data.id;
-                phaseStartTime = data.time;
-                if (currentPhaseId !== -1) activatePhase(currentPhaseId);
-            }
-
-            // Cập nhật thời gian mỗi 30s
-            setInterval(updateDuration, 30000);
+            // Tự động chạy một lần để kiểm tra giao diện
+            updateStrategyLogic();
+            setInterval(() => {
+                const mins = Math.floor((Date.now() - phaseStartTime) / 60000);
+                document.getElementById('phase-duration').textContent = `${mins} phút`;
+            }, 10000);
         };
     </script>
 </body>
