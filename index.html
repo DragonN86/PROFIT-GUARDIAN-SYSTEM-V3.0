@@ -7,28 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
-        
         body { font-family: 'Inter', sans-serif; }
-        .phase-card { 
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
-        }
-        .phase-card-active { 
-            border-color: #f2cc60 !important; 
-            background: rgba(242, 204, 96, 0.12) !important; 
-            transform: translateY(-4px); 
-        }
-        .phase-card-accumulate { 
-            border-color: #3fb950 !important; 
-            background: rgba(63, 185, 80, 0.15) !important; 
-            transform: translateY(-4px); 
-        }
-        .status-badge-active { 
-            animation: pulse 2s infinite; 
-        }
-        @keyframes pulse { 
-            0%, 100% { opacity: 1; } 
-            50% { opacity: 0.6; } 
-        }
+        .phase-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .phase-card-active { border-color: #f2cc60 !important; background: rgba(242, 204, 96, 0.12) !important; transform: translateY(-4px); }
+        .phase-card-accumulate { border-color: #3fb950 !important; background: rgba(63, 185, 80, 0.15) !important; transform: translateY(-4px); }
+        .status-badge-active { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
     </style>
 </head>
 <body class="bg-[#0d1117] text-[#c9d1d9] min-h-screen p-6 lg:p-10">
@@ -50,28 +34,18 @@
 
     <!-- DASHBOARD GRID -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        
-        <!-- Technical Analysis -->
         <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
             <div class="bg-[#1c2128] p-4 border-b border-[#30363d] font-bold text-sm">📈 BTC Spot Technical Analysis</div>
             <div class="h-[360px]"><iframe id="tech-frame" src="technical-analysis.html" class="w-full h-full border-none"></iframe></div>
         </div>
-
-        <!-- Fear & Greed -->
         <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
             <div class="bg-[#1c2128] p-4 border-b border-[#30363d] font-bold text-sm">📊 Market Sentiment</div>
             <div class="h-[360px]"><iframe id="fear-frame" src="fear-greed.html" class="w-full h-full border-none"></iframe></div>
         </div>
-
-        <!-- BTC Dominance -->
         <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
             <div class="bg-[#1c2128] p-4 border-b border-[#30363d] font-bold text-sm">🌍 BTC Dominance</div>
-            <div class="h-[360px]">
-                <iframe src="https://s.tradingview.com/widgetembed/?symbol=CRYPTOCAP%3ABTC.D&interval=D&theme=dark" class="w-full h-full border-none"></iframe>
-            </div>
+            <div class="h-[360px]"><iframe src="https://s.tradingview.com/widgetembed/?symbol=CRYPTOCAP%3ABTC.D&interval=D&theme=dark" class="w-full h-full border-none"></iframe></div>
         </div>
-
-        <!-- Leverage Signals -->
         <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
             <div class="bg-[#1c2128] p-4 border-b border-[#30363d] font-bold text-sm">🔥 Leverage & Funding Signals</div>
             <div class="h-[360px]"><iframe src="leverage-signals.html" class="w-full h-full border-none"></iframe></div>
@@ -100,6 +74,27 @@
         let currentPhaseId = 0;
         let phaseStartTime = Date.now();
 
+        const STORAGE_KEY = "wintrack_phase_state";
+
+        // Load trạng thái từ localStorage
+        function loadPhaseState() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const data = JSON.parse(saved);
+                currentPhaseId = data.phaseId || 0;
+                phaseStartTime = data.startTime || Date.now();
+            }
+        }
+
+        // Lưu trạng thái vào localStorage
+        function savePhaseState() {
+            const data = {
+                phaseId: currentPhaseId,
+                startTime: phaseStartTime
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
         const phaseConfig = [
             { id: 0, title: "Tích lũy (DCA)", desc: "RSI < 32 + Extreme Fear", status: "ACCUMULATING" },
             { id: 1, title: "Chốt 20-30%", desc: "RSI > 55 hoặc Profit > 25%", status: "WAITING" },
@@ -116,7 +111,7 @@
                         <span id="badge-${p.id}" class="text-[10px] font-bold px-4 py-1 rounded-full bg-[#21262d]">${p.status}</span>
                     </div>
                     <h3 class="font-bold text-lg text-white">${p.title}</h3>
-                    <p class="text-xs text-gray-400 mt-3 leading-relaxed">${p.desc}</p>
+                    <p class="text-xs text-gray-400 mt-3">${p.desc}</p>
                 </div>
             `).join('');
         }
@@ -124,7 +119,7 @@
         function activatePhase(id) {
             if (currentPhaseId === id) return;
 
-            // Reset all
+            // Reset tất cả
             for (let i = 0; i < 4; i++) {
                 const card = document.getElementById(`phase-card-${i}`);
                 if (card) card.classList.remove('phase-card-active', 'phase-card-accumulate');
@@ -139,11 +134,12 @@
 
             currentPhaseId = id;
             phaseStartTime = Date.now();
+            savePhaseState();
 
             document.getElementById('current-phase').textContent = `PHASE 0${id} - ${phaseConfig[id].status}`;
         }
 
-        // Logic chính
+        // Logic phân tích
         async function updateStrategy() {
             let rsi = 50, fear = 50;
 
@@ -153,8 +149,7 @@
             } catch(e) {}
 
             try {
-                // Lấy Fear & Greed (có thể tinh chỉnh sau)
-                fear = 17; // Giả lập theo ảnh của bạn
+                fear = 17; // Bạn có thể thay bằng dữ liệu thật từ fear-frame
             } catch(e) {}
 
             if (rsi < 32 && fear < 30) {
@@ -168,22 +163,22 @@
             }
         }
 
-        // Cập nhật thời gian phase
         function updateDuration() {
             const minutes = Math.floor((Date.now() - phaseStartTime) / 60000);
             document.getElementById('phase-duration').textContent = `${minutes} phút`;
         }
 
         // Khởi chạy
+        loadPhaseState();        // Load trạng thái cũ
         initPhases();
-        setInterval(updateStrategy, 6000);
+        setInterval(updateStrategy, 7000);
         setInterval(updateDuration, 30000);
         
         // Khởi động lần đầu
         setTimeout(() => {
             updateStrategy();
             updateDuration();
-        }, 800);
+        }, 1000);
     </script>
 </body>
 </html>
