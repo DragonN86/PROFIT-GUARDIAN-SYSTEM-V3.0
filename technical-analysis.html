@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BTC Spot Pro - Active Dashboard</title>
+    <title>BTC Spot Pro - Full Analysis</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
@@ -39,66 +39,69 @@
         </div>
 
         <!-- DCA TRACKER -->
-        <div class="bg-blue-900/20 border border-blue-500/30 rounded-2xl p-5 mb-6">
+        <div class="bg-blue-900/20 border border-blue-500/30 rounded-2xl p-4 mb-6">
             <div class="flex justify-between items-center mb-3">
-                <span class="text-xs font-black text-blue-400 uppercase tracking-widest">DCA TRACKER</span>
-                <button onclick="setEntryPrice()" 
-                        class="text-xs bg-blue-600 hover:bg-blue-500 px-4 py-1.5 rounded-xl transition-colors">
-                    Sửa giá gom
-                </button>
+                <span class="text-[10px] font-black text-blue-400 uppercase tracking-widest">DCA Tracker</span>
+                <button onclick="setEntryPrice()" class="text-[10px] bg-blue-500/30 hover:bg-blue-500/50 px-3 py-1 rounded-lg">Sửa giá gom</button>
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <p class="text-xs text-slate-400">Giá trung bình</p>
-                    <p id="entry-price-display" class="font-mono text-3xl font-bold text-white">$69,000</p>
+                    <p class="text-[10px] text-slate-400 uppercase font-bold">Giá trung bình</p>
+                    <p id="entry-price-display" class="font-mono font-bold text-xl text-white">$0</p>
                 </div>
                 <div class="text-right">
-                    <p class="text-xs text-slate-400">Lợi nhuận hiện tại</p>
-                    <p id="profit-pct" class="font-mono text-3xl font-bold text-emerald-400">0.00%</p>
+                    <p class="text-[10px] text-slate-400 uppercase font-bold">Lợi nhuận</p>
+                    <p id="profit-pct" class="font-mono font-bold text-xl">0.00%</p>
                 </div>
             </div>
         </div>
 
         <!-- INDICATORS -->
-        <div class="bg-slate-900/70 border border-slate-700 rounded-3xl p-5 mb-6">
-            <div class="grid grid-cols-2 gap-6">
+        <div class="bg-slate-900/70 border border-slate-700 rounded-3xl p-5 mb-5">
+            <div class="grid grid-cols-2 gap-6 mb-6">
                 <div>
-                    <div class="text-xs uppercase tracking-widest text-slate-400 mb-1">RSI (14)</div>
+                    <div class="text-[10px] uppercase tracking-widest text-slate-500 font-black mb-1">RSI (14)</div>
                     <div id="rsi-val" class="main-value text-white">50.00</div>
-                    <span id="rsi-status" class="inline-block mt-2 px-4 py-1 text-xs font-bold rounded-2xl bg-slate-700">NEUTRAL</span>
+                    <span id="rsi-status" class="inline-block mt-3 px-3 py-1 text-[9px] font-black rounded-lg bg-slate-800">NEUTRAL</span>
                 </div>
                 <div>
-                    <div class="text-xs uppercase tracking-widest text-slate-400 mb-1">MACD Hist</div>
+                    <div class="text-[10px] uppercase tracking-widest text-slate-500 font-black mb-1">MACD Hist</div>
                     <div id="macd-val" class="main-value text-emerald-400">-0.00</div>
                 </div>
             </div>
 
-            <div class="mt-8">
-                <div class="text-xs uppercase tracking-widest text-slate-400 mb-2">Bollinger Bands (20)</div>
-                <div class="flex justify-between text-sm">
-                    <div>
-                        <span class="text-red-400">Upper</span><br>
-                        <span id="bb-upper" class="font-mono text-red-400 text-lg">---</span>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-emerald-400">Lower</span><br>
-                        <span id="bb-lower" class="font-mono text-emerald-400 text-lg">---</span>
-                    </div>
+            <!-- VSA -->
+            <div class="pt-4 border-t border-slate-800">
+                <div class="flex justify-between text-[10px] text-slate-500 font-black uppercase mb-1">
+                    <span>Volume Analysis (VSA)</span>
+                    <span id="vol-ratio" class="text-blue-400">0% AVG</span>
+                </div>
+                <div id="vsa-type" class="text-[11px] font-bold text-slate-300">Scanning...</div>
+                <div class="bar-bg mt-2">
+                    <div id="vol-bar" class="bar-fill bg-blue-500" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Bollinger -->
+            <div class="mt-5 pt-4 border-t border-slate-800">
+                <div class="text-[10px] uppercase tracking-widest text-slate-500 font-black mb-2">Bollinger Bands (20)</div>
+                <div class="flex justify-between text-xs font-mono">
+                    <span class="text-red-400">Upper: <span id="bb-upper">---</span></span>
+                    <span class="text-emerald-400">Lower: <span id="bb-lower">---</span></span>
                 </div>
             </div>
         </div>
 
         <!-- VERDICT -->
-        <div id="verdict-box" class="rounded-3xl p-6 border border-emerald-500/30 bg-emerald-950/30">
-            <div class="flex items-center gap-3 mb-4">
-                <div id="signal-dot" class="w-4 h-4 bg-emerald-500 rounded-full animate-ping"></div>
-                <h2 id="strat-text" class="text-2xl font-black tracking-tighter">ĐANG PHÂN TÍCH...</h2>
+        <div id="verdict-box" class="rounded-3xl p-6 border border-emerald-500/30 bg-emerald-950/20">
+            <div class="flex items-center gap-3 mb-3">
+                <div id="signal-dot" class="w-3 h-3 bg-emerald-500 rounded-full animate-ping"></div>
+                <h2 id="strat-text" class="text-xl font-black tracking-tighter uppercase">Analyzing</h2>
             </div>
-            <p id="verdict-text" class="text-slate-300 leading-relaxed text-[15px]">Đang tải dữ liệu từ Binance...</p>
-            
-            <div class="mt-8">
-                <div class="flex justify-between text-xs font-semibold text-slate-400 mb-2">
-                    <span>ĐỘ TIN CẬY</span>
+            <p id="verdict-text" class="text-sm leading-relaxed text-slate-300">Đang tổng hợp dữ liệu...</p>
+            <div class="mt-6">
+                <div class="flex justify-between text-[10px] font-black text-slate-500 uppercase mb-2">
+                    <span>Độ tin cậy</span>
                     <span id="confidence-val">0%</span>
                 </div>
                 <div class="bar-bg">
@@ -110,30 +113,17 @@
 
     <script>
         let currentTF = '1w';
-        let entryPrice = parseFloat(localStorage.getItem('btc_entry_price')) || 69000;
+        let entryPrice = parseFloat(localStorage.getItem('btc_entry_price')) || 0;
 
         document.getElementById('entry-price-display').textContent = '$' + entryPrice.toLocaleString('en-US');
 
         function setEntryPrice() {
-            const input = prompt("Nhập giá trung bình gom BTC (USD):", entryPrice);
+            const input = prompt("Nhập giá trung bình gom BTC (USD):", entryPrice || 65000);
             if (input === null) return;
-            entryPrice = parseFloat(input);
-            if (isNaN(entryPrice)) entryPrice = 69000;
+            entryPrice = parseFloat(input) || 0;
             localStorage.setItem('btc_entry_price', entryPrice);
             document.getElementById('entry-price-display').textContent = '$' + entryPrice.toLocaleString('en-US');
             updateData();
-        }
-
-        function calculateRSI(prices, period = 14) {
-            if (prices.length < period + 1) return 50;
-            let gains = 0, losses = 0;
-            for (let i = prices.length - period; i < prices.length; i++) {
-                const diff = prices[i] - prices[i - 1];
-                if (diff > 0) gains += diff; else losses -= diff;
-            }
-            const avgGain = gains / period;
-            const avgLoss = losses / period || 0.0001;
-            return Math.min(100, Math.max(0, 100 - (100 / (1 + avgGain / avgLoss))));
         }
 
         function calculateEMA(data, period) {
@@ -147,87 +137,83 @@
             return result;
         }
 
-        function calculateMACD(prices) {
-            if (prices.length < 40) return { current: 0, prev: 0 };
-            const ema12 = calculateEMA(prices, 12);
-            const ema26 = calculateEMA(prices, 26);
-            const macdLine = ema12.map((v, i) => v - ema26[i]);
-            const signal = calculateEMA(macdLine, 9);
-            return {
-                current: macdLine[macdLine.length - 1] - signal[signal.length - 1],
-                prev: macdLine[macdLine.length - 2] - signal[signal.length - 2]
-            };
-        }
-
-        function calculateBB(prices, period = 20) {
-            const slice = prices.slice(-period);
-            const sma = slice.reduce((a, b) => a + b, 0) / period;
-            const stdDev = Math.sqrt(slice.reduce((a, b) => a + (b - sma) ** 2, 0) / period);
-            return { upper: sma + 2 * stdDev, lower: sma - 2 * stdDev };
-        }
-
         async function updateData() {
             try {
                 const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${currentTF}&limit=200`);
                 const candles = await res.json();
                 const prices = candles.map(c => parseFloat(c[4]));
+                const volumes = candles.map(c => parseFloat(c[5]));
                 const lastPrice = prices[prices.length - 1];
+                const lastVol = volumes[volumes.length - 1];
 
-                const rsi = calculateRSI(prices);
-                const macd = calculateMACD(prices);
-                const bb = calculateBB(prices);
+                if (prices.length < 30) throw new Error("Not enough data");
 
-                // Update Indicators
+                // RSI
+                let gains = 0, losses = 0;
+                for (let i = Math.max(14, prices.length - 14); i < prices.length; i++) {
+                    const diff = prices[i] - prices[i-1];
+                    diff > 0 ? gains += diff : losses -= diff;
+                }
+                const rsi = Math.min(100, Math.max(0, 100 - (100 / (1 + (gains/14) / (losses/14 || 0.001)))));
+                
+                // MACD (đã scale)
+                const ema12 = calculateEMA(prices, 12);
+                const ema26 = calculateEMA(prices, 26);
+                const macdLine = ema12.map((v, i) => v - ema26[i]);
+                const signalLine = calculateEMA(macdLine, 9);
+                let hist = macdLine[macdLine.length-1] - signalLine[signalLine.length-1];
+                hist = hist / 10; // Scale để đẹp hơn
+
+                // BB
+                const slice = prices.slice(-20);
+                const sma = slice.reduce((a,b)=>a+b,0)/20;
+                const stdDev = Math.sqrt(slice.reduce((a,b)=>a+(b-sma)**2,0)/20);
+
+                // Update UI
                 document.getElementById('rsi-val').textContent = rsi.toFixed(2);
-                const rsiS = document.getElementById('rsi-status');
-                if (rsi < 35) { rsiS.textContent = "OVERSOLD"; rsiS.className = "inline-block mt-2 px-4 py-1 text-xs font-bold rounded-2xl bg-emerald-900 text-emerald-400"; }
-                else if (rsi > 70) { rsiS.textContent = "OVERBOUGHT"; rsiS.className = "inline-block mt-2 px-4 py-1 text-xs font-bold rounded-2xl bg-red-900 text-red-400"; }
-                else { rsiS.textContent = "NEUTRAL"; rsiS.className = "inline-block mt-2 px-4 py-1 text-xs font-bold rounded-2xl bg-slate-700"; }
+                const rsiStatus = document.getElementById('rsi-status');
+                if (rsi < 35) { rsiStatus.textContent = "OVERSOLD"; rsiStatus.className = "inline-block mt-3 px-3 py-1 text-[9px] font-black rounded-lg bg-emerald-600 text-white"; }
+                else if (rsi > 70) { rsiStatus.textContent = "OVERBOUGHT"; rsiStatus.className = "inline-block mt-3 px-3 py-1 text-[9px] font-black rounded-lg bg-red-600 text-white"; }
+                else { rsiStatus.textContent = "NEUTRAL"; rsiStatus.className = "inline-block mt-3 px-3 py-1 text-[9px] font-black rounded-lg bg-slate-800"; }
 
-                document.getElementById('macd-val').textContent = macd.current.toFixed(2);
-                document.getElementById('macd-val').className = `main-value ${macd.current >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
+                document.getElementById('macd-val').textContent = hist.toFixed(2);
+                document.getElementById('macd-val').className = `main-value ${hist >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
 
-                document.getElementById('bb-upper').textContent = Math.round(bb.upper).toLocaleString();
-                document.getElementById('bb-lower').textContent = Math.round(bb.lower).toLocaleString();
+                document.getElementById('bb-upper').textContent = Math.round(sma + 2*stdDev).toLocaleString();
+                document.getElementById('bb-lower').textContent = Math.round(sma - 2*stdDev).toLocaleString();
 
-                // DCA Profit
-                if (entryPrice > 1000) {
-                    const profit = ((lastPrice - entryPrice) / entryPrice) * 100;
-                    const el = document.getElementById('profit-pct');
-                    el.textContent = (profit >= 0 ? "+" : "") + profit.toFixed(2) + "%";
-                    el.className = `font-mono text-3xl font-bold ${profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
-                }
+                // VSA
+                const avgVol = volumes.slice(-20).reduce((a,b)=>a+b,0)/20;
+                const volRatio = Math.min(300, (lastVol / avgVol) * 100);
+                document.getElementById('vol-ratio').textContent = volRatio.toFixed(0) + "% AVG";
+                document.getElementById('vol-bar').style.width = Math.min(100, volRatio) + "%";
 
-                // Strategy Logic
-                let strat = "TÍCH LŨY - KIÊN NHẪN", col = "text-slate-300", conf = 45, verd = "Thị trường đang sideway. Quan sát thêm.";
-                if (rsi > 72 || lastPrice > bb.upper * 0.985) {
-                    strat = "BÁN / REBALANCE"; col = "text-red-400"; conf = 88; verd = "Vùng quá mua mạnh. Nên chốt lời hoặc rebalance.";
-                } else if (rsi < 36 || lastPrice < bb.lower * 1.025) {
-                    strat = "VÙNG GOM DCA"; col = "text-emerald-400"; conf = 93; verd = "Điều kiện lý tưởng để DCA Spot dài hạn.";
-                } else if (macd.current > macd.prev) {
-                    strat = "PHỤC HỒI - NẮM GIỮ"; col = "text-sky-400"; conf = 72; verd = "Histogram MACD dốc lên. Tiếp tục nắm giữ.";
-                }
+                // Strategy
+                let strat = "KIÊN NHẪN", col = "text-slate-400", conf = 45, verd = "Thị trường đang sideway.";
+                if (rsi < 35) { strat = "VÙNG GOM DCA"; col = "text-emerald-400"; conf = 93; verd = "Điều kiện lý tưởng để mua Spot dài hạn."; }
+                else if (rsi > 72) { strat = "CHỐT LỜI"; col = "text-red-400"; conf = 85; verd = "Vùng quá mua, nên rebalance."; }
+                else if (hist > -5) { strat = "PHỤC HỒI"; col = "text-sky-400"; conf = 70; verd = "Xung lực bán đang yếu."; }
 
                 document.getElementById('strat-text').textContent = strat;
-                document.getElementById('strat-text').className = `text-2xl font-black tracking-tighter ${col} ${conf > 85 ? 'alert-flash' : ''}`;
+                document.getElementById('strat-text').className = `text-xl font-black tracking-tighter ${col} ${conf > 85 ? 'alert-flash' : ''}`;
                 document.getElementById('verdict-text').textContent = verd;
                 document.getElementById('confidence-val').textContent = conf + "%";
                 document.getElementById('risk-bar').style.width = conf + "%";
-                document.getElementById('risk-bar').style.background = conf > 80 ? "#10b981" : "#38bdf8";
-
-            } catch (e) { console.error(e); }
+            } catch (e) {
+                console.error(e);
+            }
         }
 
-        // Timeframe Switch
-        document.getElementById('btn-weekly').onclick = () => { currentTF = '1w'; updateActive(); updateData(); };
-        document.getElementById('btn-daily').onclick = () => { currentTF = '1d'; updateActive(); updateData(); };
+        // Timeframe switch
+        document.getElementById('btn-weekly').onclick = () => { currentTF = '1w'; updateActiveButton(); updateData(); };
+        document.getElementById('btn-daily').onclick = () => { currentTF = '1d'; updateActiveButton(); updateData(); };
 
-        function updateActive() {
+        function updateActiveButton() {
             document.getElementById('btn-weekly').classList.toggle('active', currentTF === '1w');
             document.getElementById('btn-daily').classList.toggle('active', currentTF === '1d');
         }
 
-        setInterval(updateData, 20000);
+        setInterval(updateData, 25000);
         updateData();
     </script>
 </body>
