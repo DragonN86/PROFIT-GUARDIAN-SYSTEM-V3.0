@@ -47,7 +47,7 @@
         <div class="mt-6 md:mt-0 flex items-center gap-4 bg-[#161b22] px-6 py-3 rounded-2xl border border-[#30363d]">
             <div class="flex flex-col items-end">
                 <span class="text-[10px] text-gray-500 font-bold tracking-widest uppercase">System Status</span>
-                <span id="system-status" class="text-xs font-mono text-yellow-400">WAITING IFRAMES...</span>
+                <span id="system-status" class="text-xs font-mono text-yellow-400">WAITING DATA...</span>
             </div>
             <span id="status-dot" class="w-3 h-3 bg-yellow-500 rounded-full animate-pulse shadow-[0_0_10px_#facc15]"></span>
         </div>
@@ -57,52 +57,45 @@
     <main class="max-w-7xl mx-auto">
         <!-- WIDGET GRID -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <!-- Frame 1: Technical Analysis -->
             <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
-                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] flex justify-between items-center">
-                    <span class="text-xs font-bold text-gray-300">📈 BTC RSI (D1/W1)</span>
-                </div>
+                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] text-xs font-bold text-gray-300">📈 BTC RSI (D1/W1)</div>
                 <div class="h-[400px]">
-                    <!-- Đảm bảo file này nằm cùng thư mục -->
                     <iframe id="tech-frame" src="technical-analysis.html" class="w-full h-full border-none"></iframe>
                 </div>
             </div>
 
+            <!-- Frame 2: Fear & Greed -->
             <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
-                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] flex justify-between items-center text-xs font-bold text-gray-300">
-                    📊 FEAR &amp; GREED INDEX
-                </div>
+                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] text-xs font-bold text-gray-300">📊 FEAR &amp; GREED</div>
                 <div class="h-[400px]">
-                    <!-- Đảm bảo file này nằm cùng thư mục -->
                     <iframe id="fear-frame" src="fear-greed.html" class="w-full h-full border-none"></iframe>
                 </div>
             </div>
 
+            <!-- Frame 3: BTC Dominance (TradingView) -->
             <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
-                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] flex justify-between items-center text-xs font-bold text-gray-300">
-                    🌍 BTC DOMINANCE
-                </div>
+                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] text-xs font-bold text-gray-300">🌍 BTC DOMINANCE</div>
                 <div class="h-[400px]">
-                    <iframe src="https://s.tradingview.com/widgetembed/?symbol=CRYPTOCAP%3ABTC.D&interval=D&theme=dark"
-                            class="w-full h-full border-none"></iframe>
+                    <iframe src="https://s.tradingview.com/widgetembed/?symbol=CRYPTOCAP%3ABTC.D&interval=D&theme=dark" class="w-full h-full border-none"></iframe>
                 </div>
             </div>
 
+            <!-- Frame 4: Leverage Signals -->
             <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
-                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] flex justify-between items-center text-xs font-bold text-gray-300">
-                    🔥 LEVERAGE SIGNALS
-                </div>
+                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] text-xs font-bold text-gray-300">🔥 MARKET SIGNALS</div>
                 <div class="h-[400px]">
                     <iframe src="leverage-signals.html" class="w-full h-full border-none"></iframe>
                 </div>
             </div>
         </div>
 
-        <!-- KẾ HOẠCH HÀNH ĐỘNG -->
+        <!-- ACTION PLAN -->
         <section class="mb-10">
             <div class="flex flex-col md:flex-row justify-between items-end md:items-center mb-8 gap-4">
                 <div>
                     <h2 class="text-3xl font-black text-white uppercase tracking-tight">KẾ HOẠCH HÀNH ĐỘNG</h2>
-                    <p class="text-gray-500 text-sm mt-1">Hệ thống tự động quét tín hiệu mỗi 10 giây</p>
+                    <p class="text-gray-500 text-sm mt-1">Hệ thống tự động đồng bộ dữ liệu đa tầng</p>
                 </div>
                 <div id="phase-info" class="bg-[#1c2128] border border-[#30363d] px-6 py-3 rounded-2xl flex items-center gap-4">
                     <div class="flex flex-col">
@@ -111,7 +104,7 @@
                     </div>
                     <div class="h-8 w-[1px] bg-[#30363d]"></div>
                     <div class="flex flex-col">
-                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Duration</span>
+                        <span class="text-[10px] text-gray-500 uppercase font-bold tracking-widest">In Phase</span>
                         <span id="phase-duration" class="text-sm font-mono text-[#58a6ff]">0 phút</span>
                     </div>
                 </div>
@@ -124,12 +117,18 @@
         let currentPhaseId = -1;
         let phaseStartTime = Date.now();
         const STORAGE_KEY = "wintrack_2026_state";
+        
+        // Biến lưu trữ data từ các iframe gửi về
+        let marketData = {
+            rsi: null,
+            fear: null
+        };
 
         const phaseConfig = [
-            { id: 0, title: "Tích lũy (GOM DẦN)", desc: "RSI < 32 & Extreme Fear. VSA cạn cung. Mua khi mọi người sợ hãi.", status: "ACCUMULATING", color: "text-emerald-400" },
-            { id: 1, title: "Chốt 20-30%", desc: "RSI > 55. Bảo toàn vốn gốc. Hạ tỷ trọng khi thị trường ấm lại.", status: "TAKE PROFIT 1", color: "text-blue-400" },
-            { id: 2, title: "Chốt 30-50%", desc: "RSI > 72 hoặc Fear > 80. Vùng hưng phấn cao. Chốt lời mạnh tay.", status: "TAKE PROFIT 2", color: "text-yellow-400" },
-            { id: 3, title: "Gồng lãi cuối", desc: "Extreme Greed (>85). Dịch Trailing Stop chặt chẽ. Đợi tín hiệu đảo chiều.", status: "TRAILING STOP", color: "text-red-400" }
+            { id: 0, title: "Tích lũy (GOM DẦN)", desc: "RSI < 35 & Extreme Fear. VSA cạn cung. Mua khi mọi người sợ hãi.", status: "ACCUMULATING", color: "text-emerald-400" },
+            { id: 1, title: "Bảo toàn vị thế", desc: "Thị trường ổn định. Giữ danh mục. Chốt lời nhẹ 20% nếu RSI > 55.", status: "HOLDING", color: "text-blue-400" },
+            { id: 2, title: "Chốt lời mạnh", desc: "RSI > 72 hoặc Fear > 80. Vùng hưng phấn cao. Thoát 50% hàng.", status: "TAKE PROFIT", color: "text-yellow-400" },
+            { id: 3, title: "Thoát hàng / Short", desc: "Extreme Greed (>85). Dịch Trailing Stop chặt chẽ hoặc thoát hết.", status: "EXIT STRATEGY", color: "text-red-400" }
         ];
 
         function initPhases() {
@@ -146,9 +145,46 @@
             `).join('');
         }
 
-        function activatePhase(id) {
-            if (currentPhaseId === id || id == null) return;
+        // LẮNG NGHE TIN NHẮN TỪ IFRAME (Bảo mật & Hiệu quả)
+        window.addEventListener('message', function(event) {
+            // Nhận từ technical-analysis.html
+            if (event.data.type === 'WINTRACK_UPDATE') {
+                marketData.rsi = event.data.rsi;
+            }
+            // Nhận từ fear-greed.html
+            if (event.data.type === 'WINTRACK_FEAR_UPDATE') {
+                marketData.fear = event.data.value;
+            }
 
+            // Khi có đủ dữ liệu thì chạy logic quyết định
+            if (marketData.rsi !== null && marketData.fear !== null) {
+                updateStrategyLogic();
+            }
+        });
+
+        function updateStrategyLogic() {
+            const { rsi, fear } = marketData;
+            let targetPhase = 1; // Mặc định là Phase 1
+
+            // LOGIC QUYẾT ĐỊNH WINTRACK 2026
+            if (rsi <= 35 && fear <= 30) {
+                targetPhase = 0;
+            } else if (fear >= 85) {
+                targetPhase = 3;
+            } else if (rsi >= 72 || fear >= 78) {
+                targetPhase = 2;
+            } else if (rsi >= 55 || fear >= 55) {
+                targetPhase = 1;
+            }
+
+            activatePhase(targetPhase);
+            updateSystemStatus(rsi, fear);
+        }
+
+        function activatePhase(id) {
+            if (currentPhaseId === id) return;
+
+            // Reset UI các card
             phaseConfig.forEach((_, i) => {
                 const card = document.getElementById(`phase-card-${i}`);
                 const badge = document.getElementById(`badge-${i}`);
@@ -156,6 +192,7 @@
                 if (badge) badge.className = "text-[9px] font-black px-3 py-1 rounded-lg bg-[#0d1117] border border-[#30363d] text-gray-400 uppercase tracking-tighter";
             });
 
+            // Active card được chọn
             const activeCard = document.getElementById(`phase-card-${id}`);
             const activeBadge = document.getElementById(`badge-${id}`);
 
@@ -178,103 +215,33 @@
             phaseText.className = `text-sm font-bold uppercase ${phaseConfig[id].color}`;
         }
 
+        function updateSystemStatus(rsi, fear) {
+            const statusText = document.getElementById('system-status');
+            const dot = document.getElementById('status-dot');
+            statusText.textContent = `LIVE: RSI ${Math.round(rsi)} | F&G ${fear}`;
+            statusText.className = "text-xs font-mono text-green-400";
+            dot.className = "w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#3fb950]";
+        }
+
         function updateDuration() {
             const minutes = Math.floor((Date.now() - phaseStartTime) / 60000);
             document.getElementById('phase-duration').textContent = `${minutes} phút`;
         }
 
-        function extractNumber(text) {
-            if (!text) return NaN;
-            const match = text.replace(',', '.').match(/-?\d+(\.\d+)?/);
-            return match ? parseFloat(match[0]) : NaN;
-        }
-
-        async function updateStrategy() {
-            let rsi = null, fear = null;
-
-            try {
-                const techFrame = document.getElementById('tech-frame');
-                const fearFrame = document.getElementById('fear-frame');
-
-                const techDoc = techFrame.contentDocument || techFrame.contentWindow.document;
-                const fearDoc = fearFrame.contentDocument || fearFrame.contentWindow.document;
-
-                const rsiTxt = techDoc.getElementById('rsi-val')?.innerText;
-                const fearTxt = fearDoc.getElementById('fear-val')?.innerText;
-
-                if (!rsiTxt || !fearTxt) {
-                    console.log("Chưa tìm thấy rsi-val hoặc fear-val", { rsiTxt, fearTxt });
-                    return;
-                }
-
-                rsi = extractNumber(rsiTxt);
-                fear = extractNumber(fearTxt);
-
-                if (Number.isNaN(rsi) || Number.isNaN(fear)) {
-                    console.warn("RSI/Fear không phải số hợp lệ", { rsiTxt, fearTxt, rsi, fear });
-                    return;
-                }
-
-                console.log(`WinTrack Strategy: RSI=${rsi} | Fear=${fear}`);
-            } catch (e) {
-                console.error("Lỗi truy cập iframe (hãy chạy bằng Live Server & cùng domain):", e);
-                return;
-            }
-
-            // LOGIC QUYẾT ĐỊNH
-            if (rsi <= 35 && fear <= 30) {
-                activatePhase(0);
-            } else if (rsi >= 70 || fear >= 80) {
-                activatePhase(2);
-            } else if (fear > 85) {
-                activatePhase(3);
-            } else if (rsi > 55 || fear > 60) {
-                activatePhase(1);
-            } else {
-                if (currentPhaseId === -1) activatePhase(1);
-            }
-        }
-
-        function markSystemLive() {
-            const statusText = document.getElementById('system-status');
-            const dot = document.getElementById('status-dot');
-            statusText.textContent = "LIVE ANALYSIS ACTIVE";
-            statusText.className = "text-xs font-mono text-green-400";
-            dot.className = "w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#3fb950]";
-        }
-
         window.onload = () => {
             initPhases();
 
+            // Khôi phục trạng thái từ LocalStorage
             const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
                 const data = JSON.parse(saved);
                 currentPhaseId = data.id;
                 phaseStartTime = data.time;
-                if (currentPhaseId != null) activatePhase(currentPhaseId);
+                if (currentPhaseId !== -1) activatePhase(currentPhaseId);
             }
 
-            const techFrame = document.getElementById('tech-frame');
-            const fearFrame = document.getElementById('fear-frame');
-            let loaded = 0;
-
-            function iframeLoaded() {
-                loaded++;
-                if (loaded === 2) {
-                    markSystemLive();
-                    // Cho 2 iframe thêm chút thời gian để fetch API
-                    setTimeout(() => {
-                        updateStrategy();
-                        updateDuration();
-                    }, 3000);
-
-                    setInterval(updateStrategy, 10000);
-                    setInterval(updateDuration, 30000);
-                }
-            }
-
-            techFrame.addEventListener('load', iframeLoaded);
-            fearFrame.addEventListener('load', iframeLoaded);
+            // Cập nhật thời gian mỗi 30s
+            setInterval(updateDuration, 30000);
         };
     </script>
 </body>
