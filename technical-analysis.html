@@ -21,6 +21,7 @@
 </head>
 <body class="flex justify-center p-4 min-h-screen">
     <div class="dashboard-container">
+        <!-- HEADER -->
         <div class="flex justify-between items-start mb-6">
             <div class="flex items-center gap-3">
                 <span class="text-3xl">📊</span>
@@ -54,9 +55,9 @@
         <div class="bg-slate-900/70 border border-slate-700 rounded-3xl p-5 mb-5">
             <div class="grid grid-cols-2 gap-6 mb-6">
                 <div>
-                    <div class="text-[10px] uppercase tracking-widest text-slate-500 font-black mb-1">RSI (14) – Wilder (W1)</div>
+                    <div class="text-[10px] uppercase tracking-widest text-slate-500 font-black mb-1">RSI (14) (W1)</div>
                     <div id="rsi-val" class="main-value text-white">50.00</div>
-                    <span id="rsi-status" class="inline-block mt-3 px-3 py-1 text-[9px] font-black rounded-lg bg-slate-800">NEUTRAL</span>
+                    <span id="rsi-status" class="inline-block mt-3 px-3 py-1 text-[9px] font-black rounded-lg bg-slate-800 uppercase">Neutral</span>
                 </div>
                 <div>
                     <div class="text-[10px] uppercase tracking-widest text-slate-500 font-black mb-1">MACD Hist</div>
@@ -67,11 +68,11 @@
             <div class="pt-4 border-t border-slate-800 mb-6">
                 <div class="flex justify-between text-xs font-mono">
                     <span class="text-slate-400">EMA 200 (W1):</span>
-                    <span id="ema200-val" class="font-bold">---</span>
+                    <span id="ema200-val" class="font-bold text-white">---</span>
                 </div>
             </div>
 
-            <div class="pt-4 border-t border-slate-800">
+            <div class="pt-4 border-t border-slate-800 mb-5">
                 <div class="flex justify-between text-[10px] text-slate-500 font-black uppercase mb-1">
                     <span>Volume Analysis (VSA)</span>
                     <span id="vol-ratio" class="text-blue-400">0% AVG</span>
@@ -81,7 +82,7 @@
                 </div>
             </div>
 
-            <div class="mt-5 pt-4 border-t border-slate-800">
+            <div class="pt-4 border-t border-slate-800">
                 <div class="text-[10px] uppercase tracking-widest text-slate-500 font-black mb-2">Bollinger Bands (20,2)</div>
                 <div class="flex justify-between text-xs font-mono">
                     <span class="text-red-400">Upper: <span id="bb-upper">---</span></span>
@@ -90,22 +91,13 @@
             </div>
         </div>
 
-        <!-- VERDICT -->
+        <!-- STRATEGIC VERDICT -->
         <div id="verdict-box" class="rounded-3xl p-6 border border-emerald-500/30 bg-emerald-950/20">
             <div class="flex items-center gap-3 mb-3">
                 <div id="signal-dot" class="w-3 h-3 bg-emerald-500 rounded-full animate-ping"></div>
-                <h2 id="strat-text" class="text-xl font-black tracking-tighter uppercase">Analyzing</h2>
+                <h2 id="strat-text" class="text-xl font-black tracking-tighter uppercase text-white">Analyzing</h2>
             </div>
-            <p id="verdict-text" class="text-sm leading-relaxed text-slate-300">Đang phân tích...</p>
-            <div class="mt-6">
-                <div class="flex justify-between text-[10px] font-black text-slate-500 uppercase mb-2">
-                    <span>Độ tin cậy</span>
-                    <span id="confidence-val">0%</span>
-                </div>
-                <div class="bar-bg">
-                    <div id="risk-bar" class="bar-fill bg-emerald-500" style="width: 0%"></div>
-                </div>
-            </div>
+            <p id="verdict-text" class="text-sm leading-relaxed text-slate-300">Đang phân tích đa chỉ báo...</p>
         </div>
     </div>
 
@@ -119,6 +111,7 @@
             entryPrice = parseFloat(input) || 0;
             localStorage.setItem('btc_entry_price', entryPrice);
             document.getElementById('entry-price-display').textContent = '$' + entryPrice.toLocaleString('en-US');
+            updateData();
         }
 
         function calculateEMA(data, period) {
@@ -135,23 +128,24 @@
         function calculateRSI(prices, period = 14) {
             if (prices.length < period + 1) return 50;
             const changes = [];
-            for (let i = 1; i < prices.length; i++) changes.push(prices[i] - prices[i-1]);
-
+            for (let i = 1; i < prices.length; i++) {
+                changes.push(prices[i] - prices[i - 1]);
+            }
             let avgGain = 0, avgLoss = 0;
             for (let i = 0; i < period; i++) {
                 if (changes[i] > 0) avgGain += changes[i];
                 else avgLoss -= changes[i];
             }
             avgGain /= period; avgLoss /= period;
-
             for (let i = period; i < changes.length; i++) {
                 const gain = changes[i] > 0 ? changes[i] : 0;
                 const loss = changes[i] < 0 ? -changes[i] : 0;
-                avgGain = (avgGain * (period-1) + gain) / period;
-                avgLoss = (avgLoss * (period-1) + loss) / period;
+                avgGain = (avgGain * (period - 1) + gain) / period;
+                avgLoss = (avgLoss * (period - 1) + loss) / period;
             }
             if (avgLoss === 0) return 100;
-            return Math.min(100, Math.max(0, 100 - (100 / (1 + avgGain/avgLoss))));
+            const rs = avgGain / avgLoss;
+            return Math.min(100, Math.max(0, 100 - (100 / (1 + rs))));
         }
 
         async function updateData() {
@@ -160,62 +154,85 @@
                 const candles = await res.json();
                 const prices = candles.map(c => parseFloat(c[4]));
                 const volumes = candles.map(c => parseFloat(c[5]));
-                const lastPrice = prices[prices.length-1];
-                const lastVol = volumes[volumes.length-1];
+                
+                const lastPrice = prices[prices.length - 1];
+                const lastVol = volumes[volumes.length - 1];
 
+                // Chỉ báo
                 const rsi = calculateRSI(prices);
-                const ema200 = calculateEMA(prices, 200)[prices.length-1];
-                const ema12 = calculateEMA(prices,12);
-                const ema26 = calculateEMA(prices,26);
-                const macdLine = ema12.map((v,i) => v - ema26[i]);
-                const signalLine = calculateEMA(macdLine,9);
-                const macdHist = macdLine[macdLine.length-1] - signalLine[signalLine.length-1];
+                const ema12 = calculateEMA(prices, 12);
+                const ema26 = calculateEMA(prices, 26);
+                const macdLine = ema12.map((v, i) => v - ema26[i]);
+                const signalLine = calculateEMA(macdLine, 9);
+                const hist = macdLine[macdLine.length - 1] - signalLine[signalLine.length - 1];
+                
+                const ema200Arr = calculateEMA(prices, 200);
+                const lastEMA200 = ema200Arr[ema200Arr.length - 1];
 
                 const slice20 = prices.slice(-20);
-                const sma20 = slice20.reduce((a,b)=>a+b,0)/20;
-                const std = Math.sqrt(slice20.reduce((a,b)=>a+(b-sma20)**2,0)/20);
-                const bbUpper = sma20 + 2*std;
-                const bbLower = sma20 - 2*std;
+                const sma20 = slice20.reduce((a, b) => a + b, 0) / 20;
+                const stdDev = Math.sqrt(slice20.reduce((a, b) => a + (b - sma20) ** 2, 0) / 20);
+                const bbUpper = sma20 + 2 * stdDev;
+                const bbLower = sma20 - 2 * stdDev;
                 const bbPosition = (lastPrice - bbLower) / (bbUpper - bbLower);
 
-                const avgVol = volumes.slice(-20).reduce((a,b)=>a+b,0)/20;
+                const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
                 const volRatio = (lastVol / avgVol) * 100;
 
-                // Tính Score
+                // UI Updates
+                document.getElementById('current-price').textContent = lastPrice.toLocaleString('en-US');
+                document.getElementById('rsi-val').textContent = rsi.toFixed(2);
+                document.getElementById('macd-val').textContent = hist.toFixed(2);
+                document.getElementById('macd-val').className = `main-value ${hist >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
+                document.getElementById('ema200-val').textContent = Math.round(lastEMA200).toLocaleString();
+                document.getElementById('bb-upper').textContent = Math.round(bbUpper).toLocaleString();
+                document.getElementById('bb-lower').textContent = Math.round(bbLower).toLocaleString();
+                document.getElementById('vol-ratio').textContent = volRatio.toFixed(0) + "% AVG";
+                document.getElementById('vol-bar').style.width = Math.min(100, volRatio) + "%";
+
+                if (entryPrice > 0) {
+                    const profit = ((lastPrice - entryPrice) / entryPrice) * 100;
+                    const pEl = document.getElementById('profit-pct');
+                    pEl.textContent = (profit >= 0 ? "+" : "") + profit.toFixed(2) + "%";
+                    pEl.className = `font-mono font-bold text-xl ${profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
+                }
+
+                // === TÍNH SCORE & VERDICT ===
                 let score = 0;
-                if (rsi < 35) score += 40;
-                else if (rsi > 72) score -= 40;
-                if (bbPosition < 0.25) score += 30;
-                else if (bbPosition > 0.75) score -= 30;
-                if (macdHist > 0) score += 20;
-                if (volRatio > 140) score += 18;
-                if (lastPrice > ema200) score += 25;
-                else score -= 30;
-
                 let verdict = "KIÊN NHẪN - QUAN SÁT";
-                let col = "text-slate-400";
-                if (score >= 85) { verdict = "VÙNG GOM DCA MẠNH"; col = "text-emerald-400"; }
-                else if (score >= 55) { verdict = "PHỤC HỒI - NẮM GIỮ"; col = "text-sky-400"; }
-                else if (score <= -50) { verdict = "CHỐT LỜI / REBALANCE"; col = "text-red-400"; }
+                let stratColor = "text-slate-400";
 
-                // GỬI TOÀN BỘ DỮ LIỆU
+                if (rsi < 35) score += 40; else if (rsi > 72) score -= 40;
+                if (bbPosition < 0.25) score += 30; else if (bbPosition > 0.75) score -= 30;
+                if (hist > 0) score += 20;
+                if (volRatio > 140) score += 18;
+                if (lastPrice > lastEMA200) score += 25; else score -= 30;
+
+                if (score >= 85) {
+                    verdict = "VÙNG GOM DCA MẠNH"; stratColor = "text-emerald-400";
+                } else if (score >= 55) {
+                    verdict = "PHỤC HỒI - NẮM GIỮ"; stratColor = "text-sky-400";
+                } else if (score <= -50) {
+                    verdict = "CHỐT LỜI / REBALANCE"; stratColor = "text-red-400";
+                }
+
+                document.getElementById('strat-text').textContent = verdict;
+                document.getElementById('strat-text').className = `text-xl font-black tracking-tighter uppercase ${stratColor} ${score >= 85 ? 'alert-flash' : ''}`;
+                document.getElementById('verdict-text').textContent = score >= 85 ? "Tín hiệu gom cực mạnh trên khung W1." : "Thị trường đang trong trạng thái theo dõi.";
+
+                // === GỬI DỮ LIỆU VỀ INDEX.HTML ===
                 window.parent.postMessage({
                     type: 'WINTRACK_UPDATE',
                     rsi: parseFloat(rsi.toFixed(2)),
-                    score: Math.round(score),
+                    score: score,
                     verdict: verdict,
-                    emaTrend: lastPrice > ema200 ? "BULL" : "BEAR",
-                    bbPosition: parseFloat(bbPosition.toFixed(2)),
-                    volRatio: parseFloat(volRatio.toFixed(1)),
-                    macdHist: parseFloat(macdHist.toFixed(2))
+                    emaTrend: lastPrice > lastEMA200 ? "BULL" : "BEAR",
+                    bbPos: bbPosition,
+                    volRatio: volRatio,
+                    macd: hist
                 }, "*");
 
-                // Cập nhật UI
-                document.getElementById('current-price').textContent = lastPrice.toLocaleString('en-US');
-                document.getElementById('rsi-val').textContent = rsi.toFixed(2);
-                // ... (các cập nhật UI khác bạn có thể copy từ bản cũ)
-
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error("Lỗi cập nhật dữ liệu:", e); }
         }
 
         setInterval(updateData, 25000);
