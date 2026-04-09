@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BTC Spot Pro - Full Analysis</title>
+    <title>BTC Spot Pro - Full Analysis v2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
@@ -12,9 +12,9 @@
             width: 100%; max-width: 480px; background: #0f172a; border: 1px solid #334155;
             border-radius: 28px; padding: 20px; box-shadow: 0 25px 70px rgba(0,0,0,0.7);
         }
-        .main-value { font-size: 1.2rem; font-weight: 700; letter-spacing: -2px; }
+        .main-value { font-size: 1.25rem; font-weight: 700; letter-spacing: -2px; }
         .bar-bg { height: 7px; background: #1e2937; border-radius: 9999px; overflow: hidden; }
-        .bar-fill { height: 100%; transition: all 1s ease; }
+        .bar-fill { height: 100%; transition: all 1s cubic-bezier(0.4, 0, 0.2, 1); }
         .alert-flash { animation: flash 1.3s infinite; }
         @keyframes flash { 0%,100% { opacity: 1; } 50% { opacity: 0.65; } }
         .tf-btn { transition: all 0.3s ease; }
@@ -24,18 +24,23 @@
 <body class="flex justify-center p-4 min-h-screen">
     <div class="dashboard-container">
         <!-- HEADER -->
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex justify-between items-start mb-6">
             <div class="flex items-center gap-3">
                 <span class="text-3xl">📊</span>
                 <div>
                     <h1 class="font-black text-2xl tracking-tighter">BTC Spot</h1>
-                    <p class="text-xs text-slate-400 -mt-1">Technical Analysis</p>
+                    <p class="text-xs text-slate-400 -mt-1">Technical Analysis v2</p>
                 </div>
             </div>
-            <div class="flex bg-slate-800 rounded-2xl p-1">
-                <button id="btn-weekly" class="tf-btn active px-5 py-2 text-sm font-bold rounded-xl">W1</button>
-                <button id="btn-daily" class="tf-btn px-5 py-2 text-sm font-bold rounded-xl">D1</button>
+            <div class="text-right">
+                <div id="current-price" class="font-mono text-3xl font-bold text-emerald-400">65,000</div>
+                <div id="price-change" class="text-xs font-medium"></div>
             </div>
+        </div>
+
+        <div class="flex bg-slate-800 rounded-2xl p-1 mb-6">
+            <button id="btn-weekly" class="tf-btn active px-5 py-2 text-sm font-bold rounded-xl">W1</button>
+            <button id="btn-daily" class="tf-btn px-5 py-2 text-sm font-bold rounded-xl">D1</button>
         </div>
 
         <!-- DCA TRACKER -->
@@ -59,14 +64,24 @@
         <!-- INDICATORS -->
         <div class="bg-slate-900/70 border border-slate-700 rounded-3xl p-5 mb-5">
             <div class="grid grid-cols-2 gap-6 mb-6">
+                <!-- RSI -->
                 <div>
-                    <div class="text-[10px] uppercase tracking-widest text-slate-500 font-black mb-1">RSI (14)</div>
+                    <div class="text-[10px] uppercase tracking-widest text-slate-500 font-black mb-1">RSI (14) – Wilder</div>
                     <div id="rsi-val" class="main-value text-white">50.00</div>
                     <span id="rsi-status" class="inline-block mt-3 px-3 py-1 text-[9px] font-black rounded-lg bg-slate-800">NEUTRAL</span>
                 </div>
+                <!-- MACD -->
                 <div>
-                    <div class="text-[10px] uppercase tracking-widest text-slate-500 font-black mb-1">MACD Hist</div>
-                    <div id="macd-val" class="main-value text-emerald-400">-0.00</div>
+                    <div class="text-[10px] uppercase tracking-widest text-slate-500 font-black mb-1">MACD Hist (12,26,9)</div>
+                    <div id="macd-val" class="main-value text-emerald-400">0.00</div>
+                </div>
+            </div>
+
+            <!-- EMA 200 Trend -->
+            <div class="pt-4 border-t border-slate-800 mb-6">
+                <div class="flex justify-between text-xs font-mono">
+                    <span class="text-slate-400">EMA 200:</span>
+                    <span id="ema200-val" class="font-bold">---</span>
                 </div>
             </div>
 
@@ -84,7 +99,7 @@
 
             <!-- Bollinger -->
             <div class="mt-5 pt-4 border-t border-slate-800">
-                <div class="text-[10px] uppercase tracking-widest text-slate-500 font-black mb-2">Bollinger Bands (20)</div>
+                <div class="text-[10px] uppercase tracking-widest text-slate-500 font-black mb-2">Bollinger Bands (20,2)</div>
                 <div class="flex justify-between text-xs font-mono">
                     <span class="text-red-400">Upper: <span id="bb-upper">---</span></span>
                     <span class="text-emerald-400">Lower: <span id="bb-lower">---</span></span>
@@ -114,7 +129,6 @@
     <script>
         let currentTF = '1w';
         let entryPrice = parseFloat(localStorage.getItem('btc_entry_price')) || 0;
-
         document.getElementById('entry-price-display').textContent = '$' + entryPrice.toLocaleString('en-US');
 
         function setEntryPrice() {
@@ -126,77 +140,101 @@
             updateData();
         }
 
+        // ====================== EMA ======================
         function calculateEMA(data, period) {
             const k = 2 / (period + 1);
             let ema = data[0];
-            const result = [];
-            for (let i = 0; i < data.length; i++) {
-                if (i > 0) ema = (data[i] * k) + (ema * (1 - k));
+            const result = [ema];
+            for (let i = 1; i < data.length; i++) {
+                ema = (data[i] * k) + (ema * (1 - k));
                 result.push(ema);
             }
             return result;
         }
 
+        // ====================== RSI WILDER CHUẨN ======================
+        function calculateRSI(prices, period = 14) {
+            if (prices.length < period + 1) return 50;
+            const changes = [];
+            for (let i = 1; i < prices.length; i++) {
+                changes.push(prices[i] - prices[i - 1]);
+            }
+
+            let avgGain = 0, avgLoss = 0;
+            for (let i = 0; i < period; i++) {
+                if (changes[i] > 0) avgGain += changes[i];
+                else avgLoss -= changes[i];
+            }
+            avgGain /= period;
+            avgLoss /= period;
+
+            for (let i = period; i < changes.length; i++) {
+                const gain = changes[i] > 0 ? changes[i] : 0;
+                const loss = changes[i] < 0 ? -changes[i] : 0;
+                avgGain = (avgGain * (period - 1) + gain) / period;
+                avgLoss = (avgLoss * (period - 1) + loss) / period;
+            }
+
+            if (avgLoss === 0) return 100;
+            const rs = avgGain / avgLoss;
+            return Math.min(100, Math.max(0, 100 - (100 / (1 + rs))));
+        }
+
+        // ====================== MAIN UPDATE ======================
         async function updateData() {
             try {
-                const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${currentTF}&limit=200`);
+                const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${currentTF}&limit=300`);
                 const candles = await res.json();
                 const prices = candles.map(c => parseFloat(c[4]));
                 const volumes = candles.map(c => parseFloat(c[5]));
+                if (prices.length < 50) return;
+
                 const lastPrice = prices[prices.length - 1];
                 const lastVol = volumes[volumes.length - 1];
 
-                if (prices.length < 30) return;
-
-                // === RSI CALCULATION ===
-                let gains = 0, losses = 0;
-                for (let i = prices.length - 14; i < prices.length; i++) {
-                    const diff = prices[i] - prices[i-1];
-                    diff > 0 ? gains += diff : losses -= diff;
-                }
-                const rsi = Math.min(100, Math.max(0, 100 - (100 / (1 + (gains/14) / (losses/14 || 0.001)))));
-
-                // --- GỬI DỮ LIỆU SANG INDEX.HTML ---
-                window.parent.postMessage({ 
-                    type: 'WINTRACK_UPDATE', 
-                    rsi: parseFloat(rsi.toFixed(2)) 
-                }, "*");
-                // ---------------------------------
-
-                // MACD
+                // === CÁC CHỈ BÁO ===
+                const rsi = calculateRSI(prices);
                 const ema12 = calculateEMA(prices, 12);
                 const ema26 = calculateEMA(prices, 26);
                 const macdLine = ema12.map((v, i) => v - ema26[i]);
                 const signalLine = calculateEMA(macdLine, 9);
-                let hist = macdLine[macdLine.length-1] - signalLine[signalLine.length-1];
-                const prevHist = macdLine[macdLine.length-2] - signalLine[signalLine.length-2];
-                hist = hist / 10; 
+                const hist = macdLine[macdLine.length - 1] - signalLine[signalLine.length - 1];
+                const prevHist = macdLine[macdLine.length - 2] - signalLine[signalLine.length - 2];
 
-                // Bollinger Bands
-                const slice = prices.slice(-20);
-                const sma = slice.reduce((a,b)=>a+b,0)/20;
-                const stdDev = Math.sqrt(slice.reduce((a,b)=>a+(b-sma)**2,0)/20);
-                const bbUpper = sma + 2*stdDev;
-                const bbLower = sma - 2*stdDev;
+                const slice20 = prices.slice(-20);
+                const sma20 = slice20.reduce((a, b) => a + b, 0) / 20;
+                const stdDev = Math.sqrt(slice20.reduce((a, b) => a + (b - sma20) ** 2, 0) / 20);
+                const bbUpper = sma20 + 2 * stdDev;
+                const bbLower = sma20 - 2 * stdDev;
 
-                // Volume VSA
-                const avgVol = volumes.slice(-20).reduce((a,b)=>a+b,0)/20;
+                const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
                 const volRatio = (lastVol / avgVol) * 100;
 
-                // UI UPDATE
+                const ema200 = calculateEMA(prices, 200);
+                const lastEMA200 = ema200[ema200.length - 1];
+
+                // === UI UPDATE ===
+                document.getElementById('current-price').textContent = lastPrice.toLocaleString('en-US');
                 document.getElementById('rsi-val').textContent = rsi.toFixed(2);
+                
                 const rsiEl = document.getElementById('rsi-status');
-                if (rsi < 35) rsiEl.innerHTML = `<span class="bg-emerald-600 text-white px-2 py-1 rounded">OVERSOLD</span>`;
-                else if (rsi > 70) rsiEl.innerHTML = `<span class="bg-red-600 text-white px-2 py-1 rounded">OVERBOUGHT</span>`;
-                else rsiEl.innerHTML = `<span class="bg-slate-800 px-2 py-1 rounded">NEUTRAL</span>`;
+                if (rsi < 35) rsiEl.innerHTML = `<span class="bg-emerald-600 text-white px-3 py-1 rounded">OVERSOLD</span>`;
+                else if (rsi > 70) rsiEl.innerHTML = `<span class="bg-red-600 text-white px-3 py-1 rounded">OVERBOUGHT</span>`;
+                else rsiEl.innerHTML = `<span class="bg-slate-800 px-3 py-1 rounded">NEUTRAL</span>`;
 
                 document.getElementById('macd-val').textContent = hist.toFixed(2);
                 document.getElementById('macd-val').className = `main-value ${hist >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
+
+                document.getElementById('ema200-val').textContent = Math.round(lastEMA200).toLocaleString();
+                document.getElementById('ema200-val').className = lastPrice > lastEMA200 ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold';
+
                 document.getElementById('bb-upper').textContent = Math.round(bbUpper).toLocaleString();
                 document.getElementById('bb-lower').textContent = Math.round(bbLower).toLocaleString();
+
                 document.getElementById('vol-ratio').textContent = volRatio.toFixed(0) + "% AVG";
                 document.getElementById('vol-bar').style.width = Math.min(100, volRatio) + "%";
 
+                // DCA Profit
                 if (entryPrice > 0) {
                     const profit = ((lastPrice - entryPrice) / entryPrice) * 100;
                     const pEl = document.getElementById('profit-pct');
@@ -204,28 +242,52 @@
                     pEl.className = `font-mono font-bold text-xl ${profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
                 }
 
-                // STRATEGY LOGIC
+                // ====================== STRATEGY LOGIC NÂNG CẤP ======================
                 let score = 0;
-                if (rsi < 35) score += 40; else if (rsi > 72) score -= 35;
-                const priceVsBB = (lastPrice - bbLower) / (bbUpper - bbLower);
-                if (priceVsBB < 0.22) score += 30; else if (priceVsBB > 0.78) score -= 25;
-                if (hist > prevHist && hist < 30) score += 20;
-                if (volRatio > 140) score += 15; else if (volRatio < 65) score += 10;
 
+                // 1. RSI
+                if (rsi < 35) score += 40;
+                else if (rsi > 72) score -= 40;
+
+                // 2. Bollinger Bands
+                const priceVsBB = (lastPrice - bbLower) / (bbUpper - bbLower);
+                if (priceVsBB < 0.20) score += 30;
+                else if (priceVsBB > 0.80) score -= 30;
+
+                // 3. MACD
+                if (hist > prevHist && hist > 0) score += 25;           // histogram tăng + dương
+                else if (hist < prevHist && hist < 0) score -= 25;      // histogram giảm + âm
+
+                // 4. Volume
+                if (volRatio > 150) score += 18;
+                else if (volRatio < 60) score += 12;
+
+                // 5. Trend Filter (EMA 200) – RẤT QUAN TRỌNG
+                if (lastPrice > lastEMA200) score += 15;
+                else score -= 25;
+
+                // Confidence & Verdict
                 let confidence = Math.max(30, Math.min(98, Math.round(score)));
                 let strat = "KIÊN NHẪN - QUAN SÁT";
                 let col = "text-slate-400";
                 let verdict = "Thị trường đang tích lũy, chưa có tín hiệu rõ ràng.";
 
-                if (score >= 75) {
-                    strat = "VÙNG GOM DCA"; col = "text-emerald-400";
-                    verdict = "Tín hiệu cực mạnh: RSI oversold + giá rẻ. Nên DCA Spot.";
-                } else if (score <= -40) {
-                    strat = "CHỐT LỜI / REBALANCE"; col = "text-red-400";
-                    verdict = "Vùng quá mua mạnh. Nên chốt lời một phần.";
-                } else if (score >= 45) {
-                    strat = "PHỤC HỒI - NẮM GIỮ"; col = "text-sky-400";
-                    verdict = "Áp lực bán suy yếu, xu hướng phục hồi đang hình thành.";
+                if (score >= 85) {
+                    strat = "VÙNG GOM DCA MẠNH";
+                    col = "text-emerald-400";
+                    verdict = "Tín hiệu cực mạnh! RSI oversold + giá chạm BB lower + EMA200 hỗ trợ. Nên DCA Spot ngay.";
+                } else if (score >= 55) {
+                    strat = "PHỤC HỒI - NẮM GIỮ";
+                    col = "text-sky-400";
+                    verdict = "Xu hướng phục hồi rõ ràng. Có thể tiếp tục nắm giữ hoặc DCA thêm.";
+                } else if (score <= -60) {
+                    strat = "CHỐT LỜI / REBALANCE";
+                    col = "text-red-400";
+                    verdict = "Vùng quá mua + downtrend mạnh. Nên chốt lời một phần hoặc giảm rủi ro.";
+                } else if (score <= -30) {
+                    strat = "CẢNH BÁO GIẢM";
+                    col = "text-orange-400";
+                    verdict = "Áp lực bán đang tăng. Nên quan sát kỹ, tránh mua mới.";
                 }
 
                 document.getElementById('strat-text').textContent = strat;
@@ -235,9 +297,15 @@
                 document.getElementById('risk-bar').style.width = confidence + "%";
                 document.getElementById('risk-bar').style.background = col.includes('emerald') ? "#10b981" : col.includes('red') ? "#ef4444" : "#38bdf8";
 
-            } catch (e) { console.error(e); }
+                // Gửi RSI cho index.html (nếu dùng iframe)
+                window.parent.postMessage({ type: 'WINTRACK_UPDATE', rsi: parseFloat(rsi.toFixed(2)) }, "*");
+
+            } catch (e) {
+                console.error("Lỗi fetch data:", e);
+            }
         }
 
+        // Button Timeframe
         document.getElementById('btn-weekly').onclick = () => { currentTF = '1w'; updateActiveButton(); updateData(); };
         document.getElementById('btn-daily').onclick = () => { currentTF = '1d'; updateActiveButton(); updateData(); };
 
@@ -246,8 +314,9 @@
             document.getElementById('btn-daily').classList.toggle('active', currentTF === '1d');
         }
 
+        // Auto refresh
         setInterval(updateData, 25000);
-        updateData();
+        updateData(); // Load lần đầu
     </script>
 </body>
 </html>
