@@ -291,7 +291,7 @@
                 let rsiSignal = (marketPhase === "BULL" && rsi < 45) ? 1 : (marketPhase === "BEAR" && rsi < 30) ? 0.4 : 0;
                 let macdSignal = macdHist > 0 ? 1 : 0;
                 let trendSignal = (lastPrice > ema200 ? 1 : 0) + (emaSlopeUp ? 1 : 0);
-                let structureSignal = (weeklyRangePos < 28 ? 1 : 0) + (isCheap ? 1 : 0);
+                let structureSignal = (weeklyRangePos < 28 ? 1 : 0) + (trueBottom ? 1 : 0);
                 let volumeSignal = (volRatio > 130 && lastPrice > prevClose) ? 1 : 0;
 
                 let score = 
@@ -315,7 +315,25 @@
 
                 const finalScore = Math.min(100, Math.max(0, Math.round(score)));
 
-                const buyDip = isCheap && macroUptrend && !fallingKnife;
+                // ==================== TRUE BUY THE DIP (PRO) ====================
+
+// Đáy kỹ thuật chuẩn
+const trueBottom =
+    rsi < 35 &&
+    weeklyRangePos < 28 &&
+    lastPrice <= ema200 * 1.02;
+
+// Panic đáy (fear cực độ)
+const panicBottom =
+    rsi < 30 &&
+    fgValue < 15;
+
+// Điều kiện mua chuẩn trader
+const buyDip =
+    (trueBottom || panicBottom) &&
+    macroUptrend &&
+    !fallingKnife;
+
 
                 // Position Size
                 let positionSize = "0%";
@@ -389,3 +407,5 @@
     </script>
 </body>
 </html>
+
+
