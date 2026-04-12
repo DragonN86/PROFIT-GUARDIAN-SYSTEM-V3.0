@@ -37,7 +37,7 @@
                 <div class="w-9 h-9 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-3xl">📊</div>
                 <div>
                     <h1 class="text-white font-bold text-2xl tracking-[-0.5px]">BTC Spot (W1)</h1>
-                    <p class="text-emerald-400 text-sm">BUY THE DIP v4.7 • WINTRACK 2026</p>
+                    <p class="text-emerald-400 text-sm">BUY THE DIP v4.8 PRO • WINTRACK 2026</p>
                 </div>
             </div>
             <div class="text-right">
@@ -297,7 +297,7 @@
 
                 const emaPrev = calculateEMA(closes.slice(0, -1), 200);
                 const emaSlopeUp = ema200 > emaPrev;
-                const macroUptrend = lastPrice > ema200 && emaSlopeUp;
+                const macroUptrend = emaSlopeUp && rsi > 40;
 
                 const fallingKnife = rsi < 38 && macdHist < 0 && lastPrice < prevClose && weeklyRangePos < 40;
 
@@ -308,23 +308,30 @@
                 const isLowVol = stdDev < (sma20 * 0.015);
 
                 const trueBottom =
-                    rsi < 35 &&
-                    weeklyRangePos < 28 &&
-                    lastPrice <= ema200 * 1.02;
+                    rsi < 33 &&
+                    weeklyRangePos < 25 &&
+                    lastPrice <= ema200 * 1.01;
 
                 const panicBottom =
                     rsi < 30 &&
                     fgValue < 15;
 
+                const liquidityFlush =
+                    weeklyRangePos < 20 &&
+                    volRatio > 140 &&
+                    lastPrice > prevClose;
+
                 const buyDip =
-                    (trueBottom || panicBottom) &&
-                    macroUptrend &&
-                    !fallingKnife;
+                    (trueBottom || panicBottom || liquidityFlush) &&
+                    !fallingKnife &&
+                    macroUptrend;
 
                 let rsiSignal = (marketPhase === "BULL" && rsi < 45) ? 1 : (marketPhase === "BEAR" && rsi < 30) ? 0.4 : 0;
                 let macdSignal = macdHist > 0 ? 1 : 0;
                 let trendSignal = (lastPrice > ema200 ? 1 : 0) + (emaSlopeUp ? 1 : 0);
-                let structureSignal = (weeklyRangePos < 28 ? 1 : 0) + (trueBottom ? 1 : 0);
+                let structureSignal =
+                    (trueBottom ? 2 : 0) +
+                    (weeklyRangePos < 30 ? 1 : 0);
                 let volumeSignal = (volRatio > 130 && lastPrice > prevClose) ? 1 : 0;
 
                 let score =
@@ -350,7 +357,9 @@
 
                 let positionSize = "0%";
                 if (isHighRisk || isLowVol || !macroUptrend) positionSize = "0% (Rủi ro cao)";
-                else if (finalScore >= 82 && buyDip) positionSize = "20-25%";
+                else if (panicBottom) positionSize = "25-30% (ALL IN ZONE)";
+                else if (liquidityFlush) positionSize = "20-25%";
+                else if (finalScore >= 82 && buyDip) positionSize = "15-20%";
                 else if (finalScore >= 70) positionSize = "10-15%";
                 else if (finalScore >= 55) positionSize = "5-8%";
 
