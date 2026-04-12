@@ -7,7 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
-        body { background: transparent; font-family: 'Inter', sans-serif; }
+        body { 
+            background: transparent; 
+            font-family: 'Inter', sans-serif; 
+        }
         .wintrack-card {
             background: #111827;
             border: 1px solid #1f2937;
@@ -18,7 +21,12 @@
             box-shadow: 0 25px 30px -5px rgb(16 185 129 / 0.15);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .signal-dot { animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
+        .signal-dot { 
+            animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite; 
+        }
+        .fg-card { 
+            transition: all 0.3s; 
+        }
     </style>
 </head>
 <body class="p-4 md:p-6">
@@ -29,7 +37,7 @@
                 <div class="w-9 h-9 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-3xl">📊</div>
                 <div>
                     <h1 class="text-white font-bold text-2xl tracking-[-0.5px]">BTC Spot (W1)</h1>
-                    <p class="text-emerald-400 text-sm">GOD MODE v4.4 • WINTRACK 2026</p>
+                    <p class="text-emerald-400 text-sm">GOD MODE v4.5 + Fear & Greed • WINTRACK 2026</p>
                 </div>
             </div>
             <div class="text-right">
@@ -38,11 +46,21 @@
             </div>
         </div>
 
+        <!-- FEAR & GREED INDEX -->
+        <div id="fg-card" class="wintrack-card p-4 mb-5 fg-card">
+            <div class="flex justify-between items-center">
+                <span class="text-slate-400 text-sm font-medium">FEAR & GREED INDEX</span>
+                <span id="fg-value" class="font-mono text-3xl font-bold">45</span>
+            </div>
+            <p id="fg-class" class="text-sm mt-1 text-slate-400">Neutral</p>
+        </div>
+
         <!-- DCA TRACKER -->
         <div class="wintrack-card p-5 mb-5 hover-lift">
             <div class="flex justify-between items-center mb-4">
                 <span class="text-blue-400 font-bold text-sm tracking-widest">DCA TRACKER</span>
-                <button onclick="setEntryPrice()" class="bg-blue-600 hover:bg-blue-500 px-5 py-2 text-xs font-bold rounded-2xl transition-colors">
+                <button onclick="setEntryPrice()" 
+                        class="bg-blue-600 hover:bg-blue-500 px-5 py-2 text-xs font-bold rounded-2xl transition-colors">
                     Sửa giá gom
                 </button>
             </div>
@@ -99,8 +117,8 @@
             </div>
         </div>
 
-        <!-- ENTRY + POSITION -->
-        <div class="wintrack-card p-6 hover-lift">
+        <!-- SMART ENTRY + POSITION -->
+        <div class="wintrack-card p-6 hover-lift mb-5">
             <div class="grid grid-cols-2 gap-6">
                 <div>
                     <p class="text-slate-400 text-xs">SMART ENTRY ZONE</p>
@@ -127,7 +145,8 @@
                     <span id="score-number" class="font-mono text-3xl font-bold text-emerald-400">92</span>
                 </div>
                 <div class="h-3 bg-slate-700 rounded-3xl overflow-hidden">
-                    <div id="score-bar" class="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 transition-all duration-700" style="width: 92%"></div>
+                    <div id="score-bar" class="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 transition-all duration-700" 
+                         style="width: 92%"></div>
                 </div>
             </div>
         </div>
@@ -187,13 +206,15 @@
 
         async function updateData() {
             try {
-                const [w1Res, d1Res] = await Promise.all([
+                const [w1Res, d1Res, fgRes] = await Promise.all([
                     fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=300'),
-                    fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=300')
+                    fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=300'),
+                    fetch('https://api.alternative.me/fng/')
                 ]);
 
                 const w1 = await w1Res.json();
                 const d1 = await d1Res.json();
+                const fgData = await fgRes.json();
 
                 const highs = w1.map(c => parseFloat(c[2]));
                 const lows = w1.map(c => parseFloat(c[3]));
@@ -236,6 +257,18 @@
                 if (lastPrice > ema200 && rsi > 50) marketPhase = "BULL";
                 else if (lastPrice < ema200 && rsi < 50) marketPhase = "BEAR";
 
+                // Fear & Greed
+                const fgValue = parseInt(fgData.data[0].value);
+                const fgClass = fgData.data[0].value_classification;
+
+                document.getElementById('fg-value').textContent = fgValue;
+                document.getElementById('fg-class').textContent = fgClass;
+
+                let fgColor = "text-yellow-400";
+                if (fgValue < 25) fgColor = "text-emerald-400";
+                else if (fgValue > 75) fgColor = "text-red-500";
+                document.getElementById('fg-value').className = `font-mono text-3xl font-bold ${fgColor}`;
+
                 // High Risk
                 const isFakeBreakout = weeklyRangePos > 88 && volRatio > 140 && lastPrice < prevClose;
                 const isBullTrap = rsi > 68 && weeklyRangePos > 75 && macdHist > 0 && marketPhase !== "BULL";
@@ -247,7 +280,7 @@
                 const emaPrev = calculateEMA(closes.slice(0, -1), 200);
                 const emaSlopeUp = ema200 > emaPrev;
 
-                // ==================== WEIGHTED SCORING v4.4 ====================
+                // Weighted Scoring + Fear & Greed
                 let rsiSignal = (marketPhase === "BULL" && rsi < 45) ? 1 : (marketPhase === "BEAR" && rsi < 30) ? 0.4 : 0;
                 let macdSignal = macdHist > 0 ? 1 : 0;
                 let trendSignal = (lastPrice > ema200 ? 1 : 0) + (emaSlopeUp ? 1 : 0);
@@ -255,11 +288,17 @@
                 let volumeSignal = (volRatio > 130 && lastPrice > prevClose) ? 1 : 0;
 
                 let score = 
-                    (trendSignal * 35) +           // Tăng mạnh EMA200
+                    (trendSignal * 35) + 
                     (structureSignal * 25) + 
                     (rsiSignal * 10 + macdSignal * 10) + 
                     (volumeSignal * 10) +
                     (d1Bullish ? 20 : -20);
+
+                // Fear & Greed Impact
+                if (fgValue < 25) score += 18;
+                else if (fgValue < 45) score += 8;
+                else if (fgValue > 75) score -= 22;
+                else if (fgValue > 55) score -= 10;
 
                 if (marketPhase === "BEAR") score -= 15;
                 if (isHighRisk) score -= 30;
@@ -267,16 +306,15 @@
 
                 const finalScore = Math.min(100, Math.max(0, Math.round(score)));
 
-                // Smart Entry
+                // Smart Entry & Position
                 const nearSupport = lastPrice <= bbLower * 1.05 || Math.abs(lastPrice - ema200) / ema200 < 0.035;
-
                 let positionSize = "0%";
                 if (isHighRisk || isLowVol) positionSize = "0% (Rủi ro cao)";
                 else if (finalScore >= 85 && nearSupport) positionSize = "20-25%";
                 else if (finalScore >= 70) positionSize = "10-15%";
                 else if (finalScore >= 55) positionSize = "5-8%";
 
-                // ==================== UI ====================
+                // UI Update
                 document.getElementById('current-price').textContent = lastPrice.toLocaleString('en-US');
                 document.getElementById('ema200-val').textContent = Math.round(ema200).toLocaleString('en-US');
                 document.getElementById('ema200-val').style.color = lastPrice > ema200 ? '#22c55e' : '#ef4444';
