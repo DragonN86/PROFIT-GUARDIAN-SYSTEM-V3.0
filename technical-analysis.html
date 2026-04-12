@@ -37,7 +37,7 @@
                 <div class="w-9 h-9 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-3xl">📊</div>
                 <div>
                     <h1 class="text-white font-bold text-2xl tracking-[-0.5px]">BTC Spot (W1)</h1>
-                    <p class="text-emerald-400 text-sm">GOD MODE v4.5 + Fear & Greed • WINTRACK 2026</p>
+                    <p class="text-emerald-400 text-sm">BUY THE DIP v4.7 • WINTRACK 2026</p>
                 </div>
             </div>
             <div class="text-right">
@@ -46,7 +46,7 @@
             </div>
         </div>
 
-        <!-- FEAR & GREED INDEX -->
+        <!-- FEAR & GREED -->
         <div id="fg-card" class="wintrack-card p-4 mb-5 fg-card">
             <div class="flex justify-between items-center">
                 <span class="text-slate-400 text-sm font-medium">FEAR & GREED INDEX</span>
@@ -269,22 +269,29 @@
                 else if (fgValue > 75) fgColor = "text-red-500";
                 document.getElementById('fg-value').className = `font-mono text-3xl font-bold ${fgColor}`;
 
-                // High Risk
+                // ==================== BUY THE DIP LOGIC v4.7 ====================
+                const strongSupport = lastPrice <= bbLower * 1.05;
+                const nearEMA = Math.abs(lastPrice - ema200) / ema200 < 0.03;
+                const deepValue = weeklyRangePos < 30;
+                const isCheap = strongSupport || nearEMA || deepValue;
+
+                const emaPrev = calculateEMA(closes.slice(0, -1), 200);
+                const emaSlopeUp = ema200 > emaPrev;
+                const macroUptrend = lastPrice > ema200 && emaSlopeUp;   // ← Sửa nghiêm ngặt hơn
+
+                const fallingKnife = rsi < 38 && macdHist < 0 && lastPrice < prevClose && weeklyRangePos < 40;
+
                 const isFakeBreakout = weeklyRangePos > 88 && volRatio > 140 && lastPrice < prevClose;
                 const isBullTrap = rsi > 68 && weeklyRangePos > 75 && macdHist > 0 && marketPhase !== "BULL";
-                const isHighRisk = isFakeBreakout || isBullTrap;
+                const isHighRisk = isFakeBreakout || isBullTrap || fallingKnife;
 
                 const isLowVol = stdDev < (sma20 * 0.015);
 
-                // EMA Slope
-                const emaPrev = calculateEMA(closes.slice(0, -1), 200);
-                const emaSlopeUp = ema200 > emaPrev;
-
-                // Weighted Scoring + Fear & Greed
+                // Weighted Scoring
                 let rsiSignal = (marketPhase === "BULL" && rsi < 45) ? 1 : (marketPhase === "BEAR" && rsi < 30) ? 0.4 : 0;
                 let macdSignal = macdHist > 0 ? 1 : 0;
                 let trendSignal = (lastPrice > ema200 ? 1 : 0) + (emaSlopeUp ? 1 : 0);
-                let structureSignal = (weeklyRangePos < 28 ? 1 : 0) + (lastPrice <= bbLower * 1.05 ? 1 : 0);
+                let structureSignal = (weeklyRangePos < 28 ? 1 : 0) + (isCheap ? 1 : 0);
                 let volumeSignal = (volRatio > 130 && lastPrice > prevClose) ? 1 : 0;
 
                 let score = 
@@ -294,23 +301,26 @@
                     (volumeSignal * 10) +
                     (d1Bullish ? 20 : -20);
 
-                // Fear & Greed Impact
-                if (fgValue < 25) score += 18;
-                else if (fgValue < 45) score += 8;
-                else if (fgValue > 75) score -= 22;
+                if (fgValue < 25) score += 25;
+                else if (fgValue < 40) score += 10;
+                else if (fgValue > 75) score -= 30;
                 else if (fgValue > 55) score -= 10;
 
+                if (isCheap && macroUptrend) score += 25;
+                if (!macroUptrend) score -= 40;
+                if (fallingKnife) score -= 30;
                 if (marketPhase === "BEAR") score -= 15;
-                if (isHighRisk) score -= 30;
+                if (isHighRisk) score -= 35;
                 if (isLowVol) score -= 10;
 
                 const finalScore = Math.min(100, Math.max(0, Math.round(score)));
 
-                // Smart Entry & Position
-                const nearSupport = lastPrice <= bbLower * 1.05 || Math.abs(lastPrice - ema200) / ema200 < 0.035;
+                const buyDip = isCheap && macroUptrend && !fallingKnife;
+
+                // Position Size
                 let positionSize = "0%";
-                if (isHighRisk || isLowVol) positionSize = "0% (Rủi ro cao)";
-                else if (finalScore >= 85 && nearSupport) positionSize = "20-25%";
+                if (isHighRisk || isLowVol || !macroUptrend) positionSize = "0% (Rủi ro cao)";
+                else if (finalScore >= 82 && buyDip) positionSize = "20-25%";
                 else if (finalScore >= 70) positionSize = "10-15%";
                 else if (finalScore >= 55) positionSize = "5-8%";
 
@@ -331,7 +341,7 @@
                 document.getElementById('vol-bar').style.width = Math.min(100, volRatio) + "%";
                 document.getElementById('weekly-range').textContent = Math.round(weeklyRangePos) + "%";
 
-                document.getElementById('entry-zone').textContent = nearSupport ? "✅ GẦN SUPPORT - TỐT ĐỂ DCA" : "⏳ Chờ giá về vùng hỗ trợ";
+                document.getElementById('entry-zone').textContent = buyDip ? "✅ VÙNG MUA GIÁ RẺ - TỐT ĐỂ DCA" : "⏳ Chờ giá về vùng hỗ trợ";
                 document.getElementById('position-size').textContent = positionSize;
 
                 document.getElementById('score-number').textContent = finalScore;
@@ -345,8 +355,8 @@
                     verdict = "HIGH RISK - TRÁNH XA";
                     color = "text-red-500";
                     dotColor = "bg-red-500";
-                } else if (finalScore >= 82 && nearSupport && d1Bullish) {
-                    verdict = "STRONG BUY - DCA MẠNH";
+                } else if (buyDip && finalScore >= 82) {
+                    verdict = "VÙNG MUA GIÁ RẺ - DCA MẠNH";
                     color = "text-emerald-400";
                     dotColor = "bg-emerald-500 signal-dot";
                 } else if (finalScore >= 62) {
@@ -362,8 +372,8 @@
                 document.getElementById('strat-text').textContent = verdict;
                 document.getElementById('strat-text').className = `text-xl font-black tracking-tighter uppercase ${color}`;
                 document.getElementById('signal-dot').className = `w-4 h-4 rounded-full ${dotColor}`;
-                document.getElementById('verdict-text').textContent = finalScore >= 82 && nearSupport 
-                    ? "Vùng mua lý tưởng - Nên DCA mạnh." 
+                document.getElementById('verdict-text').textContent = buyDip && finalScore >= 82 
+                    ? "Đây là vùng mua dip chất lượng cao - Nên DCA mạnh." 
                     : isHighRisk ? "Rủi ro cao - Không nên vào!" : "Đang quan sát thị trường.";
 
                 document.getElementById('last-updated').textContent = "Cập nhật: vừa xong";
