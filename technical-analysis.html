@@ -37,7 +37,7 @@
                 <div class="w-9 h-9 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-3xl">📊</div>
                 <div>
                     <h1 class="text-white font-bold text-2xl tracking-[-0.5px]">BTC Spot (W1)</h1>
-                    <p class="text-emerald-400 text-sm">BUY THE DIP v5.3 • WINTRACK 2026</p>
+                    <p class="text-emerald-400 text-sm">BUY THE DIP v5.5 • WINTRACK 2026</p>
                 </div>
             </div>
             <div class="text-right">
@@ -88,18 +88,15 @@
                     <p id="macd-val" class="text-4xl font-bold text-red-500">-25.50</p>
                 </div>
             </div>
-
             <div class="mt-8 space-y-6">
                 <div class="flex justify-between items-center">
                     <span class="text-slate-400 text-sm">Trend Strength</span>
                     <span id="trend-val" class="font-bold px-4 py-1 rounded-2xl text-emerald-400">STRONG</span>
                 </div>
-
                 <div class="flex justify-between text-sm">
                     <span class="text-slate-400">EMA 200 (W1)</span>
                     <span id="ema200-val" class="font-mono font-bold text-emerald-400">69,118</span>
                 </div>
-
                 <div>
                     <div class="flex justify-between text-xs mb-2">
                         <span class="text-slate-400">VOLUME + LIQUIDITY</span>
@@ -109,7 +106,6 @@
                         <div id="vol-bar" class="h-full bg-blue-500 transition-all" style="width: 72%"></div>
                     </div>
                 </div>
-
                 <div class="flex justify-between text-sm">
                     <span class="text-slate-400">20-Week Range</span>
                     <span id="weekly-range" class="font-mono text-emerald-400">18%</span>
@@ -138,7 +134,6 @@
                 <h2 id="strat-text" class="text-xl font-black tracking-tighter uppercase text-emerald-400">VÙNG GOM DCA MẠNH</h2>
             </div>
             <p id="verdict-text" class="text-slate-300">Các chỉ báo W1 đang cho tín hiệu tích lũy cực mạnh.</p>
-
             <div class="mt-6 pt-6 border-t border-slate-700">
                 <div class="flex justify-between items-baseline mb-3">
                     <span class="text-xs font-bold text-slate-400 tracking-widest">ĐIỂM TIN CẬY</span>
@@ -190,7 +185,6 @@
             return ema;
         }
 
-        /** EMA từng điểm O(n) — dùng cho MACD */
         function buildEMASeries(prices, period) {
             const n = prices.length;
             const out = new Array(n).fill(NaN);
@@ -207,7 +201,6 @@
             return out;
         }
 
-        /** MACD histogram (điểm cuối) — O(n), MACD/signal align cùng index nến */
         function calculateMACD(prices) {
             const em12 = buildEMASeries(prices, 12);
             const em26 = buildEMASeries(prices, 26);
@@ -241,7 +234,7 @@
             const lastM = macdLine[n - 1];
             const lastS = signalLine[n - 1];
             if (!Number.isFinite(lastM) || !Number.isFinite(lastS)) return 0;
-            return lastM - lastS;
+            return (lastM - lastS) / prices[prices.length - 1] * 100;
         }
 
         function calculateRSI(prices, period = 14) {
@@ -264,19 +257,13 @@
 
         function markApiError(msg) {
             const dash = document.getElementById('wintrack-dashboard');
-            if (dash) {
-                dash.style.opacity = '0.55';
-            }
+            if (dash) dash.style.opacity = '0.55';
             const lu = document.getElementById('last-updated');
             if (lu) {
                 lu.textContent = msg || 'Lỗi kết nối API — dữ liệu không cập nhật';
                 lu.className = 'text-xs text-red-400 mt-1 font-medium';
             }
-            const ids = [
-                'current-price', 'rsi-val', 'macd-val', 'ema200-val', 'weekly-range',
-                'vol-status', 'fg-value', 'fg-class', 'entry-zone', 'position-size',
-                'score-number', 'strat-text', 'verdict-text'
-            ];
+            const ids = ['current-price','rsi-val','macd-val','ema200-val','weekly-range','vol-status','fg-value','fg-class','entry-zone','position-size','score-number','strat-text','verdict-text'];
             for (const id of ids) {
                 const el = document.getElementById(id);
                 if (!el) continue;
@@ -290,20 +277,10 @@
                     el.textContent = '—';
                 }
             }
-            const bar = document.getElementById('vol-bar');
-            if (bar) bar.style.width = '0%';
-            const scoreBar = document.getElementById('score-bar');
-            if (scoreBar) scoreBar.style.width = '0%';
+            const bar = document.getElementById('vol-bar'); if (bar) bar.style.width = '0%';
+            const scoreBar = document.getElementById('score-bar'); if (scoreBar) scoreBar.style.width = '0%';
             const dot = document.getElementById('signal-dot');
-            if (dot) {
-                dot.className = 'w-4 h-4 rounded-full bg-red-500';
-                dot.style.animation = 'none';
-            }
-            const trendEl = document.getElementById('trend-val');
-            if (trendEl) {
-                trendEl.textContent = '—';
-                trendEl.className = 'font-bold px-4 py-1 rounded-2xl bg-slate-700 text-slate-400';
-            }
+            if (dot) { dot.className = 'w-4 h-4 rounded-full bg-red-500'; dot.style.animation = 'none'; }
         }
 
         function clearApiErrorState() {
@@ -318,306 +295,246 @@
         const WINTRACK_CACHE_KEY = 'wintrack_cache_v1';
 
         function applyMarketData(w1, d1, fgData, meta) {
-                const highs = w1.map(c => parseFloat(c[2]));
-                const lows = w1.map(c => parseFloat(c[3]));
-                const closes = w1.map(c => parseFloat(c[4]));
-                const volumes = w1.map(c => parseFloat(c[5]));
+            const highs = w1.map(c => parseFloat(c[2]));
+            const lows = w1.map(c => parseFloat(c[3]));
+            const closes = w1.map(c => parseFloat(c[4]));
+            const volumes = w1.map(c => parseFloat(c[5]));
+            const lastPrice = closes[closes.length - 1];
+            const prevClose = closes[closes.length - 2];
+            const lastVol = volumes[volumes.length - 1];
 
-                const lastPrice = closes[closes.length - 1];
-                const prevClose = closes[closes.length - 2];
-                const lastVol = volumes[volumes.length - 1];
-                window.__lastPrice = lastPrice;
-                updateProfitPct(lastPrice);
+            window.__lastPrice = lastPrice;
+            updateProfitPct(lastPrice);
 
-                const rsi = calculateRSI(closes);
-                const ema200 = calculateEMA(closes, 200);
-                const macdHist = calculateMACD(closes);
+            const rsi = calculateRSI(closes);
+            const ema200 = calculateEMA(closes, 200);
+            const macdHist = calculateMACD(closes);
 
-                const d1Closes = d1.map(c => parseFloat(c[4]));
-                const ema200D1 = calculateEMA(d1Closes, 200);
-                const rsiD1 = calculateRSI(d1Closes);
-                const macdD1 = calculateMACD(d1Closes);
-                const d1Bullish = d1Closes.at(-1) > ema200D1 && rsiD1 > 50 && macdD1 > 0;
+            const d1Closes = d1.map(c => parseFloat(c[4]));
+            const ema200D1 = calculateEMA(d1Closes, 200);
+            const rsiD1 = calculateRSI(d1Closes);
+            const macdD1 = calculateMACD(d1Closes);
+            const d1Bullish = d1Closes.at(-1) > ema200D1 && rsiD1 > 50 && macdD1 > 0;
 
-                const slice20 = closes.slice(-20);
-                const sma20 = slice20.reduce((a, b) => a + b, 0) / 20;
-                const stdDev = Math.sqrt(slice20.reduce((a, b) => a + (b - sma20) ** 2, 0) / 20);
-                const bbLower = sma20 - 2 * stdDev;
+            const slice20 = closes.slice(-20);
+            const sma20 = slice20.reduce((a, b) => a + b, 0) / 20;
+            const stdDev = Math.sqrt(slice20.reduce((a, b) => a + (b - sma20) ** 2, 0) / 20);
+            const bbLower = sma20 - 2 * stdDev;
+            const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
 
-                const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
-                let volRatio = (!Number.isFinite(lastVol) || avgVol === 0)
-                    ? 0
-                    : (lastVol / avgVol) * 100;
-                volRatio = Math.min(250, Math.max(0, volRatio));
+            let volRatio = (!Number.isFinite(lastVol) || avgVol === 0) ? 0 : (lastVol / avgVol) * 100;
+            volRatio = Math.min(150, Math.max(0, volRatio)); // ✅ Fix volume
 
-                const recentHigh = Math.max(...highs.slice(-20));
-                const recentLow = Math.min(...lows.slice(-20));
-                const range = recentHigh - recentLow;
-                const weeklyRangePos = range === 0 ? 50 : ((lastPrice - recentLow) / range) * 100;
+            const recentHigh = Math.max(...highs.slice(-20));
+            const recentLow = Math.min(...lows.slice(-20));
+            const range = recentHigh - recentLow;
+            const weeklyRangePos = range === 0 ? 50 : ((lastPrice - recentLow) / range) * 100;
 
-                let marketPhase = "SIDEWAY";
-                if (lastPrice > ema200 && rsi > 50) marketPhase = "BULL";
-                else if (lastPrice < ema200 && rsi < 50) marketPhase = "BEAR";
+            let marketPhase = "SIDEWAY";
+            if (lastPrice > ema200 && rsi > 50) marketPhase = "BULL";
+            else if (lastPrice < ema200 && rsi < 50) marketPhase = "BEAR";
 
-                const fgValue = parseInt(fgData.data[0].value, 10);
-                const fgClass = fgData.data[0].value_classification;
+            const fgValue = parseInt(fgData.data[0].value, 10);
+            const fgClass = fgData.data[0].value_classification;
 
-                document.getElementById('fg-value').textContent = fgValue;
-                document.getElementById('fg-class').textContent = fgClass;
+            document.getElementById('fg-value').textContent = fgValue;
+            document.getElementById('fg-class').textContent = fgClass;
+            let fgColor = "text-yellow-400";
+            if (fgValue < 25) fgColor = "text-emerald-400";
+            else if (fgValue > 75) fgColor = "text-red-500";
+            document.getElementById('fg-value').className = `font-mono text-3xl font-bold ${fgColor}`;
 
-                let fgColor = "text-yellow-400";
-                if (fgValue < 25) fgColor = "text-emerald-400";
-                else if (fgValue > 75) fgColor = "text-red-500";
-                document.getElementById('fg-value').className = `font-mono text-3xl font-bold ${fgColor}`;
+            const strongSupport = lastPrice <= bbLower * 1.05;
+            const nearEMA = Math.abs(lastPrice - ema200) / ema200 < 0.03;
+            const deepValue = weeklyRangePos < 30;
+            const isCheap = strongSupport || nearEMA || deepValue;
 
-                const strongSupport = lastPrice <= bbLower * 1.05;
-                const nearEMA = Math.abs(lastPrice - ema200) / ema200 < 0.03;
-                const deepValue = weeklyRangePos < 30;
-                const isCheap = strongSupport || nearEMA || deepValue;
+            const emaPrev = calculateEMA(closes.slice(0, -1), 200);
+            const emaSlopeUp = ema200 > emaPrev;
+            const macroUptrend = emaSlopeUp && rsi > 40;
 
-                const emaPrev = calculateEMA(closes.slice(0, -1), 200);
-                const emaSlopeUp = ema200 > emaPrev;
-                const macroUptrend = emaSlopeUp && rsi > 40;
+            const fallingKnife = rsi < 35 && macdHist < 0 && lastPrice < prevClose && weeklyRangePos < 35;
+            const isFakeBreakout = weeklyRangePos > 88 && volRatio > 140 && lastPrice < prevClose;
+            const isBullTrap = rsi > 68 && weeklyRangePos > 75 && macdHist > 0 && marketPhase !== "BULL";
+            const isHighRisk = isFakeBreakout || isBullTrap || fallingKnife;
+            const isLowVol = stdDev < (sma20 * 0.015);
 
-                const fallingKnife =
-                    rsi < 35 &&
-                    macdHist < 0 &&
-                    lastPrice < prevClose &&
-                    weeklyRangePos < 35;
+            // ✅ Early Dip nghiêm ngặt hơn
+            const trueBottom = rsi < 40 && weeklyRangePos < 35 && lastPrice <= ema200 * 1.03;
+            const panicBottom = rsi < 30 && fgValue < 15;
+            const liquidityFlush = weeklyRangePos < 20 && volRatio > 140 && lastPrice > prevClose;
+            const earlyDip = rsi < 40 && weeklyRangePos < 35 && lastPrice > ema200;
 
-                const isFakeBreakout = weeklyRangePos > 88 && volRatio > 140 && lastPrice < prevClose;
-                const isBullTrap = rsi > 68 && weeklyRangePos > 75 && macdHist > 0 && marketPhase !== "BULL";
-                const isHighRisk = isFakeBreakout || isBullTrap || fallingKnife;
+            const buyStrong = panicBottom || trueBottom;
+            const buyMedium = liquidityFlush;
+            const buyLight = earlyDip;
+            const buyDip = (buyStrong || buyMedium || buyLight) && !fallingKnife;
 
-                const isLowVol = stdDev < (sma20 * 0.015);
+            let rsiSignal = (marketPhase === "BULL" && rsi < 45) ? 1 : (marketPhase === "BEAR" && rsi < 30) ? 0.4 : 0;
+            // ✅ MACD Signal có ngưỡng
+            let macdSignal = macdHist > 0.05 ? 1 : macdHist > 0 ? 0.5 : 0;
+            let trendSignal = (emaSlopeUp ? 1 : 0) + (rsi > 50 ? 1 : 0);
 
-                const trueBottom =
-                    rsi < 40 &&
-                    weeklyRangePos < 35 &&
-                    lastPrice <= ema200 * 1.03;
+            let structureSignal = 0;
+            if (panicBottom) structureSignal = 3;
+            else if (trueBottom) structureSignal = 2;
+            else if (liquidityFlush) structureSignal = 2;
+            else if (earlyDip) structureSignal = 1;
 
-                const panicBottom =
-                    rsi < 30 &&
-                    fgValue < 15;
+            let volumeSignal = (volRatio > 130 && lastPrice > prevClose) ? 1 : 0;
 
-                const liquidityFlush =
-                    weeklyRangePos < 20 &&
-                    volRatio > 140 &&
-                    lastPrice > prevClose;
+            let score = (trendSignal * 35) + (structureSignal * 25) + (rsiSignal * 10 + macdSignal * 10) + (volumeSignal * 10) + (d1Bullish ? 20 : -20);
 
-                const earlyDip =
-                    rsi < 42 &&
-                    weeklyRangePos < 40 &&
-                    lastPrice > ema200;
+            if (fgValue < 25) score += 25;
+            else if (fgValue < 40) score += 10;
+            else if (fgValue > 75) score -= 30;
+            else if (fgValue > 55) score -= 10;
+            if (isCheap && macroUptrend) score += 25;
+            if (!macroUptrend) score -= 20;
+            if (fallingKnife) score -= 30;
+            if (marketPhase === "BEAR") score -= 15;
+            if (isHighRisk) score -= 35;
+            if (isLowVol) score -= 10;
+            if (buyDip && buyLight && !buyStrong && !buyMedium) score -= 10;
+            if (earlyDip) score += 10;
 
-                const buyStrong = panicBottom || trueBottom;
-                const buyMedium = liquidityFlush;
-                const buyLight = earlyDip;
-                const buyDip =
-                    (buyStrong || buyMedium || buyLight) &&
-                    !fallingKnife;
+            const finalScore = Math.min(100, Math.max(0, Math.round(score)));
 
-                let rsiSignal = (marketPhase === "BULL" && rsi < 45) ? 1 : (marketPhase === "BEAR" && rsi < 30) ? 0.4 : 0;
-                let macdSignal = macdHist > 0 ? 1 : 0;
-                let trendSignal = (emaSlopeUp ? 1 : 0) + (rsi > 50 ? 1 : 0);
-                let structureSignal = 0;
-                if (panicBottom) structureSignal = 3;
-                else if (trueBottom) structureSignal = 2;
-                else if (liquidityFlush) structureSignal = 2;
-                else if (earlyDip) structureSignal = 1;
-                let volumeSignal = (volRatio > 130 && lastPrice > prevClose) ? 1 : 0;
+            // ✅ Position Size logic được sắp xếp lại
+            let positionSize = "0%";
+            if (isHighRisk) {
+                positionSize = "0% (Rủi ro cao)";
+            } else if (panicBottom) {
+                positionSize = "25-30%";
+            } else if (trueBottom) {
+                positionSize = "15-20%";
+            } else if (liquidityFlush) {
+                positionSize = "10-15%";
+            } else if (earlyDip) {
+                positionSize = macroUptrend ? "5-8%" : "3-5% (Thăm dò)";
+            } else if (!macroUptrend) {
+                positionSize = "0%";
+            }
 
-                let score =
-                    (trendSignal * 35) +
-                    (structureSignal * 25) +
-                    (rsiSignal * 10 + macdSignal * 10) +
-                    (volumeSignal * 10) +
-                    (d1Bullish ? 20 : -20);
+            // Update UI
+            document.getElementById('current-price').textContent = lastPrice.toLocaleString('en-US');
+            document.getElementById('ema200-val').textContent = Math.round(ema200).toLocaleString('en-US');
+            document.getElementById('ema200-val').style.color = lastPrice > ema200 ? '#22c55e' : '#ef4444';
+            document.getElementById('rsi-val').textContent = rsi.toFixed(1);
+            document.getElementById('macd-val').textContent = macdHist.toFixed(2);
+            document.getElementById('macd-val').className = `text-4xl font-bold ${macdHist >= 0 ? 'text-emerald-400' : 'text-red-500'}`;
 
-                if (fgValue < 25) score += 25;
-                else if (fgValue < 40) score += 10;
-                else if (fgValue > 75) score -= 30;
-                else if (fgValue > 55) score -= 10;
+            const trendEl = document.getElementById('trend-val');
+            trendEl.textContent = trendSignal >= 2 ? "VERY STRONG" : trendSignal === 1 ? "STRONG" : "WEAK";
+            trendEl.className = `font-bold px-4 py-1 rounded-2xl ${trendSignal >= 2 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700 text-slate-300'}`;
 
-                if (isCheap && macroUptrend) score += 25;
-                if (!macroUptrend) score -= 20;
-                if (fallingKnife) score -= 30;
-                if (marketPhase === "BEAR") score -= 15;
-                if (isHighRisk) score -= 35;
-                if (isLowVol) score -= 10;
+            // ✅ Volume display đồng bộ
+            const displayVol = Math.min(100, volRatio);
+            document.getElementById('vol-bar').style.width = displayVol + "%";
+            document.getElementById('vol-status').textContent = Math.round(displayVol) + "% " + (lastPrice > prevClose ? "↑" : "↓");
 
-                if (buyDip && buyLight && !buyStrong && !buyMedium) {
-                    score -= 10;
-                }
+            document.getElementById('weekly-range').textContent = Math.round(weeklyRangePos) + "%";
 
-                const finalScore = Math.min(100, Math.max(0, Math.round(score)));
+            const entryEarlyOnly = buyLight && buyDip && !buyStrong && !buyMedium;
+            let entryZoneText = "⏳ Chờ giá về vùng hỗ trợ";
+            if (buyDip) {
+                if (buyStrong) entryZoneText = "🔥 VÙNG ĐÁY MẠNH - DCA LỚN";
+                else if (buyMedium) entryZoneText = "⚡ LIQUIDITY FLUSH - CÓ THỂ VÀO";
+                else if (entryEarlyOnly) entryZoneText = "✅ VÙNG GOM SỚM (EARLY DIP)";
+            }
 
-                let positionSize = "0%";
-                if (isHighRisk) {
-                    positionSize = "0% (Rủi ro cao)";
-                } else if (isLowVol && !buyStrong) {
-                    positionSize = "0-5% (Thanh khoản yếu)";
-                } else if (!macroUptrend) {
-                    positionSize = "0%";
-                } else if (panicBottom) {
-                    positionSize = "25-30%";
-                } else if (trueBottom) {
-                    positionSize = "15-20%";
-                } else if (liquidityFlush) {
-                    positionSize = "10-15%";
-                } else if (earlyDip) {
-                    positionSize = "5-8%";
-                }
+            document.getElementById('entry-zone').textContent = entryZoneText;
+            document.getElementById('position-size').textContent = positionSize;
+            document.getElementById('score-number').textContent = finalScore;
+            document.getElementById('score-bar').style.width = finalScore + "%";
 
-                document.getElementById('current-price').textContent = lastPrice.toLocaleString('en-US');
-                document.getElementById('ema200-val').textContent = Math.round(ema200).toLocaleString('en-US');
-                document.getElementById('ema200-val').style.color = lastPrice > ema200 ? '#22c55e' : '#ef4444';
+            let verdict = "KIÊN NHẪN - QUAN SÁT";
+            let color = "text-slate-400";
+            let dotColor = "bg-slate-400";
 
-                document.getElementById('rsi-val').textContent = rsi.toFixed(1);
-                document.getElementById('macd-val').textContent = macdHist.toFixed(2);
-                document.getElementById('macd-val').className = `text-4xl font-bold ${macdHist >= 0 ? 'text-emerald-400' : 'text-red-500'}`;
+            if (isHighRisk) {
+                verdict = "HIGH RISK - TRÁNH XA";
+                color = "text-red-500";
+                dotColor = "bg-red-500";
+            } else if (buyDip && finalScore >= 82) {
+                verdict = "VÙNG MUA GIÁ RẺ - DCA MẠNH";
+                color = "text-emerald-400";
+                dotColor = "bg-emerald-500 signal-dot";
+            } else if (entryEarlyOnly && finalScore > 50) {   // ✅ Chỉ hiện khi score > 50
+                verdict = "GOM SỚM - THĂM DÒ";
+                color = "text-cyan-400";
+                dotColor = "bg-cyan-400";
+            } else if (finalScore >= 62) {
+                verdict = "XU HƯỚNG PHỤC HỒI";
+                color = "text-sky-400";
+                dotColor = "bg-sky-400";
+            } else if (finalScore <= 40 || marketPhase === "BEAR") {
+                verdict = "CẢNH BÁO CHỐT LỜI";
+                color = "text-red-400";
+                dotColor = "bg-red-400";
+            }
 
-                const trendEl = document.getElementById('trend-val');
-                trendEl.textContent = trendSignal >= 2 ? "VERY STRONG" : trendSignal === 1 ? "STRONG" : "WEAK";
-                trendEl.className = `font-bold px-4 py-1 rounded-2xl ${trendSignal >= 2 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700 text-slate-300'}`;
+            document.getElementById('strat-text').textContent = verdict;
+            document.getElementById('strat-text').className = `text-xl font-black tracking-tighter uppercase ${color}`;
 
-                document.getElementById('vol-status').textContent = Math.round(volRatio) + "% " + (lastPrice > prevClose ? "↑" : "↓");
-                document.getElementById('vol-bar').style.width = Math.min(100, volRatio) + "%";
-                document.getElementById('weekly-range').textContent = Math.round(weeklyRangePos) + "%";
+            const dotEl = document.getElementById('signal-dot');
+            dotEl.className = `w-4 h-4 rounded-full ${dotColor}`;
+            dotEl.style.animation = dotColor.includes('signal-dot') ? '' : 'none';
 
-                const entryEarlyOnly = buyLight && buyDip && !buyStrong && !buyMedium;
-                let entryZoneText = "⏳ Chờ giá về vùng hỗ trợ";
-                if (buyDip) {
-                    if (buyStrong) {
-                        entryZoneText = "🔥 VÙNG ĐÁY MẠNH - DCA LỚN";
-                    } else if (buyMedium) {
-                        entryZoneText = "⚡ LIQUIDITY FLUSH - CÓ THỂ VÀO";
-                    } else if (entryEarlyOnly) {
-                        entryZoneText = "✅ VÙNG GOM SỚM (EARLY DIP)";
-                    }
-                }
-                document.getElementById('entry-zone').textContent = entryZoneText;
-                document.getElementById('position-size').textContent = positionSize;
+            let verdictBody = "Đang quan sát thị trường.";
+            if (isHighRisk) verdictBody = "Rủi ro cao - Không nên vào!";
+            else if (buyDip && finalScore >= 82) verdictBody = "Đây là vùng mua dip chất lượng cao - Nên DCA mạnh.";
+            else if (entryEarlyOnly && finalScore > 50) verdictBody = "Gom sớm (early dip): vào từng phần nhỏ, theo dõi kháng cự gần.";
 
-                document.getElementById('score-number').textContent = finalScore;
-                document.getElementById('score-bar').style.width = finalScore + "%";
+            document.getElementById('verdict-text').textContent = verdictBody;
 
-                let verdict = "KIÊN NHẪN - QUAN SÁT";
-                let color = "text-slate-400";
-                let dotColor = "bg-slate-400";
-
-                if (isHighRisk) {
-                    verdict = "HIGH RISK - TRÁNH XA";
-                    color = "text-red-500";
-                    dotColor = "bg-red-500";
-                } else if (buyDip && finalScore >= 82) {
-                    verdict = "VÙNG MUA GIÁ RẺ - DCA MẠNH";
-                    color = "text-emerald-400";
-                    dotColor = "bg-emerald-500 signal-dot";
-                } else if (entryEarlyOnly) {
-                    verdict = "GOM SỚM - THĂM DÒ";
-                    color = "text-cyan-400";
-                    dotColor = "bg-cyan-400";
-                } else if (finalScore >= 62) {
-                    verdict = "XU HƯỚNG PHỤC HỒI";
-                    color = "text-sky-400";
-                    dotColor = "bg-sky-400";
-                } else if (finalScore <= 40 || marketPhase === "BEAR") {
-                    verdict = "CẢNH BÁO CHỐT LỜI";
-                    color = "text-red-400";
-                    dotColor = "bg-red-400";
-                }
-
-                document.getElementById('strat-text').textContent = verdict;
-                document.getElementById('strat-text').className = `text-xl font-black tracking-tighter uppercase ${color}`;
-                const dotEl = document.getElementById('signal-dot');
-                if (dotEl) {
-                    dotEl.className = `w-4 h-4 rounded-full ${dotColor}`;
-                    dotEl.style.animation = dotColor.includes('signal-dot') ? '' : 'none';
-                }
-
-                let verdictBody = "Đang quan sát thị trường.";
-                if (isHighRisk) {
-                    verdictBody = "Rủi ro cao - Không nên vào!";
-                } else if (buyDip && finalScore >= 82) {
-                    verdictBody = "Đây là vùng mua dip chất lượng cao - Nên DCA mạnh.";
-                } else if (entryEarlyOnly) {
-                    verdictBody = "Gom sớm (early dip): vào từng phần nhỏ, theo dõi kháng cự gần.";
-                }
-                document.getElementById('verdict-text').textContent = verdictBody;
-
-                const lu = document.getElementById('last-updated');
-                if (meta.fromCache && meta.cacheTs) {
-                    const ageMin = Math.max(0, Math.round((Date.now() - meta.cacheTs) / 60000));
-                    lu.textContent = `Cache · ~${ageMin} phút trước · API không kết nối`;
-                    lu.className = 'text-xs text-amber-400 mt-1 font-medium';
-                } else {
-                    lu.textContent = "Cập nhật: vừa xong";
-                    lu.className = 'text-xs text-slate-500 mt-1';
-                }
+            const lu = document.getElementById('last-updated');
+            if (meta.fromCache && meta.cacheTs) {
+                const ageMin = Math.max(0, Math.round((Date.now() - meta.cacheTs) / 60000));
+                lu.textContent = `Cache · ~${ageMin} phút trước · API không kết nối`;
+                lu.className = 'text-xs text-amber-400 mt-1 font-medium';
+            } else {
+                lu.textContent = "Cập nhật: vừa xong";
+                lu.className = 'text-xs text-slate-500 mt-1';
+            }
         }
 
         async function updateData() {
             try {
                 clearApiErrorState();
-
                 const ac = new AbortController();
                 const fetchTimeout = setTimeout(() => ac.abort(), 8000);
                 let w1Res, d1Res, fgRes;
                 try {
                     [w1Res, d1Res, fgRes] = await Promise.all([
-                    fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=300', { signal: ac.signal }),
-                    fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=300', { signal: ac.signal }),
-                    fetch('https://api.alternative.me/fng/', { signal: ac.signal })
+                        fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=300', { signal: ac.signal }),
+                        fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=300', { signal: ac.signal }),
+                        fetch('https://api.alternative.me/fng/', { signal: ac.signal })
                     ]);
-                } finally {
-                    clearTimeout(fetchTimeout);
-                }
+                } finally { clearTimeout(fetchTimeout); }
 
-                if (!w1Res.ok || !d1Res.ok) {
-                    throw new Error('Binance HTTP ' + w1Res.status + ' / ' + d1Res.status);
-                }
-                if (!fgRes.ok) {
-                    throw new Error('Fear&Greed HTTP ' + fgRes.status);
-                }
+                if (!w1Res.ok || !d1Res.ok) throw new Error('Binance error');
+                if (!fgRes.ok) throw new Error('F&G error');
 
                 const w1 = await w1Res.json();
                 const d1 = await d1Res.json();
                 const fgData = await fgRes.json();
 
-                if (!Array.isArray(w1) || !Array.isArray(d1)) {
-                    throw new Error('Dữ liệu nến không hợp lệ (có thể API trả lỗi JSON).');
-                }
-                if (!fgData || !Array.isArray(fgData.data) || !fgData.data[0]) {
-                    throw new Error('Fear & Greed: định dạng phản hồi không đúng.');
-                }
-
-                try {
-                    localStorage.setItem(WINTRACK_CACHE_KEY, JSON.stringify({ t: Date.now(), w1, d1, fgData }));
-                } catch (storageErr) {
-                    console.warn('Cache write failed', storageErr);
-                }
+                localStorage.setItem(WINTRACK_CACHE_KEY, JSON.stringify({ t: Date.now(), w1, d1, fgData }));
                 applyMarketData(w1, d1, fgData, { fromCache: false, cacheTs: null });
-
             } catch (e) {
-                console.error(e);
                 let usedCache = false;
                 try {
                     const raw = localStorage.getItem(WINTRACK_CACHE_KEY);
                     if (raw) {
                         const c = JSON.parse(raw);
-                        if (c && Array.isArray(c.w1) && Array.isArray(c.d1) && c.fgData && Array.isArray(c.fgData.data) && c.fgData.data[0]) {
-                            clearApiErrorState();
-                            applyMarketData(c.w1, c.d1, c.fgData, { fromCache: true, cacheTs: c.t || Date.now() });
+                        if (c?.w1 && c?.d1 && c?.fgData?.data?.[0]) {
+                            applyMarketData(c.w1, c.d1, c.fgData, { fromCache: true, cacheTs: c.t });
                             usedCache = true;
                         }
                     }
-                } catch (parseErr) {
-                    console.warn(parseErr);
-                }
-                if (!usedCache) {
-                    markApiError(e.name === 'AbortError' ? 'Hết thời gian chờ API (8s)' : undefined);
-                }
+                } catch {}
+                if (!usedCache) markApiError(e.name === 'AbortError' ? 'Hết thời gian chờ API (8s)' : undefined);
             }
         }
 
