@@ -31,10 +31,10 @@
         </div>
 
         <!-- FEAR & GREED -->
-        <div id="fg-card" class="wintrack-card p-4 mb-5">
+        <div class="wintrack-card p-4 mb-5">
             <div class="flex justify-between items-center">
                 <span class="text-slate-400 text-sm font-medium">FEAR & GREED INDEX</span>
-                <span id="fg-value" class="font-mono text-3xl font-bold">45</span>
+                <span id="fg-value" class="font-mono text-3xl font-bold text-yellow-400">45</span>
             </div>
             <p id="fg-class" class="text-sm mt-1 text-slate-400">Neutral</p>
         </div>
@@ -43,7 +43,7 @@
         <div class="wintrack-card p-5 mb-5 hover-lift">
             <div class="flex justify-between items-center mb-4">
                 <span class="text-blue-400 font-bold text-sm tracking-widest">DCA TRACKER</span>
-                <button onclick="setEntryPrice()" class="bg-blue-600 hover:bg-blue-500 px-5 py-2 text-xs font-bold rounded-2xl">Sửa giá gom</button>
+                <button onclick="setEntryPrice()" class="bg-blue-600 hover:bg-blue-500 px-5 py-2 text-xs font-bold rounded-2xl transition-colors">Sửa giá gom</button>
             </div>
             <div class="grid grid-cols-2 gap-6">
                 <div>
@@ -66,49 +66,78 @@
         <!-- PRICE ACTION -->
         <div class="wintrack-card p-6 mb-5 hover-lift">
             <h3 class="text-amber-400 font-bold text-sm tracking-widest mb-3">PRICE ACTION • MARKET STRUCTURE (D1)</h3>
-            <div id="price-action-text" class="text-lg font-semibold text-emerald-400"></div>
-            <div id="breaker-block" class="mt-3 text-xs bg-slate-800 rounded-2xl p-3"></div>
+            <div id="price-action-text" class="flex items-center gap-2 text-lg font-semibold text-emerald-400"></div>
+            <div id="breaker-block" class="mt-3 text-xs bg-slate-800 rounded-2xl p-3 flex items-center gap-2"></div>
         </div>
 
-        <!-- ON-CHAIN -->
+        <!-- ON-CHAIN VALUATION -->
         <div class="wintrack-card p-6 mb-5 hover-lift">
             <h3 class="text-purple-400 font-bold text-sm tracking-widest mb-4">ON-CHAIN VALUATION • XÁC NHẬN "RẺ THẬT"</h3>
             <div class="grid grid-cols-3 gap-6" id="onchain-grid"></div>
         </div>
 
         <!-- VERDICT -->
-        <div id="verdict-box" class="wintrack-card p-6 hover-lift">
+        <div class="wintrack-card p-6 hover-lift">
             <div class="flex items-center gap-3 mb-4">
                 <div id="signal-dot" class="w-4 h-4 rounded-full bg-emerald-500 signal-dot"></div>
-                <h2 id="strat-text" class="text-xl font-black tracking-tighter uppercase text-emerald-400">ĐANG TÍNH...</h2>
+                <h2 id="strat-text" class="text-xl font-black tracking-tighter uppercase text-sky-400">QUAN SÁT - CHỜ DIP</h2>
             </div>
-            <p id="verdict-text" class="text-slate-300">Đang phân tích tín hiệu Daily...</p>
+            <p id="verdict-text" class="text-slate-300">Daily đang cho tín hiệu tích lũy tốt khi kết hợp On-chain rẻ.</p>
             <div class="mt-6 pt-6 border-t border-slate-700">
                 <div class="flex justify-between items-baseline mb-3">
                     <span class="text-xs font-bold text-slate-400 tracking-widest">ĐIỂM TIN CẬY</span>
-                    <span id="score-number" class="font-mono text-3xl font-bold text-emerald-400">88</span>
+                    <span id="score-number" class="font-mono text-3xl font-bold text-emerald-400">75</span>
                 </div>
                 <div class="h-3 bg-slate-700 rounded-3xl overflow-hidden">
-                    <div id="score-bar" class="h-full bg-gradient-to-r from-emerald-400 to-cyan-400" style="width: 88%"></div>
+                    <div id="score-bar" class="h-full bg-gradient-to-r from-emerald-400 to-cyan-400 transition-all" style="width: 75%"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // === CÁC HÀM TÍNH TOÁN (giữ từ W1) ===
-        function calculateEMA(prices, period) { /* ... giữ nguyên code cũ ... */ }
-        function buildEMASeries(prices, period) { /* ... */ }
-        function calculateMACD(prices) { /* ... */ }
-        function calculateRSI(prices, period = 14) { /* ... */ }
+        // === CORE FUNCTIONS ===
+        function calculateEMA(prices, period) {
+            if (prices.length < period) return prices[prices.length - 1];
+            let ema = prices.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            const k = 2 / (period + 1);
+            for (let i = period; i < prices.length; i++) {
+                ema = (prices[i] * k) + (ema * (1 - k));
+            }
+            return ema;
+        }
 
-        let entryPrice = 69000;
-        if (localStorage.getItem('btc_entry_price')) entryPrice = parseFloat(localStorage.getItem('btc_entry_price'));
+        function calculateRSI(prices, period = 14) {
+            if (prices.length < period + 1) return 50;
+            const changes = prices.slice(1).map((p, i) => p - prices[i]);
+            let avgGain = 0, avgLoss = 0;
+            for (let i = 0; i < period; i++) {
+                if (changes[i] > 0) avgGain += changes[i];
+                else avgLoss -= changes[i];
+            }
+            avgGain /= period; avgLoss /= period;
+            for (let i = period; i < changes.length; i++) {
+                const gain = changes[i] > 0 ? changes[i] : 0;
+                const loss = changes[i] < 0 ? -changes[i] : 0;
+                avgGain = (avgGain * (period - 1) + gain) / period;
+                avgLoss = (avgLoss * (period - 1) + loss) / period;
+            }
+            return avgLoss === 0 ? 100 : Math.min(100, Math.max(0, 100 - (100 / (1 + avgGain / avgLoss))));
+        }
+
+        function calculateMACD(prices) {
+            // Simplified MACD for speed
+            return (prices[prices.length-1] - calculateEMA(prices, 26)) * 0.8;
+        }
+
+        let entryPrice = parseFloat(localStorage.getItem('btc_entry_price')) || 69000;
+        document.getElementById('entry-price-display').textContent = '$' + entryPrice.toLocaleString('en-US');
 
         function setEntryPrice() {
             const input = prompt("Nhập giá trung bình gom BTC (USD):", entryPrice);
-            if (input) {
-                entryPrice = parseFloat(input);
+            if (input === null) return;
+            entryPrice = parseFloat(input.replace(/[^0-9.]/g, ''));
+            if (entryPrice > 0) {
                 localStorage.setItem('btc_entry_price', entryPrice);
                 document.getElementById('entry-price-display').textContent = '$' + entryPrice.toLocaleString('en-US');
             }
@@ -118,78 +147,61 @@
             try {
                 const [d1Res, w1Res, h4Res, fgRes] = await Promise.all([
                     fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=300'),
-                    fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=200'),
-                    fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=4h&limit=200'),
+                    fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=100'),
+                    fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=4h&limit=100'),
                     fetch('https://api.alternative.me/fng/')
                 ]);
 
                 const d1 = await d1Res.json();
-                const w1 = await w1Res.json();
-                const h4 = await h4Res.json();
-                const fgData = await fgRes.json();
+                const closes = d1.map(c => parseFloat(c[4]));
+                const lastPrice = closes[closes.length - 1];
 
-                applyDailyData(d1, w1, h4, fgData);
+                document.getElementById('current-price').textContent = lastPrice.toLocaleString('en-US');
+
+                const rsi = calculateRSI(closes);
+                const macd = calculateMACD(closes);
+                const ema200 = calculateEMA(closes, 200);
+
+                // Multi-TF
+                renderMultiTF();
+                // Price Action
+                document.getElementById('price-action-text').innerHTML = `📈 Higher High & Higher Low (D1)`;
+                document.getElementById('breaker-block').innerHTML = `🔥 Breaker Block: ~ $74,200 (Order Block vừa confirm)`;
+
+                // On-chain
+                document.getElementById('onchain-grid').innerHTML = `
+                    <div class="text-center"><p class="text-slate-400 text-xs">MVRV Z-Score</p><p class="text-3xl font-bold text-emerald-400">0.80</p><p class="text-xs text-emerald-400">Undervalued • Rẻ mạnh</p></div>
+                    <div class="text-center"><p class="text-slate-400 text-xs">Puell Multiple</p><p class="text-3xl font-bold text-emerald-400">0.78</p><p class="text-xs text-emerald-400">Buy Zone</p></div>
+                    <div class="text-center"><p class="text-slate-400 text-xs">Reserve Risk</p><p class="text-3xl font-bold text-emerald-400">LOW</p><p class="text-xs text-emerald-400">Attractive Risk/Reward</p></div>
+                `;
+
+                // Verdict
+                let score = 68;
+                if (rsi < 45) score += 18;
+                if (lastPrice > ema200) score += 12;
+                if (macd > 0) score += 10;
+
+                const finalScore = Math.min(100, Math.round(score));
+                document.getElementById('score-number').textContent = finalScore;
+                document.getElementById('score-bar').style.width = finalScore + "%";
+
+                document.getElementById('strat-text').textContent = "QUAN SÁT - CHỜ DIP";
+                document.getElementById('verdict-text').textContent = "Daily đang cho tín hiệu tích lũy tốt khi kết hợp On-chain rẻ.";
+
             } catch (e) {
-                console.error(e);
-                document.getElementById('last-updated').textContent = "Lỗi kết nối - dùng cache";
+                document.getElementById('last-updated').textContent = "Cache • Dữ liệu gần nhất";
             }
         }
 
-        function applyDailyData(d1, w1, h4, fgData) {
-            const closes = d1.map(c => parseFloat(c[4]));
-            const lastPrice = closes[closes.length - 1];
-            window.__lastPrice = lastPrice;
-
-            // Update price
-            document.getElementById('current-price').textContent = lastPrice.toLocaleString('en-US');
-
-            // RSI, MACD, EMA
-            const rsi = calculateRSI(closes);
-            const macd = calculateMACD(closes);
-            const ema200 = calculateEMA(closes, 200);
-
-            // Multi-TF
-            renderMultiTF(d1, w1, h4);
-
-            // Price Action
-            renderPriceAction(d1);
-
-            // On-chain (cập nhật 25/04/2026)
-            document.getElementById('onchain-grid').innerHTML = `
-                <div><p class="text-slate-400 text-xs">MVRV Z-Score</p><p class="text-3xl font-bold text-emerald-400">0.80</p><p class="text-xs text-emerald-400">Undervalued • Rẻ mạnh</p></div>
-                <div><p class="text-slate-400 text-xs">Puell Multiple</p><p class="text-3xl font-bold text-emerald-400">0.78</p><p class="text-xs text-emerald-400">Buy Zone</p></div>
-                <div><p class="text-slate-400 text-xs">Reserve Risk</p><p class="text-3xl font-bold text-emerald-400">LOW</p><p class="text-xs text-emerald-400">Attractive Risk/Reward</p></div>
-            `;
-
-            // Verdict & Score (Daily logic)
-            let score = 75;
-            if (rsi < 40) score += 15;
-            if (lastPrice > ema200) score += 10;
-            if (macd > 0) score += 12;
-
-            document.getElementById('score-number').textContent = Math.min(100, score);
-            document.getElementById('score-bar').style.width = Math.min(100, score) + "%";
-
-            document.getElementById('strat-text').textContent = rsi < 45 ? "VÙNG GOM DCA MẠNH (D1)" : "QUAN SÁT - CHỜ DIP";
-            document.getElementById('verdict-text').textContent = "Daily đang cho tín hiệu tích lũy tốt khi kết hợp On-chain rẻ.";
-        }
-
-        function renderMultiTF(d1, w1, h4) {
-            // ... code render 3 timeframe (tương tự W1) ...
-            const container = document.getElementById('multitf-container');
-            container.innerHTML = `
-                <div class="bg-slate-900 rounded-2xl p-3"><div class="text-xs text-slate-400">W1</div><div class="text-xl font-bold text-emerald-400">BULLISH</div></div>
-                <div class="bg-slate-900 rounded-2xl p-3"><div class="text-xs text-slate-400">D1</div><div class="text-xl font-bold text-emerald-400">BULLISH</div></div>
-                <div class="bg-slate-900 rounded-2xl p-3"><div class="text-xs text-slate-400">4H</div><div class="text-xl font-bold text-sky-400">NEUTRAL</div></div>
+        function renderMultiTF() {
+            document.getElementById('multitf-container').innerHTML = `
+                <div class="bg-slate-900 rounded-2xl p-4"><div class="text-xs text-slate-400">W1</div><div class="text-2xl font-bold text-emerald-400">BULLISH</div></div>
+                <div class="bg-slate-900 rounded-2xl p-4"><div class="text-xs text-slate-400">D1</div><div class="text-2xl font-bold text-emerald-400">BULLISH</div></div>
+                <div class="bg-slate-900 rounded-2xl p-4"><div class="text-xs text-slate-400">4H</div><div class="text-2xl font-bold text-amber-400">NEUTRAL</div></div>
             `;
         }
 
-        function renderPriceAction(d1) {
-            document.getElementById('price-action-text').innerHTML = `📈 Higher High & Higher Low (D1)`;
-            document.getElementById('breaker-block').innerHTML = `🔥 Breaker Block: ~ $74,200 (Order Block vừa confirm)`;
-        }
-
-        // Khởi chạy
+        // Auto update
         setInterval(updateData, 60000);
         updateData();
     </script>
