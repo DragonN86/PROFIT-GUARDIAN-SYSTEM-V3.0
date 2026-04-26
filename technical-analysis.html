@@ -6,36 +6,36 @@
     <title>WinTrack Pro W1 | Terminal System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap');
         
         :root {
-            --bg-deep: #030712;
-            --panel-bg: #0f172a;
-            --border-color: #1e293b;
+            --bg-deep: #020617;
+            --panel-bg: rgba(15, 23, 42, 0.8);
+            --border-color: rgba(255, 255, 255, 0.05);
         }
 
         body { 
-            background: transparent; 
+            background: var(--bg-deep); 
             font-family: 'Inter', sans-serif; 
-            color: #e2e8f0; 
+            color: #f1f5f9; 
             -webkit-font-smoothing: antialiased; 
         }
         
         .panel { 
             background: var(--panel-bg); 
             border: 1px solid var(--border-color); 
-            border-radius: 16px; 
+            border-radius: 12px; 
             position: relative;
-            overflow: hidden;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
         }
 
         .text-label { 
-            font-size: 10px; 
+            font-size: 9px; 
             font-weight: 800; 
             color: #64748b; 
             text-transform: uppercase; 
-            letter-spacing: 0.1em; 
+            letter-spacing: 0.15em; 
         }
 
         .value-mono { font-family: 'ui-monospace', monospace; }
@@ -44,8 +44,8 @@
             height: 6px; 
             background: #020617; 
             border-radius: 99px; 
-            padding: 1px;
-            border: 1px solid rgba(255,255,255,0.05);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.03);
         }
 
         .bar-fill { 
@@ -54,77 +54,74 @@
             transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); 
         }
 
-        /* 4 Cấp độ hành động - Visual Styles */
-        .lvl-strong { border-left: 6px solid #10b981; box-shadow: inset 15px 0 30px -15px rgba(16, 185, 129, 0.3); }
-        .lvl-good { border-left: 6px solid #22d3ee; box-shadow: inset 15px 0 30px -15px rgba(34, 211, 238, 0.2); }
-        .lvl-wait { border-left: 6px solid #94a3b8; }
-        .lvl-risk { border-left: 6px solid #f43f5e; box-shadow: inset 15px 0 30px -15px rgba(244, 63, 94, 0.2); }
+        /* 4 Cấp độ hành động - Giữ nguyên logic class của bạn */
+        .lvl-strong { border-left: 5px solid #10b981; box-shadow: inset 10px 0 20px -10px rgba(16, 185, 129, 0.2); }
+        .lvl-good { border-left: 5px solid #22d3ee; box-shadow: inset 10px 0 20px -10px rgba(34, 211, 238, 0.15); }
+        .lvl-wait { border-left: 5px solid #64748b; }
+        .lvl-risk { border-left: 5px solid #f43f5e; box-shadow: inset 10px 0 20px -10px rgba(244, 63, 94, 0.15); }
 
-        .glow-emerald { text-shadow: 0 0 20px rgba(16, 185, 129, 0.5); }
-        
-        @media (max-width: 640px) {
-            .value-huge { font-size: 3.5rem; }
-        }
+        .glow-emerald { text-shadow: 0 0 15px rgba(16, 185, 129, 0.5); }
+        .glow-text { text-shadow: 0 0 15px currentColor; }
     </style>
 </head>
-<body class="p-2 sm:p-6">
+<body class="p-3 sm:p-8">
     <div id="wintrack-dashboard" class="max-w-xl mx-auto space-y-4">
         
-        <div class="flex justify-between items-end px-1 mb-2">
+        <div class="flex justify-between items-end px-1 mb-4">
             <div>
                 <h1 class="text-white font-black text-2xl tracking-tighter uppercase italic leading-none">WinTrack <span class="text-emerald-500">W1</span></h1>
-                <div id="last-updated" class="text-[9px] font-bold text-slate-500 mt-2 uppercase tracking-widest font-mono">Syncing Intelligence...</div>
+                <div id="last-updated" class="text-[9px] font-bold text-slate-500 mt-2 uppercase tracking-[0.2em] font-mono opacity-80">Initialising Intelligence...</div>
             </div>
             <div class="text-right">
                 <div id="current-price" class="value-mono text-3xl font-black text-white tracking-tighter leading-none italic">---,---</div>
-                <div class="text-label text-[9px] mt-1 opacity-50 italic">Live BTC/USDT</div>
+                <div class="text-label mt-1 opacity-50 italic">Live BTC/USDT</div>
             </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
             <div class="panel p-4">
-                <div class="flex justify-between items-start mb-2">
+                <div class="flex justify-between items-start mb-1">
                     <span class="text-label italic">PnL Performance</span>
-                    <button onclick="setEntryPrice()" class="text-[9px] font-black text-slate-500 border border-slate-700 px-2 py-0.5 rounded hover:bg-blue-600/20 hover:text-blue-400 transition-all">EDIT</button>
+                    <button onclick="setEntryPrice()" class="text-[8px] font-black bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded hover:bg-slate-700 transition-all uppercase">Edit</button>
                 </div>
                 <div class="flex items-baseline gap-2">
                     <span id="profit-pct" class="text-3xl font-black value-mono text-emerald-400 tracking-tight">+0.00%</span>
-                    <span id="entry-price-display" class="text-[10px] font-bold text-slate-600 value-mono">$---</span>
                 </div>
+                <div id="entry-price-display" class="text-[10px] font-bold text-slate-600 value-mono italic mt-1">Avg: $---</div>
             </div>
             <div class="panel p-4">
                 <span class="text-label italic">Psychology</span>
-                <div class="flex items-baseline gap-3 mt-2">
+                <div class="flex items-baseline gap-3 mt-1">
                     <span id="fg-value" class="text-3xl font-black value-mono leading-none">--</span>
-                    <span id="fg-class" class="text-[10px] font-black text-slate-500 uppercase tracking-tighter leading-tight">---</span>
+                    <span id="fg-class" class="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-tight">Fear & Greed</span>
                 </div>
             </div>
         </div>
 
         <div class="panel p-5 space-y-5">
-            <div class="grid grid-cols-3 gap-2 pb-4 border-b border-slate-800/50">
+            <div class="grid grid-cols-3 gap-2 pb-4 border-b border-white/5">
                 <div class="space-y-1">
                     <p class="text-label">RSI (14)</p>
-                    <p id="rsi-val" class="text-2xl font-black value-mono leading-none">--.-</p>
+                    <p id="rsi-val" class="text-2xl font-black value-mono leading-none italic">--.-</p>
                 </div>
-                <div class="space-y-1 text-center border-x border-slate-800/50">
+                <div class="space-y-1 text-center border-x border-white/5">
                     <p class="text-label">MACD Hist</p>
-                    <p id="macd-val" class="text-2xl font-black value-mono text-slate-400 leading-none">-.--</p>
+                    <p id="macd-val" class="text-2xl font-black value-mono text-slate-400 leading-none italic">-.--</p>
                 </div>
                 <div class="space-y-1 text-right">
                     <p class="text-label">Range Pos</p>
-                    <p id="weekly-range" class="text-2xl font-black value-mono text-blue-400 leading-none">--%</p>
+                    <p id="weekly-range" class="text-2xl font-black value-mono text-blue-400 leading-none italic">--%</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-6">
-                <div class="flex flex-col justify-between py-1">
+                <div class="flex flex-col justify-between">
                     <div>
                         <p class="text-label mb-1">EMA 200 (W1)</p>
-                        <p id="ema200-val" class="text-lg font-black value-mono tracking-tight italic">---,---</p>
+                        <p id="ema200-val" class="text-lg font-black value-mono tracking-tight italic text-slate-300">---,---</p>
                     </div>
                     <div class="mt-3">
-                        <span id="trend-val" class="text-[10px] font-black px-3 py-1 rounded-lg bg-slate-800 text-slate-400 uppercase tracking-widest">---</span>
+                        <span id="trend-val" class="text-[9px] font-black px-2 py-1 rounded bg-slate-800 text-slate-400 uppercase tracking-widest">---</span>
                     </div>
                 </div>
                 <div class="flex flex-col justify-end">
@@ -133,7 +130,7 @@
                         <span id="vol-status" class="text-[10px] font-black text-blue-500 italic">--%</span>
                     </div>
                     <div class="bar-container">
-                        <div id="vol-bar" class="bar-fill bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.4)]" style="width: 0%"></div>
+                        <div id="vol-bar" class="bar-fill bg-blue-600" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
@@ -141,40 +138,40 @@
 
         <div class="grid grid-cols-2 gap-3">
             <div class="panel p-4 border-l-4 border-l-emerald-500 bg-emerald-500/5">
-                <p class="text-label italic mb-1 text-emerald-500">Execution Zone</p>
-                <p id="entry-zone" class="text-xs font-black text-white uppercase italic tracking-tight">ANALYZING...</p>
+                <p class="text-label italic mb-1 text-emerald-500 opacity-80">Execution Zone</p>
+                <p id="entry-zone" class="text-sm font-black text-white uppercase italic tracking-tight">ANALYZING...</p>
             </div>
             <div class="panel p-4 border-l-4 border-l-blue-500">
-                <p class="text-label italic mb-1">Capital Alloc</p>
-                <p id="position-size" class="text-2xl font-black value-mono leading-none text-white">0%</p>
+                <p class="text-label italic mb-1 opacity-80">Capital Alloc</p>
+                <p id="position-size" class="text-2xl font-black value-mono leading-none text-white italic">0%</p>
             </div>
         </div>
 
-        <div id="verdict-box" class="panel p-6 bg-gradient-to-br from-[#111827] to-[#030712] border-2 border-slate-800 relative shadow-2xl">
+        <div id="verdict-box" class="panel p-6 bg-gradient-to-br from-slate-900 to-slate-950 transition-all duration-500">
             <div class="flex items-center gap-4 mb-5">
-                <div class="relative flex h-4 w-4">
+                <div class="relative flex h-3 w-3">
                     <div id="signal-dot-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"></div>
-                    <div id="signal-dot" class="relative inline-flex rounded-full h-4 w-4 shadow-lg"></div>
+                    <div id="signal-dot" class="relative inline-flex rounded-full h-3 w-3"></div>
                 </div>
-                <h2 id="strat-text" class="text-2xl font-black tracking-tighter uppercase italic leading-none">---</h2>
+                <h2 id="strat-text" class="text-xl font-black tracking-tight uppercase italic leading-none">---</h2>
             </div>
             
-            <p id="verdict-text" class="text-slate-400 text-sm md:text-base leading-relaxed font-medium italic mb-8 border-l-2 border-slate-800 pl-4"></p>
+            <p id="verdict-text" class="text-slate-400 text-sm leading-relaxed font-medium italic mb-10 border-l border-slate-700 pl-4"></p>
             
-            <div class="pt-6 border-t border-white/5 flex flex-col sm:flex-row items-end sm:items-center gap-6">
-                <div class="flex-shrink-0 w-full sm:w-auto">
-                    <p class="text-label mb-1">Confidence Index</p>
+            <div class="pt-6 border-t border-white/5 flex flex-col sm:flex-row items-end sm:items-center gap-8">
+                <div class="flex-shrink-0">
+                    <p class="text-label mb-2">Confidence Index</p>
                     <div class="flex items-baseline gap-1">
-                        <span id="score-number" class="text-6xl font-black value-mono tracking-tighter italic leading-none">--</span>
+                        <span id="score-number" class="text-6xl font-black value-mono tracking-tighter italic leading-none glow-text">--</span>
                         <span class="text-slate-600 font-bold text-lg italic">/100</span>
                     </div>
                 </div>
                 <div class="flex-grow w-full space-y-2">
                     <div class="flex justify-between items-end">
-                        <span class="text-[9px] font-black text-slate-600 uppercase tracking-widest">Risk/Reward Alpha</span>
-                        <span class="text-[9px] font-black text-slate-500 uppercase italic opacity-60">Verified</span>
+                        <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Risk/Reward Alpha</span>
+                        <span class="text-[9px] font-black text-slate-600 italic opacity-60 uppercase">System Verified</span>
                     </div>
-                    <div class="bar-container h-3">
+                    <div class="bar-container h-2.5">
                         <div id="score-bar" class="bar-fill"></div>
                     </div>
                 </div>
@@ -183,9 +180,9 @@
     </div>
 
     <script>
-        // === CORE SETTINGS ===
+        /* === TOÀN BỘ LOGIC GIỮ NGUYÊN NHƯ FILE CỦA BẠN === */
         let entryPrice = parseFloat(localStorage.getItem('btc_entry_price')) || 69000;
-        document.getElementById('entry-price-display').textContent = '$' + entryPrice.toLocaleString('en-US');
+        document.getElementById('entry-price-display').textContent = 'Avg: $' + entryPrice.toLocaleString('en-US');
         const CACHE_KEY = 'wintrack_w1_v6_pro';
 
         function setEntryPrice() {
@@ -195,7 +192,7 @@
             if (val > 0) {
                 entryPrice = val;
                 localStorage.setItem('btc_entry_price', String(entryPrice));
-                document.getElementById('entry-price-display').textContent = '$' + entryPrice.toLocaleString('en-US');
+                document.getElementById('entry-price-display').textContent = 'Avg: $' + entryPrice.toLocaleString('en-US');
                 if (window.__lastPrice) updateProfitPct(window.__lastPrice);
             }
         }
@@ -207,7 +204,6 @@
             el.className = `text-3xl font-black value-mono tracking-tight ${pct >= 0 ? 'text-emerald-400' : 'text-rose-500'}`;
         }
 
-        // === MATH ENGINE ===
         const calculateEMA = (ps, p) => ps.length < p ? ps[ps.length - 1] : ps.slice(p).reduce((e, v) => (v * (2 / (p + 1))) + (e * (1 - (2 / (p + 1)))), ps.slice(0, p).reduce((a, b) => a + b, 0) / p);
         
         function calculateRSI(prices, period = 14) {
@@ -238,7 +234,6 @@
             return isNaN(res) ? 0 : res;
         }
 
-        // === RENDER ENGINE ===
         function applyMarketData(w1, d1, fgData, meta) {
             const closes = w1.map(c => parseFloat(c[4]));
             const highs = w1.map(c => parseFloat(c[2]));
@@ -255,7 +250,6 @@
             const rangePos = ((lastPrice - Math.min(...lows.slice(-20))) / (Math.max(...highs.slice(-20)) - Math.min(...lows.slice(-20)))) * 100;
             const fgValue = parseInt(fgData.data[0].value);
 
-            // Basic UI Updates
             document.getElementById('current-price').textContent = lastPrice.toLocaleString('en-US');
             document.getElementById('fg-value').textContent = fgValue;
             document.getElementById('fg-class').textContent = fgData.data[0].value_classification;
@@ -267,7 +261,6 @@
             document.getElementById('vol-status').textContent = Math.round(volRatio) + "%";
             document.getElementById('trend-val').textContent = lastPrice > ema200 ? (rsi > 50 ? "BULLISH" : "STRENGTHENING") : "BEARISH";
 
-            // === VERDICT 4-STAGE ENGINE ===
             let score = 50;
             if (fgValue < 25) score += 20; else if (fgValue < 40) score += 10;
             if (rsi < 40) score += 15; else if (rsi < 50) score += 5;
@@ -289,50 +282,50 @@
             if (finalScore >= 80) {
                 box.classList.add('lvl-strong');
                 strat.textContent = "🔥 STRONG DCA SIGNAL";
-                strat.className = "text-2xl font-black tracking-tighter uppercase italic text-emerald-400 italic glow-emerald";
+                strat.className = "text-xl font-black tracking-tight uppercase italic text-emerald-400 glow-text";
                 verdict.textContent = "Cấu trúc W1 đạt vùng chiết khấu cực đại. Đây là cơ hội tích lũy dài hạn hiếm gặp.";
-                dot.className = "relative inline-flex rounded-full h-4 w-4 bg-emerald-500 shadow-[0_0_15px_#10b981]";
+                dot.className = "relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-[0_0_10px_#10b981]";
                 dotPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75";
-                sBar.className = "h-full rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.4)]";
-                sNum.className = "text-6xl font-black value-mono tracking-tighter italic leading-none text-emerald-400 glow-emerald";
+                sBar.className = "bar-fill bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]";
+                sNum.className = "text-6xl font-black value-mono tracking-tighter italic leading-none text-emerald-400 glow-text";
                 document.getElementById('entry-zone').textContent = "DEEP VALUE AREA";
                 document.getElementById('position-size').textContent = "25-35%";
             } else if (finalScore >= 65) {
                 box.classList.add('lvl-good');
                 strat.textContent = "✅ SAFE ACCUMULATE";
-                strat.className = "text-2xl font-black tracking-tighter uppercase italic text-cyan-400";
+                strat.className = "text-xl font-black tracking-tight uppercase italic text-cyan-400";
                 verdict.textContent = "Định giá thị trường đang ở mức rẻ. Phù hợp để gia tăng vị thế DCA đều đặn.";
-                dot.className = "relative inline-flex rounded-full h-4 w-4 bg-cyan-400 shadow-[0_0_15px_#22d3ee]";
+                dot.className = "relative inline-flex rounded-full h-3 w-3 bg-cyan-400 shadow-[0_0_10px_#22d3ee]";
                 dotPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75";
-                sBar.className = "h-full rounded-full bg-gradient-to-r from-cyan-600 to-cyan-400";
+                sBar.className = "bar-fill bg-cyan-400";
                 sNum.className = "text-6xl font-black value-mono tracking-tighter italic leading-none text-cyan-400";
                 document.getElementById('entry-zone').textContent = "CONSISTENT DCA";
                 document.getElementById('position-size').textContent = "10-15%";
             } else if (finalScore >= 45) {
                 box.classList.add('lvl-wait');
                 strat.textContent = "⏳ HOLD / OBSERVING";
-                strat.className = "text-2xl font-black tracking-tighter uppercase italic text-slate-500";
+                strat.className = "text-xl font-black tracking-tight uppercase italic text-slate-500";
                 verdict.textContent = "Chưa có tín hiệu gom hàng rõ ràng. Ưu tiên giữ tiền mặt và quan sát vùng hỗ trợ.";
-                dot.className = "relative inline-flex rounded-full h-4 w-4 bg-slate-600";
+                dot.className = "relative inline-flex rounded-full h-3 w-3 bg-slate-600";
                 dotPing.className = "hidden";
-                sBar.className = "h-full rounded-full bg-slate-600";
+                sBar.className = "bar-fill bg-slate-600";
                 sNum.className = "text-6xl font-black value-mono tracking-tighter italic leading-none text-slate-500";
                 document.getElementById('entry-zone').textContent = "WAIT FOR DIP";
                 document.getElementById('position-size').textContent = "0-5%";
             } else {
                 box.classList.add('lvl-risk');
                 strat.textContent = "⚠️ HIGH RISK / CAUTION";
-                strat.className = "text-2xl font-black tracking-tighter uppercase italic text-rose-500";
+                strat.className = "text-xl font-black tracking-tight uppercase italic text-rose-500";
                 verdict.textContent = "Thị trường đang hưng phấn quá mức hoặc cấu trúc suy yếu. Tuyệt đối không mua đuổi.";
-                dot.className = "relative inline-flex rounded-full h-4 w-4 bg-rose-500 shadow-[0_0_15px_#f43f5e]";
+                dot.className = "relative inline-flex rounded-full h-3 w-3 bg-rose-500 shadow-[0_0_10px_#f43f5e]";
                 dotPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75";
-                sBar.className = "h-full rounded-full bg-gradient-to-r from-rose-600 to-rose-400";
+                sBar.className = "bar-fill bg-rose-500";
                 sNum.className = "text-6xl font-black value-mono tracking-tighter italic leading-none text-rose-500";
                 document.getElementById('entry-zone').textContent = "OVERBOUGHT";
                 document.getElementById('position-size').textContent = "0%";
             }
 
-            document.getElementById('last-updated').textContent = meta.fromCache ? "Offline Mode (Cache)" : `Sync: ${new Date().toLocaleTimeString('vi-VN')} • Live`;
+            document.getElementById('last-updated').textContent = meta.fromCache ? "Offline (Cache)" : `System Live: ${new Date().toLocaleTimeString('vi-VN')}`;
         }
 
         async function updateData() {
