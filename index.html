@@ -17,7 +17,7 @@
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .phase-card-active, .phase-card-accumulate {
-            transform: translateY(-4px);
+            transform: translateY(-2px);
         }
 
         /* ==================== IFRAME WRAPPER ==================== */
@@ -34,7 +34,6 @@
             padding-top: 68%;
         }
 
-        /* === 2 Ô CHÍNH - ĐÃ GIẢM THÊM 10% === */
         .tall-iframe {
             padding-top: 117% !important;
         }
@@ -55,8 +54,18 @@
             border: none;
         }
 
-        .main-analysis {
-            grid-row: span 2;
+        /* GIẢM SHADOW KHUNG */
+        .dashboard-card {
+            box-shadow: 0 4px 15px -2px rgba(0, 0, 0, 0.3) !important;
+            border: 1px solid #30363d;
+        }
+
+        .dashboard-card:hover {
+            box-shadow: 0 8px 25px -3px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        .main-analysis .dashboard-card {
+            box-shadow: 0 6px 20px -3px rgba(0, 0, 0, 0.35) !important;
         }
     </style>
 </head>
@@ -84,38 +93,46 @@
         <!-- DASHBOARD GRID -->
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8 mb-12 auto-rows-fr">
             <!-- W1 -->
-            <div class="main-analysis border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22] shadow-2xl">
-                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] font-bold text-sm flex items-center gap-2">
-                    📈 BTC Spot Technical Analysis (W1) • v6.0
-                </div>
-                <div class="iframe-wrapper tall-iframe">
-                    <iframe id="tech-w1" src="technical-analysis.html"></iframe>
+            <div class="main-analysis">
+                <div class="dashboard-card border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
+                    <div class="bg-[#1c2128] p-4 border-b border-[#30363d] font-bold text-sm flex items-center gap-2">
+                        📈 BTC Spot Technical Analysis (W1) • v6.0
+                    </div>
+                    <div class="iframe-wrapper tall-iframe">
+                        <iframe id="tech-w1" src="technical-analysis.html"></iframe>
+                    </div>
                 </div>
             </div>
 
             <!-- Daily -->
-            <div class="main-analysis border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22] shadow-2xl">
-                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] font-bold text-sm flex items-center gap-2">
-                    📊 BTC Spot Technical Analysis (Daily)
-                </div>
-                <div class="iframe-wrapper tall-iframe">
-                    <iframe id="tech-day" src="technical-day.html"></iframe>
+            <div class="main-analysis">
+                <div class="dashboard-card border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
+                    <div class="bg-[#1c2128] p-4 border-b border-[#30363d] font-bold text-sm flex items-center gap-2">
+                        📊 BTC Spot Technical Analysis (Daily)
+                    </div>
+                    <div class="iframe-wrapper tall-iframe">
+                        <iframe id="tech-day" src="technical-day.html"></iframe>
+                    </div>
                 </div>
             </div>
 
             <!-- BTC Dominance -->
-            <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22] shadow-2xl">
-                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] font-bold text-sm">🌍 BTC Dominance</div>
-                <div class="iframe-wrapper">
-                    <iframe src="https://s.tradingview.com/widgetembed/?symbol=CRYPTOCAP%3ABTC.D&interval=D&theme=dark" allowfullscreen></iframe>
+            <div>
+                <div class="dashboard-card border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
+                    <div class="bg-[#1c2128] p-4 border-b border-[#30363d] font-bold text-sm">🌍 BTC Dominance</div>
+                    <div class="iframe-wrapper">
+                        <iframe src="https://s.tradingview.com/widgetembed/?symbol=CRYPTOCAP%3ABTC.D&interval=D&theme=dark" allowfullscreen></iframe>
+                    </div>
                 </div>
             </div>
 
             <!-- Leverage & Funding -->
-            <div class="border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22] shadow-2xl">
-                <div class="bg-[#1c2128] p-4 border-b border-[#30363d] font-bold text-sm">🔥 Leverage & Funding Signals</div>
-                <div class="iframe-wrapper">
-                    <iframe src="leverage-signals.html"></iframe>
+            <div>
+                <div class="dashboard-card border border-[#30363d] rounded-3xl overflow-hidden bg-[#161b22]">
+                    <div class="bg-[#1c2128] p-4 border-b border-[#30363d] font-bold text-sm">🔥 Leverage & Funding Signals</div>
+                    <div class="iframe-wrapper">
+                        <iframe src="leverage-signals.html"></iframe>
+                    </div>
                 </div>
             </div>
         </div>
@@ -139,6 +156,7 @@
     </div>
 
     <script>
+        // Script giữ nguyên
         let currentPhaseId = 0;
         let phaseStartTime = Date.now();
         const STORAGE_KEY = "wintrack_phase_state";
@@ -183,4 +201,33 @@
             });
            
             const card = document.getElementById(`phase-card-${id}`);
-            const badge =
+            const badge = document.getElementById(`badge-${id}`);
+           
+            if (id === 0) card.classList.add('phase-card-accumulate');
+            else card.classList.add('phase-card-active');
+           
+            badge.textContent = id === 0 ? "ACCUMULATING" : "ACTIVE";
+            badge.className = `text-[10px] font-bold px-4 py-1 rounded-full ${id === 0 ? 'bg-emerald-500 text-black' : 'bg-[#f2cc60] text-black'}`;
+           
+            if (id !== currentPhaseId) {
+                currentPhaseId = id;
+                phaseStartTime = Date.now();
+                savePhaseState();
+            }
+           
+            document.getElementById('current-phase').textContent = `PHASE 0${id} - ${phaseConfig[id].status}`;
+        }
+
+        function updateDuration() {
+            const minutes = Math.floor((Date.now() - phaseStartTime) / 60000);
+            document.getElementById('phase-duration').textContent = `${minutes} phút`;
+        }
+
+        loadPhaseState();
+        initPhases();
+        activatePhase(currentPhaseId);
+        setInterval(updateDuration, 30000);
+        setTimeout(updateDuration, 1000);
+    </script>
+</body>
+</html>
