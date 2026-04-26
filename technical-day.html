@@ -3,108 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BTC WinTrack 2026 - Realtime System</title>
+    <title>WinTrack 2026 - Mobile Optimized</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
         body { background: #030712; font-family: 'Inter', sans-serif; color: white; }
-        .wintrack-card { background: #111827; border: 1px solid #1f2937; border-radius: 20px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .hover-lift:hover { transform: translateY(-5px); box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5); }
+        .wintrack-card { background: #111827; border: 1px solid #1f2937; border-radius: 20px; transition: all 0.3s ease; }
+        .hover-lift:hover { transform: translateY(-3px); box-shadow: 0 15px 30px -10px rgb(0 0 0 / 0.5); }
         .signal-dot { animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
-        @keyframes ping { 75%, 100% { transform: scale(2.5); opacity: 0; } }
+        @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+        /* Giúp thanh cuộn mượt hơn trên mobile */
+        * { -webkit-tap-highlight-color: transparent; }
     </style>
 </head>
-<body class="p-4 md:p-10 bg-[#030712]">
+<body class="p-3 md:p-10 bg-[#030712] antialiased">
     <div class="max-w-5xl mx-auto">
-        <!-- Header -->
-        <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
-            <div class="flex items-center gap-5">
-                <div class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-3xl shadow-lg shadow-blue-900/20">📊</div>
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4 px-1">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center text-2xl shadow-lg">📊</div>
                 <div>
-                    <h1 class="text-white font-black text-4xl tracking-tighter uppercase">BTC SPOT <span class="text-blue-500">D1</span></h1>
-                    <p id="last-updated" class="text-slate-500 text-xs font-mono uppercase tracking-[0.2em] mt-1 italic font-semibold">Đang đồng bộ...</p>
+                    <h1 class="text-white font-black text-2xl md:text-3xl tracking-tighter uppercase italic">BTC SPOT <span class="text-blue-500">D1</span></h1>
+                    <p id="last-updated" class="text-slate-500 text-[10px] font-mono uppercase tracking-widest mt-0.5">Syncing...</p>
                 </div>
             </div>
-            <div class="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 backdrop-blur-md min-w-[260px] shadow-xl">
-                <p class="text-slate-500 text-[10px] uppercase font-bold mb-1 tracking-widest">Giá Realtime • BINANCE</p>
-                <div id="current-price" class="font-mono text-5xl font-bold text-emerald-400 tracking-tighter">---,---</div>
+            <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 backdrop-blur-md shadow-xl flex flex-col justify-center">
+                <p class="text-slate-500 text-[9px] uppercase font-bold mb-1 tracking-widest">Live Price • Binance</p>
+                <div id="current-price" class="font-mono text-3xl md:text-4xl font-bold text-emerald-400 tracking-tighter leading-none">---,---</div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <!-- On-chain -->
-            <div class="wintrack-card p-7 border-t border-t-purple-500/30">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-purple-400 font-bold text-xs tracking-widest uppercase">Định giá On-chain</h3>
-                    <div id="onchain-status" class="text-[10px] px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 font-black uppercase tracking-wider">TECHNICAL ONLY</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="wintrack-card p-5 border-t border-t-purple-500/20">
+                <div class="flex justify-between items-center mb-5">
+                    <h3 class="text-purple-400 font-bold text-[10px] tracking-widest uppercase">On-chain Valuation</h3>
+                    <div id="onchain-status" class="text-[9px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 font-black uppercase tracking-tighter border border-amber-500/20">Checking...</div>
                 </div>
-                <div class="grid grid-cols-2 gap-6" id="onchain-grid"></div>
-            </div>
-
-            <!-- Price Action -->
-            <div class="wintrack-card p-7 border-t border-t-amber-500/30">
-                <h3 class="text-amber-400 font-bold text-xs tracking-widest uppercase mb-6">Cấu trúc thị trường (D1)</h3>
-                <div id="price-action-text" class="text-2xl font-black text-slate-100 mb-4 tracking-tight"></div>
-                <div id="breaker-block" class="bg-black/40 p-4 rounded-xl border border-slate-800 text-slate-300 font-medium flex justify-between items-center"></div>
-            </div>
-        </div>
-
-        <!-- Verdict -->
-        <div id="verdict-card" class="wintrack-card p-10 border-l-[12px] bg-gradient-to-br from-[#111827] to-[#0b0f1a]">
-            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-10">
-                <div class="flex-1">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div id="signal-dot" class="w-5 h-5 rounded-full bg-slate-600"></div>
-                        <h2 id="strat-text" class="text-3xl font-black tracking-tighter uppercase text-slate-500">Đang tổng hợp...</h2>
+                <div class="grid grid-cols-2 gap-4" id="onchain-grid">
                     </div>
-                    <p id="verdict-text" class="text-slate-400 leading-relaxed text-xl italic font-medium"></p>
+            </div>
+
+            <div class="wintrack-card p-5 border-t border-t-amber-500/20">
+                <h3 class="text-amber-400 font-bold text-[10px] tracking-widest uppercase mb-5">Market Structure (D1)</h3>
+                <div id="price-action-text" class="text-lg font-black text-slate-100 mb-3 tracking-tight">---</div>
+                <div id="breaker-block" class="bg-black/30 p-3 rounded-xl border border-slate-800 text-[11px] text-slate-400 flex justify-between items-center">
+                    </div>
+            </div>
+        </div>
+
+        <div id="verdict-card" class="wintrack-card p-6 md:p-10 border-l-[8px] md:border-l-[12px] bg-gradient-to-br from-[#111827] to-[#0b0f1a] shadow-2xl relative overflow-hidden">
+            <div class="flex flex-col gap-6">
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div id="signal-dot" class="w-3 h-3 rounded-full bg-slate-600"></div>
+                        <h2 id="strat-text" class="text-xl md:text-3xl font-black tracking-tighter uppercase text-slate-500">Analysing...</h2>
+                    </div>
+                    <p id="verdict-text" class="text-slate-400 leading-snug text-sm md:text-xl italic font-medium"></p>
                 </div>
                 
-                <div class="w-full lg:w-80 p-6 bg-black/20 rounded-3xl border border-white/5 shadow-inner">
-                    <div class="flex justify-between items-baseline mb-4">
-                        <span class="text-[11px] font-black text-slate-500 tracking-widest uppercase">DCA Trust Score</span>
-                        <span id="score-number" class="font-mono text-5xl font-bold text-slate-600 tracking-tighter">--</span>
+                <div class="w-full bg-black/30 p-5 rounded-2xl border border-white/5">
+                    <div class="flex justify-between items-end mb-3">
+                        <div>
+                            <span class="text-[10px] font-black text-slate-500 tracking-widest uppercase block mb-1">Trust Score</span>
+                            <span id="score-number" class="font-mono text-5xl font-bold text-slate-600 leading-none tracking-tighter">--</span>
+                        </div>
+                        <div class="text-right">
+                            <span id="score-context" class="text-[9px] text-slate-500 uppercase font-black tracking-widest block">---</span>
+                        </div>
                     </div>
-                    <div class="h-5 bg-black/60 rounded-full overflow-hidden p-1.5 shadow-2xl border border-slate-800">
-                        <div id="score-bar" class="h-full bg-slate-700 rounded-full transition-all duration-1000" style="width: 0%"></div>
-                    </div>
-                    <div class="flex justify-between mt-4 text-[9px]">
-                        <span id="score-context" class="text-slate-500 uppercase font-black tracking-widest"></span>
-                        <span class="text-slate-600 font-mono">WINTRACK v2.6</span>
+                    <div class="h-3 bg-black/50 rounded-full overflow-hidden p-0.5 border border-slate-800">
+                        <div id="score-bar" class="h-full bg-slate-700 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <footer class="text-center mt-8 py-4 opacity-30">
+            <p class="text-[9px] font-bold tracking-[0.3em] uppercase">WinTrack 2026 • Discipline is Freedom</p>
+        </footer>
     </div>
 
     <script>
-        // === TÍNH TOÁN CHÍNH XÁC ===
-        function calculateEMA(prices, period) {
-            if (prices.length < period) return prices[prices.length - 1];
-            let ema = prices.slice(0, period).reduce((a, b) => a + b, 0) / period;
-            const k = 2 / (period + 1);
-            for (let i = period; i < prices.length; i++) {
-                ema = (prices[i] * k) + (ema * (1 - k));
-            }
-            return ema;
-        }
-
+        // === CORE CALCULATIONS ===
+        const calculateEMA = (ps, p) => ps.length < p ? ps[ps.length - 1] : ps.slice(p).reduce((e, v) => (v * (2 / (p + 1))) + (e * (1 - (2 / (p + 1)))), ps.slice(0, p).reduce((a, b) => a + b, 0) / p);
+        
         function calculateRSI(prices, period = 14) {
             if (prices.length < period + 1) return 50;
             const changes = prices.slice(1).map((p, i) => p - prices[i]);
-            let avgGain = 0, avgLoss = 0;
-            for (let i = 0; i < period; i++) {
-                if (changes[i] > 0) avgGain += changes[i];
-                else avgLoss -= changes[i];
-            }
-            avgGain /= period; avgLoss /= period;
+            let gain = 0, loss = 0;
+            for (let i = 0; i < period; i++) changes[i] > 0 ? gain += changes[i] : loss -= changes[i];
+            gain /= period; loss /= period;
             for (let i = period; i < changes.length; i++) {
-                const gain = changes[i] > 0 ? changes[i] : 0;
-                const loss = changes[i] < 0 ? -changes[i] : 0;
-                avgGain = (avgGain * (period - 1) + gain) / period;
-                avgLoss = (avgLoss * (period - 1) + loss) / period;
+                gain = (gain * (period - 1) + (changes[i] > 0 ? changes[i] : 0)) / period;
+                loss = (loss * (period - 1) + (changes[i] < 0 ? -changes[i] : 0)) / period;
             }
-            return avgLoss === 0 ? 100 : Math.min(100, Math.max(0, 100 - (100 / (1 + avgGain / avgLoss))));
+            return 100 - (100 / (1 + gain / (loss || 0.0001)));
         }
 
         async function updateData() {
@@ -118,69 +110,74 @@
 
                 document.getElementById('current-price').textContent = price.toLocaleString('en-US');
 
-                // On-chain Fallback
-                const ocStatus = document.getElementById('onchain-status');
-                ocStatus.textContent = "TECHNICAL ONLY";
-                ocStatus.className = "text-[10px] px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 font-black uppercase tracking-wider";
+                // Render On-chain
+                document.getElementById('onchain-status').textContent = "TECHNICAL ONLY";
                 document.getElementById('onchain-grid').innerHTML = `
-                    <div><p class="text-slate-400 text-xs">MVRV Z-Score</p><p class="text-3xl font-bold text-emerald-400">0.80</p></div>
-                    <div><p class="text-slate-400 text-xs">Puell Multiple</p><p class="text-3xl font-bold text-emerald-400">0.78</p></div>
+                    <div class="bg-black/20 p-3 rounded-xl border border-slate-800"><p class="text-slate-500 text-[9px] uppercase font-bold mb-1">MVRV Z</p><p class="text-xl font-bold text-emerald-400">0.80</p></div>
+                    <div class="bg-black/20 p-3 rounded-xl border border-slate-800"><p class="text-slate-500 text-[9px] uppercase font-bold mb-1">Puell</p><p class="text-xl font-bold text-emerald-400">0.78</p></div>
                 `;
 
-                // Price Action
-                document.getElementById('price-action-text').textContent = price > ema200 ? "📈 Cấu trúc tăng dài hạn" : "📉 Cấu trúc điều chỉnh";
+                // Render Price Action
+                document.getElementById('price-action-text').textContent = price > ema200 ? "📈 Uptrend Structure" : "📉 Correction Phase";
                 const support = Math.round(ema200 * 0.965);
-                document.getElementById('breaker-block').innerHTML = `
-                    <span>Vùng hỗ trợ (DCA Zone):</span>
-                    <span class="text-emerald-400 font-mono font-bold tracking-wider">$${support.toLocaleString()}</span>
-                `;
+                document.getElementById('breaker-block').innerHTML = `<span>DCA Zone:</span><span class="text-emerald-400 font-bold">$${support.toLocaleString()}</span>`;
 
-                // Score
+                // Calculation
                 let score = 58;
                 if (rsi < 45) score += 15;
                 if (rsi < 35) score += 12;
                 if (price <= ema200 * 1.06) score += 18;
-                const finalScore = Math.min(100, Math.round(score + 15)); // On-chain rẻ
+                const finalScore = Math.min(100, Math.round(score + 15));
 
-                // Render Score & Verdict
-                document.getElementById('score-number').textContent = finalScore;
-                document.getElementById('score-bar').style.width = finalScore + "%";
-                document.getElementById('score-context').textContent = "Tech + On-chain Fallback";
-
+                // UI Update
                 const strat = document.getElementById('strat-text');
                 const verdict = document.getElementById('verdict-text');
                 const dot = document.getElementById('signal-dot');
                 const card = document.getElementById('verdict-card');
+                const sBar = document.getElementById('score-bar');
+                const sNum = document.getElementById('score-number');
+
+                sNum.textContent = finalScore;
+                sBar.style.width = finalScore + "%";
+                document.getElementById('score-context').textContent = "Tech + Fallback";
 
                 if (finalScore >= 90) {
-                    strat.textContent = "🔥 VÙNG ĐÁY MẠNH - DCA LỚN";
-                    strat.className = "text-3xl font-black text-emerald-400 tracking-tighter uppercase";
-                    verdict.textContent = "Sự hội tụ hiếm gặp. Cơ hội vàng để DCA lớn 15-25% vốn ngay lúc này.";
-                    dot.className = "w-5 h-5 rounded-full bg-emerald-500 signal-dot";
+                    strat.textContent = "🔥 DCA LỚN - ĐÁY MẠNH";
+                    strat.className = "text-xl md:text-3xl font-black text-emerald-400 tracking-tighter uppercase";
+                    verdict.textContent = "Cơ hội vàng! Kỹ thuật và định giá đang ở vùng cực rẻ. Giải ngân 15-25% vốn.";
+                    dot.className = "w-3 h-3 rounded-full bg-emerald-500 signal-dot";
                     card.style.borderLeftColor = "#10b981";
+                    sBar.className = "h-full bg-emerald-500 transition-all duration-1000";
+                    sNum.className = "font-mono text-5xl font-bold text-emerald-500 tracking-tighter";
                 } else if (finalScore >= 82) {
                     strat.textContent = "✅ VÙNG MUA TỐT - DCA";
-                    strat.className = "text-3xl font-black text-cyan-400 tracking-tighter uppercase";
-                    verdict.textContent = "Thị trường đang rẻ. Phù hợp DCA dần 8-15% vốn.";
-                    dot.className = "w-5 h-5 rounded-full bg-cyan-400 signal-dot";
+                    strat.className = "text-xl md:text-3xl font-black text-cyan-400 tracking-tighter uppercase";
+                    verdict.textContent = "Định giá hấp dẫn. Phù hợp để tích lũy dần 8-15% vốn theo kế hoạch.";
+                    dot.className = "w-3 h-3 rounded-full bg-cyan-400 signal-dot";
                     card.style.borderLeftColor = "#22d3ee";
+                    sBar.className = "h-full bg-cyan-400 transition-all duration-1000";
+                    sNum.className = "font-mono text-5xl font-bold text-cyan-400 tracking-tighter";
                 } else if (finalScore >= 70) {
                     strat.textContent = "⏳ QUAN SÁT - CHỜ DIP";
-                    strat.className = "text-3xl font-black text-sky-400 tracking-tighter uppercase";
-                    verdict.textContent = "Chưa đủ hấp dẫn để vào lớn. Nên chờ dip sâu hơn.";
-                    dot.className = "w-5 h-5 rounded-full bg-sky-400";
+                    strat.className = "text-xl md:text-3xl font-black text-sky-400 tracking-tighter uppercase";
+                    verdict.textContent = "Giá chưa đạt mức chiết khấu kỳ vọng. Kiên nhẫn chờ dip sâu hơn.";
+                    dot.className = "w-3 h-3 rounded-full bg-sky-400";
                     card.style.borderLeftColor = "#38bdf8";
+                    sBar.className = "h-full bg-sky-500 transition-all duration-1000";
+                    sNum.className = "font-mono text-5xl font-bold text-sky-400 tracking-tighter";
                 } else {
                     strat.textContent = "⚠️ CẢNH BÁO - TRÁNH";
-                    strat.className = "text-3xl font-black text-red-400 tracking-tighter uppercase";
-                    verdict.textContent = "Rủi ro cao. Không nên vào mới lúc này.";
-                    dot.className = "w-5 h-5 rounded-full bg-red-400";
+                    strat.className = "text-xl md:text-3xl font-black text-red-500 tracking-tighter uppercase";
+                    verdict.textContent = "Rủi ro cao hoặc On-chain quá nhiệt. Tuyệt đối không FOMO tại đây.";
+                    dot.className = "w-3 h-3 rounded-full bg-red-500";
                     card.style.borderLeftColor = "#ef4444";
+                    sBar.className = "h-full bg-red-500 transition-all duration-1000";
+                    sNum.className = "font-mono text-5xl font-bold text-red-500 tracking-tighter";
                 }
 
-                document.getElementById('last-updated').textContent = `Đồng bộ: ${new Date().toLocaleTimeString('vi-VN')}`;
+                document.getElementById('last-updated').textContent = `Sync: ${new Date().toLocaleTimeString('vi-VN')}`;
             } catch (e) {
-                console.error(e);
+                document.getElementById('last-updated').textContent = "Connection Error";
             }
         }
 
