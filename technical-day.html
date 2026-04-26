@@ -40,7 +40,7 @@
                 <div class="w-11 h-11 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-2xl flex items-center justify-center text-3xl">📈</div>
                 <div>
                     <h1 class="text-2xl font-black tracking-tighter uppercase">BTC SPOT <span class="text-cyan-400">D1 ELITE</span></h1>
-                    <p id="last-updated" class="text-xs text-slate-400">Live • v3.3</p>
+                    <p id="last-updated" class="text-xs text-slate-400">Đang đồng bộ...</p>
                 </div>
             </div>
             <div class="text-right">
@@ -76,16 +76,16 @@
             <div class="grid grid-cols-3 gap-3 mt-5">
                 <div class="inner-box text-center">
                     <p class="text-label text-pink-400">FEAR & GREED</p>
-                    <p id="fear-greed" class="text-3xl font-black text-yellow-400">33</p>
-                    <p class="text-xs text-yellow-400" id="fear-label">Fear</p>
+                    <p id="fear-greed" class="text-3xl font-black">---</p>
+                    <p id="fear-label" class="text-xs"></p>
                 </div>
                 <div class="inner-box text-center">
-                    <p class="text-label text-sky-400">BACKTEST</p>
-                    <p id="backtest-rate" class="text-3xl font-black text-emerald-400">68%</p>
-                    <p class="text-xs text-slate-400">365 ngày</p>
+                    <p class="text-label text-sky-400">BACKTEST (365 NGÀY)</p>
+                    <p id="backtest-rate" class="text-3xl font-black text-emerald-400">---</p>
+                    <p class="text-xs text-slate-400">Win rate DCA</p>
                 </div>
                 <div id="whale-card" class="inner-box text-center hidden">
-                    <p class="text-label text-orange-400">🐳 WHALE</p>
+                    <p class="text-label text-orange-400">🐳 WHALE ALERT</p>
                     <p class="text-xl font-bold text-orange-400">SPIKE</p>
                 </div>
             </div>
@@ -141,13 +141,40 @@
             return 100 - (100 / (1 + gain / (loss || 0.0001)));
         }
 
+        async function getFearGreed() {
+            try {
+                const res = await fetch('https://api.alternative.me/fng/?limit=1');
+                const data = await res.json();
+                const value = parseInt(data.data[0].value);
+                const label = data.data[0].value_classification;
+                return { value, label };
+            } catch (e) {
+                return { value: 45, label: "Neutral" };
+            }
+        }
+
+        function calculateBacktestWinRate(closes) {
+            let totalSignals = 0;
+            let wins = 0;
+            for (let i = 60; i < closes.length - 40; i++) {
+                const slice = closes.slice(0, i + 1);
+                const rsi = calculateRSI(slice);
+                const ema = calculateEMA(slice, 200);
+                if (rsi < 45 && slice[slice.length-1] < ema * 1.06) {
+                    totalSignals++;
+                    if (closes[i + 40] > slice[slice.length-1] * 1.08) wins++;
+                }
+            }
+            return totalSignals > 10 ? Math.round((wins / totalSignals) * 100) : 65;
+        }
+
         async function updateData() {
             try {
-                const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=300');
+                const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=365');
                 const data = await res.json();
                 const closes = data.map(d => parseFloat(d[4]));
-                const price = closes[closes.length - 1];
                 const volumes = data.map(d => parseFloat(d[5]));
+                const price = closes[closes.length - 1];
 
                 const ema200 = calculateEMA(closes, 200);
                 const rsi = calculateRSI(closes);
@@ -157,28 +184,34 @@
 
                 document.getElementById('current-price').textContent = price.toLocaleString('en-US');
 
-                // === DCA TRUST SCORE v3.3 - TRỌNG SỐ MỚI ===
-                let score = 42; // Base
+                // Fear & Greed Realtime
+                const fg = await getFearGreed();
+                document.getElementById('fear-greed').textContent = fg.value;
+                document.getElementById('fear-label').textContent = fg.label;
+
+                // Backtest động
+                const backtestWin = calculateBacktestWinRate(closes);
+                document.getElementById('backtest-rate').textContent = backtestWin + "%";
+
+                // DCA Trust Score v3.3
+                let score = 42;
 
                 const isUptrend = price > ema200 * 0.98;
-                if (isUptrend) score += 20;                    // Supertrend / Trend
+                if (isUptrend) score += 20;
                 if (rsi < 40) score += 24;
                 else if (rsi < 50) score += 14;
                 if (volumeExhaust) score += 16;
-                if (rsi > 72) score -= 20;                     // Overheat
-                // Fear & Greed giả lập (có thể thay bằng API)
-                const fearGreed = 33;
-                if (fearGreed < 35) score += 15;
+                if (rsi > 72) score -= 20;
+                if (fg.value < 35) score += 15;
 
                 score = Math.max(20, Math.min(98, Math.round(score)));
 
-                // Render Score
+                // Render Score & Verdict
                 const scoreEl = document.getElementById('score-number');
                 const barEl = document.getElementById('score-bar');
                 scoreEl.textContent = score;
                 barEl.style.width = score + '%';
 
-                // Verdict theo trọng số mới
                 const card = document.getElementById('verdict-card');
                 const strat = document.getElementById('strat-text');
                 const verdictText = document.getElementById('verdict-text');
@@ -187,38 +220,33 @@
                 if (score >= 88) {
                     strat.textContent = "🔥 DCA LỚN - ĐÁY MẠNH";
                     strat.className = "text-xl font-black uppercase tracking-tighter text-emerald-400";
-                    verdictText.textContent = "Điều kiện cực kỳ thuận lợi. Giải ngân mạnh 15-30% vốn ngay.";
+                    verdictText.textContent = "Fear mạnh + Technical đồng thuận. Giải ngân mạnh ngay!";
                     card.style.borderLeftColor = "#10b981";
-                    dot.innerHTML = "🚀";
-                    dot.className = "w-6 h-6 rounded-full bg-emerald-400 flex items-center justify-center text-xl";
+                    dot.innerHTML = "🚀"; dot.className = "w-6 h-6 rounded-full bg-emerald-400 flex items-center justify-center";
                 } else if (score >= 78) {
                     strat.textContent = "✅ VÙNG MUA TỐT";
                     strat.className = "text-xl font-black uppercase tracking-tighter text-cyan-400";
-                    verdictText.textContent = "Nên tích lũy dần theo kế hoạch. Rất đáng mua.";
+                    verdictText.textContent = "Điều kiện DCA rất thuận lợi. Nên tích lũy dần.";
                     card.style.borderLeftColor = "#22d3ee";
-                    dot.innerHTML = "✅";
-                    dot.className = "w-6 h-6 rounded-full bg-cyan-400 flex items-center justify-center text-xl";
+                    dot.innerHTML = "✅"; dot.className = "w-6 h-6 rounded-full bg-cyan-400 flex items-center justify-center";
                 } else if (score >= 62) {
                     strat.textContent = "⏳ CHỜ DIP THÊM";
                     strat.className = "text-xl font-black uppercase tracking-tighter text-amber-400";
-                    verdictText.textContent = "Có tín hiệu tích cực nhưng chưa đủ mạnh. Chờ thêm xác nhận.";
+                    verdictText.textContent = "Có tín hiệu nhưng chưa đủ mạnh. Chờ thêm xác nhận.";
                     card.style.borderLeftColor = "#f59e0b";
-                    dot.innerHTML = "⏳";
-                    dot.className = "w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center text-xl";
+                    dot.innerHTML = "⏳"; dot.className = "w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center";
                 } else {
                     strat.textContent = "⚠️ PHÒNG THỦ";
                     strat.className = "text-xl font-black uppercase tracking-tighter text-red-400";
-                    verdictText.textContent = "Thị trường chưa rẻ. Giữ stablecoin và chờ tín hiệu rõ ràng hơn.";
+                    verdictText.textContent = "Thị trường chưa rẻ. Giữ stablecoin chờ tín hiệu rõ hơn.";
                     card.style.borderLeftColor = "#ef4444";
-                    dot.innerHTML = "🛡️";
-                    dot.className = "w-6 h-6 rounded-full bg-red-400 flex items-center justify-center text-xl";
+                    dot.innerHTML = "🛡️"; dot.className = "w-6 h-6 rounded-full bg-red-400 flex items-center justify-center";
                 }
 
                 // DCA Zones
                 const level1 = Math.round(ema200 * 0.93);
                 const level2 = Math.round(ema200 * 0.97);
                 const level3 = Math.round(ema200 * 1.015);
-
                 document.getElementById('dca-zones').innerHTML = `
                     <div class="inner-box text-center">
                         <p class="text-label text-emerald-400">MỨC 1</p>
