@@ -54,7 +54,6 @@
             transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); 
         }
 
-        /* 4 Cấp độ hành động - Giữ nguyên logic class của bạn */
         .lvl-strong { border-left: 5px solid #10b981; box-shadow: inset 10px 0 20px -10px rgba(16, 185, 129, 0.2); }
         .lvl-good { border-left: 5px solid #22d3ee; box-shadow: inset 10px 0 20px -10px rgba(34, 211, 238, 0.15); }
         .lvl-wait { border-left: 5px solid #64748b; }
@@ -148,7 +147,7 @@
         </div>
 
         <div id="verdict-box" class="panel p-6 bg-gradient-to-br from-slate-900 to-slate-950 transition-all duration-500">
-            <div class="flex items-center gap-4 mb-5">
+            <div class="flex items-center gap-4 mb-4">
                 <div class="relative flex h-3 w-3">
                     <div id="signal-dot-ping" class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"></div>
                     <div id="signal-dot" class="relative inline-flex rounded-full h-3 w-3"></div>
@@ -156,22 +155,25 @@
                 <h2 id="strat-text" class="text-xl font-black tracking-tight uppercase italic leading-none">---</h2>
             </div>
             
-            <p id="verdict-text" class="text-slate-400 text-sm leading-relaxed font-medium italic mb-10 border-l border-slate-700 pl-4"></p>
+            <p id="verdict-text" class="text-slate-400 text-sm leading-relaxed font-medium italic mb-6 border-l border-slate-700 pl-4"></p>
             
-            <div class="pt-6 border-t border-white/5 flex flex-col sm:flex-row items-end sm:items-center gap-8">
-                <div class="flex-shrink-0">
-                    <p class="text-label mb-2">Confidence Index</p>
-                    <div class="flex items-baseline gap-1">
-                        <span id="score-number" class="text-6xl font-black value-mono tracking-tighter italic leading-none glow-text">--</span>
-                        <span class="text-slate-600 font-bold text-lg italic">/100</span>
+            <div class="pt-5 border-t border-white/5 flex flex-row items-center gap-6">
+                <div class="flex items-center gap-3">
+                    <div class="flex flex-col">
+                        <p class="text-label mb-1">Confidence</p>
+                        <div class="flex items-baseline gap-1">
+                            <span id="score-number" class="text-4xl font-black value-mono tracking-tighter italic leading-none glow-text">--</span>
+                            <span class="text-slate-600 font-bold text-xs italic">/100</span>
+                        </div>
                     </div>
                 </div>
-                <div class="flex-grow w-full space-y-2">
+
+                <div class="flex-grow space-y-2">
                     <div class="flex justify-between items-end">
                         <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Risk/Reward Alpha</span>
-                        <span class="text-[9px] font-black text-slate-600 italic opacity-60 uppercase">System Verified</span>
+                        <span class="text-[9px] font-black text-slate-600 italic opacity-60 uppercase leading-none">Verified</span>
                     </div>
-                    <div class="bar-container h-2.5">
+                    <div class="bar-container h-2">
                         <div id="score-bar" class="bar-fill"></div>
                     </div>
                 </div>
@@ -180,7 +182,6 @@
     </div>
 
     <script>
-        /* === TOÀN BỘ LOGIC GIỮ NGUYÊN NHƯ FILE CỦA BẠN === */
         let entryPrice = parseFloat(localStorage.getItem('btc_entry_price')) || 69000;
         document.getElementById('entry-price-display').textContent = 'Avg: $' + entryPrice.toLocaleString('en-US');
         const CACHE_KEY = 'wintrack_w1_v6_pro';
@@ -287,7 +288,7 @@
                 dot.className = "relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-[0_0_10px_#10b981]";
                 dotPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75";
                 sBar.className = "bar-fill bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]";
-                sNum.className = "text-6xl font-black value-mono tracking-tighter italic leading-none text-emerald-400 glow-text";
+                sNum.className = "text-4xl font-black value-mono tracking-tighter italic leading-none text-emerald-400 glow-text";
                 document.getElementById('entry-zone').textContent = "DEEP VALUE AREA";
                 document.getElementById('position-size').textContent = "25-35%";
             } else if (finalScore >= 65) {
@@ -298,7 +299,7 @@
                 dot.className = "relative inline-flex rounded-full h-3 w-3 bg-cyan-400 shadow-[0_0_10px_#22d3ee]";
                 dotPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75";
                 sBar.className = "bar-fill bg-cyan-400";
-                sNum.className = "text-6xl font-black value-mono tracking-tighter italic leading-none text-cyan-400";
+                sNum.className = "text-4xl font-black value-mono tracking-tighter italic leading-none text-cyan-400";
                 document.getElementById('entry-zone').textContent = "CONSISTENT DCA";
                 document.getElementById('position-size').textContent = "10-15%";
             } else if (finalScore >= 45) {
@@ -309,7 +310,7 @@
                 dot.className = "relative inline-flex rounded-full h-3 w-3 bg-slate-600";
                 dotPing.className = "hidden";
                 sBar.className = "bar-fill bg-slate-600";
-                sNum.className = "text-6xl font-black value-mono tracking-tighter italic leading-none text-slate-500";
+                sNum.className = "text-4xl font-black value-mono tracking-tighter italic leading-none text-slate-500";
                 document.getElementById('entry-zone').textContent = "WAIT FOR DIP";
                 document.getElementById('position-size').textContent = "0-5%";
             } else {
@@ -320,7 +321,7 @@
                 dot.className = "relative inline-flex rounded-full h-3 w-3 bg-rose-500 shadow-[0_0_10px_#f43f5e]";
                 dotPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75";
                 sBar.className = "bar-fill bg-rose-500";
-                sNum.className = "text-6xl font-black value-mono tracking-tighter italic leading-none text-rose-500";
+                sNum.className = "text-4xl font-black value-mono tracking-tighter italic leading-none text-rose-500";
                 document.getElementById('entry-zone').textContent = "OVERBOUGHT";
                 document.getElementById('position-size').textContent = "0%";
             }
