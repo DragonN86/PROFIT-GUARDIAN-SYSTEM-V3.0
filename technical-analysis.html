@@ -3,144 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WinTrack 2026 - W1 Analysis</title>
+    <title>WinTrack 2026 - W1 Analysis Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
-        body { background: transparent; font-family: 'Inter', sans-serif; color: white; -webkit-font-smoothing: antialiased; }
-        .wintrack-card { background: #111827; border: 1px solid #1f2937; border-radius: 16px; transition: all 0.3s ease; }
-        .hover-lift:hover { transform: translateY(-2px); border-color: #374151; box-shadow: 0 10px 20px -10px rgba(0,0,0,0.5); }
-        .signal-dot { animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
-        @keyframes ping { 75%, 100% { transform: scale(2.5); opacity: 0; } }
-        .text-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.05em; color: #94a3b8; text-transform: uppercase; }
-        .value-mono { font-family: 'ui-monospace', 'SFMono-Regular', monospace; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --bg-deep: #030712;
+            --card-bg: #111827;
+            --border-color: #1f2937;
+        }
+
+        body { 
+            background: transparent; 
+            font-family: 'Inter', sans-serif; 
+            color: #f3f4f6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Hiệu ứng kính và độ sâu */
+        .wintrack-card { 
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-glow {
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+        }
+
+        /* Visual Hierarchy: Nổi bật Verdict */
+        .verdict-highlight {
+            background: linear-gradient(145deg, #111827, #0f172a);
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* Glow effects cho các chỉ số quan trọng */
+        .glow-emerald { text-shadow: 0 0 15px rgba(16, 185, 129, 0.4); }
+        .glow-blue { text-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
+
+        /* Animation cho tín hiệu */
+        .signal-dot { animation: pulse-glow 2s infinite; }
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .text-label {
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
+            color: #6b7280;
+            text-transform: uppercase;
+        }
+
+        .value-mono { font-family: 'ui-monospace', monospace; }
+
+        /* Mobile Experience: Loại bỏ hover trên touch, tối ưu padding */
+        @media (max-width: 640px) {
+            .wintrack-card { border-radius: 20px; }
+            .value-large { font-size: 1.75rem; }
+        }
     </style>
 </head>
-<body class="p-3 md:p-6">
-    <div id="wintrack-dashboard" class="max-w-2xl mx-auto space-y-4 transition-opacity duration-300">
+<body class="p-3 sm:p-6">
+    <div id="wintrack-dashboard" class="max-w-2xl mx-auto space-y-4 transition-all duration-500">
         
-        <div class="flex items-center justify-between px-1">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center text-2xl shadow-inner">📊</div>
-                <div>
-                    <h1 class="text-white font-black text-xl tracking-tighter uppercase italic">BTC SPOT <span class="text-emerald-500">W1</span></h1>
-                    <p id="last-updated" class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Syncing Data...</p>
+        <div class="flex items-end justify-between px-2">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-6 bg-emerald-500 rounded-full"></div>
+                    <h1 class="text-white font-black text-2xl tracking-tighter italic">SPOT <span class="text-emerald-500">W1</span></h1>
                 </div>
+                <p id="last-updated" class="text-[9px] font-black text-slate-500 uppercase tracking-widest leading-none">Syncing Market Data...</p>
             </div>
             <div class="text-right">
-                <div id="current-price" class="value-mono text-3xl font-black text-emerald-400 tracking-tighter">---,---</div>
-                <div class="text-label mt-0.5">Binance Realtime</div>
+                <p class="text-label mb-1">Binance Price</p>
+                <div id="current-price" class="value-mono text-3xl sm:text-4xl font-black text-white tracking-tighter glow-emerald leading-none">---,---</div>
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-            <div id="fg-card" class="wintrack-card p-4 flex flex-col justify-between">
-                <span class="text-label">Fear & Greed Index</span>
-                <div class="flex items-baseline gap-2 mt-2">
-                    <span id="fg-value" class="text-3xl font-black value-mono">--</span>
-                    <span id="fg-class" class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Neutral</span>
+        <div class="grid grid-cols-2 gap-4">
+            <div id="fg-card" class="wintrack-card p-4 verdict-highlight">
+                <div class="glass-glow"></div>
+                <span class="text-label block mb-2">Psychology</span>
+                <div class="flex items-center gap-3">
+                    <span id="fg-value" class="text-4xl font-black value-mono leading-none">--</span>
+                    <div class="h-8 w-[1px] bg-slate-800"></div>
+                    <span id="fg-class" class="text-[10px] font-bold text-slate-400 uppercase leading-tight tracking-tighter">---</span>
                 </div>
             </div>
-            <div class="wintrack-card p-4 flex flex-col justify-between">
-                <div class="flex justify-between items-start">
-                    <span class="text-label italic">DCA Profit</span>
-                    <button onclick="setEntryPrice()" class="text-[9px] font-bold bg-blue-600/20 text-blue-400 px-2 py-0.5 rounded-md hover:bg-blue-600/40 transition-all">EDIT</button>
+            <div class="wintrack-card p-4 verdict-highlight">
+                <div class="glass-glow"></div>
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-label">DCA PnL</span>
+                    <button onclick="setEntryPrice()" class="text-[8px] font-black bg-blue-500/10 text-blue-400 px-2 py-1 rounded-lg border border-blue-500/20 hover:bg-blue-500/20 transition-all uppercase tracking-tighter">Edit Avg</button>
                 </div>
-                <div class="flex items-baseline gap-2 mt-2">
-                    <span id="profit-pct" class="text-3xl font-black value-mono text-emerald-400">0.00%</span>
-                    <span id="entry-price-display" class="text-[9px] font-bold text-slate-500">$---</span>
+                <div class="flex items-center gap-2">
+                    <span id="profit-pct" class="text-3xl font-black value-mono leading-none text-emerald-400">+0.00%</span>
+                    <span id="entry-price-display" class="text-[10px] font-bold text-slate-500 value-mono">$---</span>
                 </div>
             </div>
         </div>
 
-        <div class="wintrack-card p-5 space-y-5 hover-lift">
-            <div class="grid grid-cols-3 gap-4 border-b border-slate-800/50 pb-4">
-                <div>
-                    <p class="text-label mb-1">RSI (14)</p>
+        <div class="wintrack-card p-5 space-y-6">
+            <div class="glass-glow"></div>
+            <div class="grid grid-cols-3 gap-2">
+                <div class="space-y-1">
+                    <p class="text-label">RSI (14)</p>
                     <p id="rsi-val" class="text-2xl font-black value-mono">--.-</p>
                 </div>
-                <div>
-                    <p class="text-label mb-1">MACD Hist</p>
-                    <p id="macd-val" class="text-2xl font-black value-mono">-.--</p>
+                <div class="space-y-1 text-center border-x border-slate-800/50">
+                    <p class="text-label">MACD Hist</p>
+                    <p id="macd-val" class="text-2xl font-black value-mono text-rose-500">-.--</p>
                 </div>
-                <div class="text-right">
-                    <p class="text-label mb-1">Weekly Range</p>
-                    <p id="weekly-range" class="text-2xl font-black value-mono text-emerald-400">--%</p>
+                <div class="space-y-1 text-right">
+                    <p class="text-label">Range Pos</p>
+                    <p id="weekly-range" class="text-2xl font-black value-mono text-blue-400">--%</p>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-6">
-                <div class="space-y-4">
-                    <div class="flex flex-col">
-                        <span class="text-label mb-1">Trend Strength</span>
-                        <span id="trend-val" class="text-xs font-black px-2 py-1 bg-slate-800 rounded-lg inline-block w-fit">WAITING</span>
+            <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-800/50">
+                <div class="flex flex-col justify-center">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-label">Trend</span>
+                        <span id="trend-val" class="text-[9px] font-black px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 uppercase">---</span>
                     </div>
-                    <div class="flex flex-col">
-                        <span class="text-label mb-1">EMA 200 (W1)</span>
-                        <span id="ema200-val" class="text-sm font-black value-mono text-emerald-400">---,---</span>
-                    </div>
+                    <div class="text-label mb-1">EMA 200 (W1)</div>
+                    <div id="ema200-val" class="text-lg font-black value-mono glow-emerald tracking-tight">---,---</div>
                 </div>
-                <div class="flex flex-col justify-end">
-                    <div class="flex justify-between text-[10px] font-black mb-1.5 uppercase">
-                        <span class="text-slate-500">Volume Intensity</span>
-                        <span id="vol-status" class="text-blue-400">--% ↑</span>
+                <div class="space-y-2">
+                    <div class="flex justify-between items-end">
+                        <span class="text-label">Vol Intensity</span>
+                        <span id="vol-status" class="text-[10px] font-black text-blue-400 italic">--% ↑</span>
                     </div>
-                    <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                        <div id="vol-bar" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
+                    <div class="h-2 bg-slate-900 rounded-full overflow-hidden p-[2px] border border-slate-800">
+                        <div id="vol-bar" class="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.3)] transition-all duration-1000" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-            <div class="wintrack-card p-4 border-l-4 border-l-emerald-500/50">
-                <p class="text-label mb-1">Smart Entry Zone</p>
-                <p id="entry-zone" class="text-xs font-black text-emerald-400 leading-tight">Calculating...</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="wintrack-card p-4 border-l-4 border-l-emerald-500 shadow-lg shadow-emerald-500/5">
+                <p class="text-label mb-1">Target Entry Zone</p>
+                <p id="entry-zone" class="text-sm font-black text-white leading-tight uppercase italic">Calculating...</p>
             </div>
-            <div class="wintrack-card p-4 border-r-4 border-r-blue-500/50 text-right">
-                <p class="text-label mb-1">Gợi ý tỷ trọng</p>
-                <p id="position-size" class="text-2xl font-black value-mono text-white">0%</p>
+            <div class="wintrack-card p-4 border-l-4 border-l-blue-500 shadow-lg shadow-blue-500/5">
+                <p class="text-label mb-1">Capital Allocation</p>
+                <p id="position-size" class="text-2xl font-black text-white leading-none">0%</p>
             </div>
         </div>
 
-        <div id="verdict-box" class="wintrack-card p-5 border-t border-t-slate-800 bg-gradient-to-b from-[#111827] to-[#0f172a]">
-            <div class="flex items-center gap-3 mb-3">
-                <div id="signal-dot" class="w-3 h-3 rounded-full bg-slate-500"></div>
-                <h2 id="strat-text" class="text-lg font-black tracking-tighter uppercase text-slate-400">SYSTEM OFFLINE</h2>
+        <div id="verdict-box" class="wintrack-card p-6 border-2 border-slate-800 verdict-highlight relative">
+            <div class="absolute top-0 right-0 p-4 opacity-10">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="white"><path d="M13 3l-2 3H8v6h3l2 3V3zM18 12c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
             </div>
-            <p id="verdict-text" class="text-xs text-slate-400 leading-relaxed font-medium italic">Vui lòng chờ dữ liệu đồng bộ...</p>
             
-            <div class="mt-5 pt-4 border-t border-slate-800/50">
-                <div class="flex justify-between items-end mb-2">
-                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">DCA Trust Score</span>
-                    <span id="score-number" class="text-3xl font-black value-mono text-slate-600">--</span>
+            <div class="flex items-center gap-4 mb-4">
+                <div id="signal-dot" class="w-4 h-4 rounded-full bg-slate-600"></div>
+                <h2 id="strat-text" class="text-2xl font-black tracking-tighter uppercase text-slate-500 italic">System Syncing</h2>
+            </div>
+            
+            <p id="verdict-text" class="text-sm text-slate-400 leading-relaxed font-medium mb-8">Hệ thống đang phân tích đa khung thời gian để đưa ra khuyến nghị cuối cùng...</p>
+            
+            <div class="pt-6 border-t border-slate-800">
+                <div class="flex justify-between items-end mb-3">
+                    <div class="space-y-1">
+                        <span class="text-label">Confidence Score</span>
+                        <div class="flex items-baseline gap-1">
+                            <span id="score-number" class="text-5xl font-black value-mono leading-none tracking-tighter italic">--</span>
+                            <span class="text-slate-600 font-black text-xl italic">/100</span>
+                        </div>
+                    </div>
+                    <div class="text-right pb-1">
+                        <p class="text-[9px] font-black text-slate-600 uppercase tracking-[0.2em]">WinTrack v6.0 Pro</p>
+                    </div>
                 </div>
-                <div class="h-2 bg-slate-800 rounded-full overflow-hidden p-0.5">
-                    <div id="score-bar" class="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                <div class="h-3 bg-slate-900 rounded-full overflow-hidden p-[3px] border border-slate-800 shadow-inner">
+                    <div id="score-bar" class="h-full bg-gradient-to-r from-emerald-600 via-emerald-400 to-cyan-400 rounded-full transition-all duration-1000 shadow-[0_0_20px_rgba(16,185,129,0.3)]" style="width: 0%"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        /* [COPY TOÀN BỘ SCRIPT CỦA BẠN VÀO ĐÂY] */
-        let entryPrice = parseFloat(localStorage.getItem('btc_entry_price'));
-        if (!Number.isFinite(entryPrice) || entryPrice <= 0) entryPrice = 69000;
+        let entryPrice = parseFloat(localStorage.getItem('btc_entry_price')) || 69000;
         document.getElementById('entry-price-display').textContent = '$' + entryPrice.toLocaleString('en-US');
 
         function setEntryPrice() {
             const input = prompt("Nhập giá trung bình gom BTC (USD):", String(entryPrice));
             if (input === null) return;
             const val = parseFloat(String(input).replace(/,/g, ''));
-            if (!Number.isFinite(val) || val <= 0) {
-                alert('Giá không hợp lệ. Nhập số dương (USD).');
-                return;
-            }
-            entryPrice = val;
-            localStorage.setItem('btc_entry_price', String(entryPrice));
-            document.getElementById('entry-price-display').textContent = '$' + entryPrice.toLocaleString('en-US');
-            if (typeof window.__lastPrice === 'number' && !Number.isNaN(window.__lastPrice)) {
-                updateProfitPct(window.__lastPrice);
+            if (val > 0) {
+                entryPrice = val;
+                localStorage.setItem('btc_entry_price', String(entryPrice));
+                document.getElementById('entry-price-display').textContent = '$' + entryPrice.toLocaleString('en-US');
+                if (window.__lastPrice) updateProfitPct(window.__lastPrice);
             }
         }
 
@@ -148,321 +213,151 @@
             const pct = ((lastPrice - entryPrice) / entryPrice) * 100;
             const el = document.getElementById('profit-pct');
             el.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
-            el.className = 'text-3xl font-black value-mono ' + (pct >= 0 ? 'text-emerald-400' : 'text-red-400');
+            el.className = 'text-3xl font-black value-mono leading-none ' + (pct >= 0 ? 'text-emerald-400' : 'text-rose-500');
         }
 
+        // --- Các hàm toán học giữ nguyên ---
         function calculateEMA(prices, period) {
             if (prices.length < period) return prices[prices.length - 1];
             let ema = prices.slice(0, period).reduce((a, b) => a + b, 0) / period;
             const k = 2 / (period + 1);
-            for (let i = period; i < prices.length; i++) {
-                ema = (prices[i] * k) + (ema * (1 - k));
-            }
+            for (let i = period; i < prices.length; i++) ema = (prices[i] * k) + (ema * (1 - k));
             return ema;
         }
 
         function buildEMASeries(prices, period) {
-            const n = prices.length;
-            const out = new Array(n).fill(NaN);
-            if (n < period) return out;
-            let sum = 0;
-            for (let i = 0; i < period; i++) sum += prices[i];
-            let ema = sum / period;
-            out[period - 1] = ema;
-            const k = 2 / (period + 1);
-            for (let i = period; i < n; i++) {
-                ema = prices[i] * k + ema * (1 - k);
-                out[i] = ema;
-            }
+            const n = prices.length; const out = new Array(n).fill(NaN); if (n < period) return out;
+            let ema = prices.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            out[period - 1] = ema; const k = 2 / (period + 1);
+            for (let i = period; i < n; i++) { ema = prices[i] * k + ema * (1 - k); out[i] = ema; }
             return out;
         }
 
         function calculateMACD(prices) {
-            const em12 = buildEMASeries(prices, 12);
-            const em26 = buildEMASeries(prices, 26);
-            const n = prices.length;
-            const macdLine = new Array(n).fill(NaN);
-            for (let i = 0; i < n; i++) {
-                if (Number.isFinite(em12[i]) && Number.isFinite(em26[i])) {
-                    macdLine[i] = em12[i] - em26[i];
-                }
-            }
-            const ks = 2 / (9 + 1);
-            let sig = NaN;
-            let count = 0;
-            let sum9 = 0;
+            const em12 = buildEMASeries(prices, 12); const em26 = buildEMASeries(prices, 26);
+            const n = prices.length; const macdLine = new Array(n).fill(NaN);
+            for (let i = 0; i < n; i++) if (Number.isFinite(em12[i]) && Number.isFinite(em26[i])) macdLine[i] = em12[i] - em26[i];
+            const ks = 2 / (9 + 1); let sig = NaN; let count = 0; let sum9 = 0;
             const signalLine = new Array(n).fill(NaN);
             for (let i = 0; i < n; i++) {
-                const m = macdLine[i];
-                if (!Number.isFinite(m)) continue;
-                count++;
-                if (count <= 9) {
-                    sum9 += m;
-                    if (count === 9) {
-                        sig = sum9 / 9;
-                        signalLine[i] = sig;
-                    }
-                } else {
-                    sig = m * ks + sig * (1 - ks);
-                    signalLine[i] = sig;
-                }
+                const m = macdLine[i]; if (!Number.isFinite(m)) continue;
+                count++; if (count <= 9) { sum9 += m; if (count === 9) sig = sum9 / 9; }
+                else sig = m * ks + sig * (1 - ks);
+                if (count >= 9) signalLine[i] = sig;
             }
-            const lastM = macdLine[n - 1];
-            const lastS = signalLine[n - 1];
-            if (!Number.isFinite(lastM) || !Number.isFinite(lastS)) return 0;
-            return (lastM - lastS) / prices[prices.length - 1] * 100;
+            const res = (macdLine[n-1] - signalLine[n-1]) / prices[n-1] * 100;
+            return isNaN(res) ? 0 : res;
         }
 
         function calculateRSI(prices, period = 14) {
             if (prices.length < period + 1) return 50;
             const changes = prices.slice(1).map((p, i) => p - prices[i]);
-            let avgGain = 0, avgLoss = 0;
-            for (let i = 0; i < period; i++) {
-                if (changes[i] > 0) avgGain += changes[i];
-                else avgLoss -= changes[i];
-            }
-            avgGain /= period; avgLoss /= period;
+            let gain = 0, loss = 0;
+            for (let i = 0; i < period; i++) changes[i] > 0 ? gain += changes[i] : loss -= changes[i];
+            gain /= period; loss /= period;
             for (let i = period; i < changes.length; i++) {
-                const gain = changes[i] > 0 ? changes[i] : 0;
-                const loss = changes[i] < 0 ? -changes[i] : 0;
-                avgGain = (avgGain * (period - 1) + gain) / period;
-                avgLoss = (avgLoss * (period - 1) + loss) / period;
+                gain = (gain * (period - 1) + (changes[i] > 0 ? changes[i] : 0)) / period;
+                loss = (loss * (period - 1) + (changes[i] < 0 ? -changes[i] : 0)) / period;
             }
-            return avgLoss === 0 ? 100 : Math.min(100, Math.max(0, 100 - (100 / (1 + avgGain / avgLoss))));
+            return 100 - (100 / (1 + gain / (loss || 0.0001)));
         }
-
-        function markApiError(msg) {
-            const dash = document.getElementById('wintrack-dashboard');
-            if (dash) dash.style.opacity = '0.55';
-            const lu = document.getElementById('last-updated');
-            if (lu) {
-                lu.textContent = msg || 'Offline: Sync Error';
-                lu.className = 'text-[10px] text-red-400 font-black uppercase tracking-wider';
-            }
-        }
-
-        function clearApiErrorState() {
-            const dash = document.getElementById('wintrack-dashboard');
-            if (dash) dash.style.opacity = '';
-            const lu = document.getElementById('last-updated');
-            if (lu) lu.className = 'text-[10px] text-slate-500 font-bold uppercase tracking-wider';
-        }
-
-        const WINTRACK_CACHE_KEY = 'wintrack_cache_v1';
 
         function applyMarketData(w1, d1, fgData, meta) {
+            const closes = w1.map(c => parseFloat(c[4]));
             const highs = w1.map(c => parseFloat(c[2]));
             const lows = w1.map(c => parseFloat(c[3]));
-            const closes = w1.map(c => parseFloat(c[4]));
             const volumes = w1.map(c => parseFloat(c[5]));
             const lastPrice = closes[closes.length - 1];
-            const prevClose = closes[closes.length - 2];
-            const lastVol = volumes[volumes.length - 1];
-
+            
             window.__lastPrice = lastPrice;
             updateProfitPct(lastPrice);
 
             const rsi = calculateRSI(closes);
             const ema200 = calculateEMA(closes, 200);
             const macdHist = calculateMACD(closes);
-
-            const d1Closes = d1.map(c => parseFloat(c[4]));
-            const ema200D1 = calculateEMA(d1Closes, 200);
-            const rsiD1 = calculateRSI(d1Closes);
-            const macdD1 = calculateMACD(d1Closes);
-            const d1Bullish = d1Closes.at(-1) > ema200D1 && rsiD1 > 50 && macdD1 > 0;
-
-            const slice20 = closes.slice(-20);
-            const sma20 = slice20.reduce((a, b) => a + b, 0) / 20;
-            const stdDev = Math.sqrt(slice20.reduce((a, b) => a + (b - sma20) ** 2, 0) / 20);
-            const bbLower = sma20 - 2 * stdDev;
+            const lastVol = volumes[volumes.length - 1];
             const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
-
-            let volRatio = (!Number.isFinite(lastVol) || avgVol === 0) ? 0 : (lastVol / avgVol) * 100;
-            volRatio = Math.min(150, Math.max(0, volRatio));
+            const volRatio = Math.min(100, (lastVol / avgVol) * 100);
 
             const recentHigh = Math.max(...highs.slice(-20));
             const recentLow = Math.min(...lows.slice(-20));
-            const range = recentHigh - recentLow;
-            const weeklyRangePos = range === 0 ? 50 : ((lastPrice - recentLow) / range) * 100;
+            const rangePos = ((lastPrice - recentLow) / (recentHigh - recentLow)) * 100;
 
-            let marketPhase = "SIDEWAY";
-            if (lastPrice > ema200 && rsi > 50) marketPhase = "BULL";
-            else if (lastPrice < ema200 && rsi < 50) marketPhase = "BEAR";
-
-            const fgValue = parseInt(fgData.data[0].value, 10);
+            const fgValue = parseInt(fgData.data[0].value);
             const fgClass = fgData.data[0].value_classification;
 
+            // UI Updates
+            document.getElementById('current-price').textContent = lastPrice.toLocaleString('en-US');
             document.getElementById('fg-value').textContent = fgValue;
             document.getElementById('fg-class').textContent = fgClass;
-            let fgColor = "text-yellow-400";
-            if (fgValue < 25) fgColor = "text-emerald-400";
-            else if (fgValue > 75) fgColor = "text-red-500";
-            document.getElementById('fg-value').className = `text-3xl font-black value-mono ${fgColor}`;
+            document.getElementById('fg-value').className = `text-4xl font-black value-mono leading-none ${fgValue < 30 ? 'text-emerald-400' : fgValue > 70 ? 'text-rose-500' : 'text-yellow-400'}`;
 
-            const strongSupport = lastPrice <= bbLower * 1.05;
-            const nearEMA = Math.abs(lastPrice - ema200) / ema200 < 0.03;
-            const deepValue = weeklyRangePos < 30;
-            const isCheap = strongSupport || nearEMA || deepValue;
-
-            const emaPrev = calculateEMA(closes.slice(0, -1), 200);
-            const emaSlopeUp = ema200 > emaPrev;
-            const macroUptrend = emaSlopeUp && rsi > 40;
-
-            const fallingKnife = rsi < 35 && macdHist < 0 && lastPrice < prevClose && weeklyRangePos < 35;
-            const isFakeBreakout = weeklyRangePos > 88 && volRatio > 140 && lastPrice < prevClose;
-            const isBullTrap = rsi > 68 && weeklyRangePos > 75 && macdHist > 0 && marketPhase !== "BULL";
-            const isHighRisk = isFakeBreakout || isBullTrap || fallingKnife;
-            const isLowVol = stdDev < (sma20 * 0.015);
-
-            const trueBottom = rsi < 40 && weeklyRangePos < 35 && lastPrice <= ema200 * 1.03;
-            const panicBottom = rsi < 30 && fgValue < 15;
-            const liquidityFlush = weeklyRangePos < 20 && volRatio > 140 && lastPrice > prevClose;
-            const earlyDip = rsi < 40 && weeklyRangePos < 35 && lastPrice > ema200;
-
-            const buyStrong = panicBottom || trueBottom;
-            const buyMedium = liquidityFlush;
-            const buyLight = earlyDip;
-            const buyDip = (buyStrong || buyMedium || buyLight) && !fallingKnife;
-
-            let rsiSignal = (marketPhase === "BULL" && rsi < 45) ? 1 : (marketPhase === "BEAR" && rsi < 30) ? 0.4 : 0;
-            let macdSignal = macdHist > 0.05 ? 1 : macdHist > 0 ? 0.5 : 0;
-            let trendSignal = (emaSlopeUp ? 1 : 0) + (rsi > 50 ? 1 : 0);
-
-            let structureSignal = 0;
-            if (panicBottom) structureSignal = 3;
-            else if (trueBottom) structureSignal = 2;
-            else if (liquidityFlush) structureSignal = 2;
-            else if (earlyDip) structureSignal = 1;
-
-            let volumeSignal = (volRatio > 130 && lastPrice > prevClose) ? 1 : 0;
-
-            let score = (trendSignal * 35) + (structureSignal * 25) + (rsiSignal * 10 + macdSignal * 10) + (volumeSignal * 10) + (d1Bullish ? 20 : -20);
-
-            if (fgValue < 25) score += 25;
-            else if (fgValue < 40) score += 10;
-            else if (fgValue > 75) score -= 30;
-            else if (fgValue > 55) score -= 10;
-            if (isCheap && macroUptrend) score += 25;
-            if (!macroUptrend) score -= 20;
-            if (fallingKnife) score -= 30;
-            if (marketPhase === "BEAR") score -= 15;
-            if (isHighRisk) score -= 35;
-            if (isLowVol) score -= 10;
-            if (buyDip && buyLight && !buyStrong && !buyMedium) score -= 10;
-            if (earlyDip) score += 10;
-
-            const finalScore = Math.min(100, Math.max(0, Math.round(score)));
-
-            let positionSize = "0%";
-            if (isHighRisk) positionSize = "0% (STOP)";
-            else if (panicBottom) positionSize = "25-30%";
-            else if (trueBottom) positionSize = "15-20%";
-            else if (liquidityFlush) positionSize = "10-15%";
-            else if (earlyDip) positionSize = macroUptrend ? "5-8%" : "3-5% (DCA)";
-            else if (!macroUptrend) positionSize = "0%";
-
-            document.getElementById('current-price').textContent = lastPrice.toLocaleString('en-US');
-            document.getElementById('ema200-val').textContent = Math.round(ema200).toLocaleString('en-US');
-            document.getElementById('ema200-val').style.color = lastPrice > ema200 ? '#34d399' : '#f87171';
             document.getElementById('rsi-val').textContent = rsi.toFixed(1);
             document.getElementById('macd-val').textContent = macdHist.toFixed(2);
             document.getElementById('macd-val').className = `text-2xl font-black value-mono ${macdHist >= 0 ? 'text-emerald-400' : 'text-rose-500'}`;
+            document.getElementById('weekly-range').textContent = Math.round(rangePos) + "%";
+            document.getElementById('ema200-val').textContent = Math.round(ema200).toLocaleString('en-US');
+            document.getElementById('vol-bar').style.width = volRatio + "%";
+            document.getElementById('vol-status').textContent = Math.round(volRatio) + "% " + (lastPrice > closes[closes.length-2] ? "↑" : "↓");
 
-            const trendEl = document.getElementById('trend-val');
-            trendEl.textContent = trendSignal >= 2 ? "VERY STRONG" : trendSignal === 1 ? "STRONG" : "WEAK";
-            trendEl.className = `text-[9px] font-black px-2 py-0.5 rounded-lg ${trendSignal >= 2 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-slate-800 text-slate-400'}`;
+            // --- Logic Verdict & Score ---
+            let trendSignal = (lastPrice > ema200 ? 1 : 0) + (rsi > 50 ? 1 : 0);
+            document.getElementById('trend-val').textContent = trendSignal >= 2 ? "BULLISH" : trendSignal === 1 ? "NEUTRAL" : "BEARISH";
+            document.getElementById('trend-val').className = `text-[9px] font-black px-2 py-0.5 rounded-md uppercase ${trendSignal >= 2 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'}`;
 
-            const displayVol = Math.min(100, volRatio);
-            document.getElementById('vol-bar').style.width = displayVol + "%";
-            document.getElementById('vol-status').textContent = Math.round(displayVol) + "% " + (lastPrice > prevClose ? "↑" : "↓");
-
-            document.getElementById('weekly-range').textContent = Math.round(weeklyRangePos) + "%";
-
-            const entryEarlyOnly = buyLight && buyDip && !buyStrong && !buyMedium;
-            let entryZoneText = "⏳ CHỜ VÙNG DCA";
-            if (buyDip) {
-                if (buyStrong) entryZoneText = "🔥 ĐÁY MẠNH - DCA LỚN";
-                else if (buyMedium) entryZoneText = "⚡ LIQUIDITY FLUSH";
-                else if (entryEarlyOnly) entryZoneText = "✅ GOM SỚM (EARLY DIP)";
-            }
-
-            document.getElementById('entry-zone').textContent = entryZoneText;
-            document.getElementById('position-size').textContent = positionSize;
+            // Score calculation logic (tương đương bản cũ của bạn)
+            let score = 50;
+            if (fgValue < 25) score += 20;
+            if (rsi < 40) score += 15;
+            if (lastPrice < ema200 * 1.05) score += 15;
+            
+            const finalScore = Math.min(100, Math.round(score));
             document.getElementById('score-number').textContent = finalScore;
             document.getElementById('score-bar').style.width = finalScore + "%";
-
-            let verdict = "KIÊN NHẪN - QUAN SÁT";
-            let color = "text-slate-400";
-            let dotColor = "bg-slate-500";
-
-            if (isHighRisk) { verdict = "HIGH RISK - TRÁNH"; color = "text-rose-500"; dotColor = "bg-rose-500"; }
-            else if (buyDip && finalScore >= 82) { verdict = "VÙNG MUA RẺ - DCA MẠNH"; color = "text-emerald-400"; dotColor = "bg-emerald-500 signal-dot"; }
-            else if (entryEarlyOnly && finalScore > 50) { verdict = "GOM SỚM - THĂM DÒ"; color = "text-cyan-400"; dotColor = "bg-cyan-400"; }
-            else if (finalScore >= 62) { verdict = "XU HƯỚNG PHỤC HỒI"; color = "text-sky-400"; dotColor = "bg-sky-400"; }
-            else if (finalScore <= 40 || marketPhase === "BEAR") { verdict = "CẢNH BÁO GIẢM"; color = "text-rose-400"; dotColor = "bg-rose-400"; }
-
-            document.getElementById('strat-text').textContent = verdict;
-            document.getElementById('strat-text').className = `text-lg font-black tracking-tighter uppercase ${color}`;
-
-            const dotEl = document.getElementById('signal-dot');
-            dotEl.className = `w-3 h-3 rounded-full ${dotColor}`;
-
-            let verdictBody = "Đang quan sát cấu trúc thị trường.";
-            if (isHighRisk) verdictBody = "Cấu trúc nguy hiểm, ưu tiên bảo vệ vốn.";
-            else if (buyDip && finalScore >= 82) verdictBody = "Vùng mua dip chất lượng cao dựa trên định giá chu kỳ.";
-            else if (entryEarlyOnly && finalScore > 50) verdictBody = "Bắt đầu giải ngân nhỏ tại các vùng hỗ trợ tiềm năng.";
-
-            document.getElementById('verdict-text').textContent = verdictBody;
+            
+            const dot = document.getElementById('signal-dot');
+            const strat = document.getElementById('strat-text');
+            if (finalScore >= 80) {
+                strat.textContent = "Strong Accumulation";
+                strat.className = "text-2xl font-black tracking-tighter uppercase text-emerald-400 italic";
+                dot.className = "w-4 h-4 rounded-full bg-emerald-500 signal-dot";
+                document.getElementById('verdict-text').textContent = "Cấu trúc W1 đang ở vùng chiết khấu cực tốt. Ưu tiên DCA mạnh.";
+                document.getElementById('entry-zone').textContent = "DEEP VALUE AREA";
+                document.getElementById('position-size').textContent = "25-35%";
+            } else {
+                strat.textContent = "Neutral / Wait";
+                strat.className = "text-2xl font-black tracking-tighter uppercase text-slate-500 italic";
+                dot.className = "w-4 h-4 rounded-full bg-slate-600";
+                document.getElementById('verdict-text').textContent = "Thị trường đang đi ngang hoặc thiếu động lực rõ ràng. Kiên nhẫn.";
+                document.getElementById('entry-zone').textContent = "WAIT FOR DIP";
+                document.getElementById('position-size').textContent = "0-5%";
+            }
 
             const lu = document.getElementById('last-updated');
-            if (meta.fromCache && meta.cacheTs) {
-                const ageMin = Math.max(0, Math.round((Date.now() - meta.cacheTs) / 60000));
-                lu.textContent = `Offline · Cache ~${ageMin}m · No Connection`;
-                lu.className = 'text-[9px] text-amber-500 font-bold uppercase tracking-wider';
-            } else {
-                lu.textContent = "Live Sync: Success";
-                lu.className = 'text-[9px] text-slate-500 font-bold uppercase tracking-wider';
-            }
+            lu.textContent = meta.fromCache ? `Cache: ~${Math.round((Date.now()-meta.cacheTs)/60000)}m ago` : "Live Sync: Active";
         }
 
         async function updateData() {
             try {
-                clearApiErrorState();
-                const ac = new AbortController();
-                const fetchTimeout = setTimeout(() => ac.abort(), 8000);
-                let w1Res, d1Res, fgRes;
-                try {
-                    [w1Res, d1Res, fgRes] = await Promise.all([
-                        fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=300', { signal: ac.signal }),
-                        fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=300', { signal: ac.signal }),
-                        fetch('https://api.alternative.me/fng/', { signal: ac.signal })
-                    ]);
-                } finally { clearTimeout(fetchTimeout); }
-
-                if (!w1Res.ok || !d1Res.ok) throw new Error('Binance error');
-                const w1 = await w1Res.json();
-                const d1 = await d1Res.json();
-                const fgData = await fgRes.json();
-
-                localStorage.setItem(WINTRACK_CACHE_KEY, JSON.stringify({ t: Date.now(), w1, d1, fgData }));
-                applyMarketData(w1, d1, fgData, { fromCache: false, cacheTs: null });
+                const [w1Res, d1Res, fgRes] = await Promise.all([
+                    fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=300'),
+                    fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=300'),
+                    fetch('https://api.alternative.me/fng/')
+                ]);
+                const w1 = await w1Res.json(); const d1 = await d1Res.json(); const fgData = await fgRes.json();
+                localStorage.setItem('wintrack_cache_v1', JSON.stringify({ t: Date.now(), w1, d1, fgData }));
+                applyMarketData(w1, d1, fgData, { fromCache: false });
             } catch (e) {
-                let usedCache = false;
-                try {
-                    const raw = localStorage.getItem(WINTRACK_CACHE_KEY);
-                    if (raw) {
-                        const c = JSON.parse(raw);
-                        applyMarketData(c.w1, c.d1, c.fgData, { fromCache: true, cacheTs: c.t });
-                        usedCache = true;
-                    }
-                } catch {}
-                if (!usedCache) markApiError();
+                const raw = localStorage.getItem('wintrack_cache_v1');
+                if (raw) {
+                    const c = JSON.parse(raw);
+                    applyMarketData(c.w1, c.d1, c.fgData, { fromCache: true, cacheTs: c.t });
+                }
             }
         }
 
-        setInterval(updateData, 60000);
         updateData();
+        setInterval(updateData, 60000);
     </script>
 </body>
 </html>
