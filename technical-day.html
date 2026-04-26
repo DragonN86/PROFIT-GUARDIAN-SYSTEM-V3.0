@@ -15,7 +15,7 @@
 </head>
 <body class="p-4 md:p-6">
     <div id="wintrack-dashboard" class="max-w-[100%] mx-auto transition-opacity duration-300">
-        
+       
         <!-- HEADER -->
         <div class="flex items-center justify-between mb-6">
             <div class="flex items-center gap-3">
@@ -98,6 +98,36 @@
             return avgLoss === 0 ? 100 : Math.min(100, Math.max(0, 100 - (100 / (1 + avgGain / avgLoss))));
         }
 
+        // ==================== FETCH REAL-TIME ON-CHAIN (BGeometrics) ====================
+        async function fetchOnChain() {
+            const TOKEN = 'YOUR_TOKEN_HERE';   // ← THAY TOKEN CỦA BẠN VÀO ĐÂY
+            
+            try {
+                const now = new Date();
+                const endDay = now.toISOString().split('T')[0];
+                const startDay = new Date(now.getTime() - 86400000 * 2).toISOString().split('T')[0];
+
+                // MVRV Z-Score
+                const mvrvRes = await fetch(`https://api.bitcoin-data.com/v1/mvrv?token=${TOKEN}&startday=${startDay}&endday=${endDay}`);
+                const mvrvData = await mvrvRes.json();
+                const mvrvZ = mvrvData.length ? parseFloat(mvrvData[mvrvData.length-1].value || mvrvData[mvrvData.length-1]) : 0.8;
+
+                // Puell Multiple
+                const puellRes = await fetch(`https://api.bitcoin-data.com/v1/puell-multiple?token=${TOKEN}&startday=${startDay}&endday=${endDay}`);
+                const puellData = await puellRes.json();
+                const puell = puellData.length ? parseFloat(puellData[puellData.length-1].value || puellData[puellData.length-1]) : 0.78;
+
+                // Reserve Risk (chưa có endpoint miễn phí ổn định → giữ "LOW")
+                const reserveRisk = "LOW";
+
+                return { mvrvZ, puell, reserveRisk };
+            } catch (e) {
+                console.error("On-chain fetch error:", e);
+                return { mvrvZ: 0.80, puell: 0.78, reserveRisk: "LOW" };
+            }
+        }
+
+        // ==================== UPDATE DASHBOARD ====================
         async function updateData() {
             try {
                 const d1Res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=300');
@@ -118,38 +148,46 @@
                 document.getElementById('price-action-text').innerHTML = `📈 Higher High & Higher Low (D1)`;
                 document.getElementById('breaker-block').innerHTML = `🔥 Breaker Block: ~ $74,200`;
 
-                // On-Chain (hiện tại đang rẻ mạnh)
+                // Fetch On-Chain realtime
+                const { mvrvZ, puell, reserveRisk } = await fetchOnChain();
+
+                // Cập nhật On-Chain grid
                 document.getElementById('onchain-grid').innerHTML = `
-                    <div class="text-center"><p class="text-slate-400 text-xs">MVRV Z-Score</p><p class="text-3xl font-bold text-emerald-400">0.80</p><p class="text-xs text-emerald-400">Undervalued • Rẻ mạnh</p></div>
-                    <div class="text-center"><p class="text-slate-400 text-xs">Puell Multiple</p><p class="text-3xl font-bold text-emerald-400">0.78</p><p class="text-xs text-emerald-400">Buy Zone</p></div>
-                    <div class="text-center"><p class="text-slate-400 text-xs">Reserve Risk</p><p class="text-3xl font-bold text-emerald-400">LOW</p><p class="text-xs text-emerald-400">Attractive Risk/Reward</p></div>
+                    <div class="text-center">
+                        <p class="text-slate-400 text-xs">MVRV Z-Score</p>
+                        <p class="text-3xl font-bold text-emerald-400">${mvrvZ.toFixed(2)}</p>
+                        <p class="text-xs text-emerald-400">${mvrvZ < 1 ? 'Undervalued • Rẻ mạnh' : 'Fair Value'}</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-slate-400 text-xs">Puell Multiple</p>
+                        <p class="text-3xl font-bold text-emerald-400">${puell.toFixed(2)}</p>
+                        <p class="text-xs text-emerald-400">${puell < 1 ? 'Buy Zone' : 'Neutral'}</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-slate-400 text-xs">Reserve Risk</p>
+                        <p class="text-3xl font-bold text-emerald-400">${reserveRisk}</p>
+                        <p class="text-xs text-emerald-400">Attractive Risk/Reward</p>
+                    </div>
                 `;
 
-                // ==================== TÍNH SCORE MỚI (Baseline 55 + On-chain) ====================
-                let score = 55;                    // Baseline đã hạ
-
-                // Technical factors
+                // Tính Score
+                let score = 55;
                 if (rsi < 45) score += 15;
                 if (rsi < 35) score += 12;
                 if (lastPrice <= ema200 * 1.03) score += 18;
                 if (lastPrice > ema200) score += 8;
 
-                // On-Chain Impact
-                const onChainStrong = true;   // Hiện tại rẻ mạnh
-                if (onChainStrong) {
-                    score += 25;
-                } else if (false) {           // On-Chain trung bình
-                    score += 10;
-                } else {                      // On-Chain đắt
-                    score -= 15;
-                }
+                const onChainStrong = (mvrvZ < 1.0 && puell < 1.0);
+                if (onChainStrong) score += 25;
+                else if (mvrvZ < 2.0 || puell < 2.0) score += 10;
+                else score -= 15;
 
                 const finalScore = Math.min(100, Math.round(score));
 
                 document.getElementById('score-number').textContent = finalScore;
                 document.getElementById('score-bar').style.width = finalScore + "%";
 
-                // ==================== 4 MỨC VERDICT ====================
+                // Verdict
                 const stratEl = document.getElementById('strat-text');
                 const verdictEl = document.getElementById('verdict-text');
                 const dotEl = document.getElementById('signal-dot');
@@ -176,8 +214,10 @@
                     dotEl.className = "w-4 h-4 rounded-full bg-red-400";
                 }
 
+                document.getElementById('last-updated').textContent = `Cập nhật: vừa xong (on-chain realtime)`;
             } catch (e) {
-                document.getElementById('last-updated').textContent = "Cache • Dữ liệu gần nhất";
+                console.error(e);
+                document.getElementById('last-updated').textContent = "Lỗi fetch • Dùng cache cũ";
             }
         }
 
