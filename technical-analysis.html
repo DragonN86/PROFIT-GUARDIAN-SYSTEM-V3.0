@@ -7,65 +7,58 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&display=swap');
-        
+       
         :root {
             --bg-deep: #020617;
-            --panel-bg: rgba(15, 23, 42, 0.8);
-            --border-color: rgba(255, 255, 255, 0.05);
+            --panel-bg: rgba(15, 23, 42, 0.85);
+            --border-color: rgba(255, 255, 255, 0.06);
         }
-
-        body { 
-            background: var(--bg-deep); 
-            font-family: 'Inter', sans-serif; 
-            color: #f1f5f9; 
-            -webkit-font-smoothing: antialiased; 
+        body {
+            background: var(--bg-deep);
+            font-family: 'Inter', sans-serif;
+            color: #f1f5f9;
+            -webkit-font-smoothing: antialiased;
         }
-        
-        .panel { 
-            background: var(--panel-bg); 
-            border: 1px solid var(--border-color); 
-            border-radius: 12px; 
+       
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
             position: relative;
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(12px);
             transition: all 0.3s ease;
         }
-
-        .text-label { 
-            font-size: 9px; 
-            font-weight: 800; 
-            color: #64748b; 
-            text-transform: uppercase; 
-            letter-spacing: 0.15em; 
+        .text-label {
+            font-size: 9px;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
         }
-
         .value-mono { font-family: 'ui-monospace', monospace; }
-        
-        .bar-container { 
-            height: 6px; 
-            background: #020617; 
-            border-radius: 99px; 
+       
+        .bar-container {
+            height: 6px;
+            background: #020617;
+            border-radius: 9999px;
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.03);
         }
-
-        .bar-fill { 
-            height: 100%; 
-            border-radius: 99px; 
-            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1); 
+        .bar-fill {
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        .lvl-strong { border-left: 5px solid #10b981; box-shadow: inset 10px 0 20px -10px rgba(16, 185, 129, 0.2); }
-        .lvl-good { border-left: 5px solid #22d3ee; box-shadow: inset 10px 0 20px -10px rgba(34, 211, 238, 0.15); }
+        .lvl-strong { border-left: 5px solid #10b981; }
+        .lvl-good { border-left: 5px solid #22d3ee; }
         .lvl-wait { border-left: 5px solid #64748b; }
-        .lvl-risk { border-left: 5px solid #f43f5e; box-shadow: inset 10px 0 20px -10px rgba(244, 63, 94, 0.15); }
-
-        .glow-emerald { text-shadow: 0 0 15px rgba(16, 185, 129, 0.5); }
-        .glow-text { text-shadow: 0 0 15px currentColor; }
+        .lvl-risk { border-left: 5px solid #f43f5e; }
+        .glow-emerald { text-shadow: 0 0 15px rgba(16, 185, 129, 0.6); }
     </style>
 </head>
 <body class="p-3 sm:p-8">
     <div id="wintrack-dashboard" class="max-w-xl mx-auto space-y-4">
-        
+       
         <div class="flex justify-between items-end px-1 mb-4">
             <div>
                 <h1 class="text-white font-black text-2xl tracking-tighter uppercase italic leading-none">WinTrack <span class="text-emerald-500">W1</span></h1>
@@ -81,7 +74,7 @@
             <div class="panel p-4">
                 <div class="flex justify-between items-start mb-1">
                     <span class="text-label italic">PnL Performance</span>
-                    <button onclick="setEntryPrice()" class="text-[8px] font-black bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded hover:bg-slate-700 transition-all uppercase">Edit</button>
+                    <button onclick="setEntryPrice()" class="text-[8px] font-black bg-slate-800 text-slate-400 px-2 py-0.5 rounded hover:bg-slate-700 transition-all uppercase">Edit</button>
                 </div>
                 <div class="flex items-baseline gap-2">
                     <span id="profit-pct" class="text-3xl font-black value-mono text-emerald-400 tracking-tight">+0.00%</span>
@@ -154,27 +147,26 @@
                 </div>
                 <h2 id="strat-text" class="text-xl font-black tracking-tight uppercase italic leading-none">---</h2>
             </div>
-            
+           
             <p id="verdict-text" class="text-slate-400 text-sm leading-relaxed font-medium italic mb-6 border-l border-slate-700 pl-4"></p>
-            
+           
             <div class="pt-5 border-t border-white/5 flex flex-row items-center gap-6">
                 <div class="flex items-center gap-3">
                     <div class="flex flex-col">
                         <p class="text-label mb-1">Confidence</p>
                         <div class="flex items-baseline gap-1">
-                            <span id="score-number" class="text-4xl font-black value-mono tracking-tighter italic leading-none glow-text">--</span>
+                            <span id="score-number" class="text-4xl font-black value-mono tracking-tighter italic leading-none glow-emerald">--</span>
                             <span class="text-slate-600 font-bold text-xs italic">/100</span>
                         </div>
                     </div>
                 </div>
-
                 <div class="flex-grow space-y-2">
                     <div class="flex justify-between items-end">
                         <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Risk/Reward Alpha</span>
                         <span class="text-[9px] font-black text-slate-600 italic opacity-60 uppercase leading-none">Verified</span>
                     </div>
                     <div class="bar-container h-2">
-                        <div id="score-bar" class="bar-fill"></div>
+                        <div id="score-bar" class="bar-fill bg-emerald-500"></div>
                     </div>
                 </div>
             </div>
@@ -184,7 +176,8 @@
     <script>
         let entryPrice = parseFloat(localStorage.getItem('btc_entry_price')) || 69000;
         document.getElementById('entry-price-display').textContent = 'Avg: $' + entryPrice.toLocaleString('en-US');
-        const CACHE_KEY = 'wintrack_w1_v6_pro';
+
+        const CACHE_KEY = 'wintrack_w1_v7_pro';
 
         function setEntryPrice() {
             const input = prompt("Nhập giá trung bình gom BTC (USD):", String(entryPrice));
@@ -205,52 +198,77 @@
             el.className = `text-3xl font-black value-mono tracking-tight ${pct >= 0 ? 'text-emerald-400' : 'text-rose-500'}`;
         }
 
-        const calculateEMA = (ps, p) => ps.length < p ? ps[ps.length - 1] : ps.slice(p).reduce((e, v) => (v * (2 / (p + 1))) + (e * (1 - (2 / (p + 1)))), ps.slice(0, p).reduce((a, b) => a + b, 0) / p);
-        
+        // ==================== INDICATORS ====================
+
+        function calculateEMA(prices, period) {
+            if (prices.length < period) return prices[prices.length - 1] || 0;
+            
+            let ema = prices.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            const multiplier = 2 / (period + 1);
+            
+            for (let i = period; i < prices.length; i++) {
+                ema = prices[i] * multiplier + ema * (1 - multiplier);
+            }
+            return ema;
+        }
+
         function calculateRSI(prices, period = 14) {
             if (prices.length < period + 1) return 50;
-            const changes = prices.slice(1).map((p, i) => p - prices[i]);
-            let gain = 0, loss = 0;
-            for (let i = 0; i < period; i++) changes[i] > 0 ? gain += changes[i] : loss -= changes[i];
-            gain /= period; loss /= period;
-            for (let i = period; i < changes.length; i++) {
-                gain = (gain * (period - 1) + (changes[i] > 0 ? changes[i] : 0)) / period;
-                loss = (loss * (period - 1) + (changes[i] < 0 ? -changes[i] : 0)) / period;
+
+            let gains = 0, losses = 0;
+            for (let i = 1; i <= period; i++) {
+                const change = prices[i] - prices[i - 1];
+                if (change > 0) gains += change;
+                else losses -= change;
             }
-            return 100 - (100 / (1 + gain / (loss || 0.0001)));
+
+            let avgGain = gains / period;
+            let avgLoss = losses / period;
+
+            for (let i = period + 1; i < prices.length; i++) {
+                const change = prices[i] - prices[i - 1];
+                avgGain = (avgGain * (period - 1) + Math.max(change, 0)) / period;
+                avgLoss = (avgLoss * (period - 1) + Math.max(-change, 0)) / period;
+            }
+
+            if (avgLoss === 0) return 100;
+            const rs = avgGain / avgLoss;
+            return 100 - (100 / (1 + rs));
         }
 
         function calculateMACD(prices) {
-            const buildEMA = (ps, p) => {
-                const out = new Array(ps.length).fill(NaN); if (ps.length < p) return out;
-                let ema = ps.slice(0, p).reduce((a, b) => a + b, 0) / p;
-                out[p-1] = ema; const k = 2 / (p + 1);
-                for (let i = p; i < ps.length; i++) { ema = ps[i] * k + ema * (1 - k); out[i] = ema; }
-                return out;
-            };
-            const e12 = buildEMA(prices, 12); const e26 = buildEMA(prices, 26);
-            const line = e12.map((v, i) => v - e26[i]);
-            const sig = buildEMA(line.filter(v => !isNaN(v)), 9);
-            const res = (line.at(-1) - (sig.at(-1) || 0)) / prices.at(-1) * 100;
-            return isNaN(res) ? 0 : res;
+            if (prices.length < 35) return 0;
+            const ema12 = calculateEMA(prices, 12);
+            const ema26 = calculateEMA(prices, 26);
+            const macdLine = ema12 - ema26;
+            return macdLine; // Histogram approximation (có thể mở rộng sau)
         }
 
-        function applyMarketData(w1, d1, fgData, meta) {
+        // ==================== MAIN LOGIC ====================
+
+        function applyMarketData(w1, fgData, meta) {
             const closes = w1.map(c => parseFloat(c[4]));
             const highs = w1.map(c => parseFloat(c[2]));
             const lows = w1.map(c => parseFloat(c[3]));
             const lastPrice = closes.at(-1);
-            
+
             window.__lastPrice = lastPrice;
             updateProfitPct(lastPrice);
 
             const rsi = calculateRSI(closes);
             const ema200 = calculateEMA(closes, 200);
             const macdHist = calculateMACD(closes);
-            const volRatio = Math.min(100, (parseFloat(w1.at(-1)[5]) / (w1.slice(-20).reduce((a, b) => a + parseFloat(b[5]), 0) / 20)) * 100);
-            const rangePos = ((lastPrice - Math.min(...lows.slice(-20))) / (Math.max(...highs.slice(-20)) - Math.min(...lows.slice(-20)))) * 100;
+            
+            const avgVol20 = w1.slice(-20).reduce((a, b) => a + parseFloat(b[5]), 0) / 20;
+            const volRatio = Math.min(180, (parseFloat(w1.at(-1)[5]) / avgVol20) * 100);
+            
+            const recentLows = Math.min(...lows.slice(-20));
+            const recentHighs = Math.max(...highs.slice(-20));
+            const rangePos = ((lastPrice - recentLows) / (recentHighs - recentLows)) * 100;
+
             const fgValue = parseInt(fgData.data[0].value);
 
+            // Update UI
             document.getElementById('current-price').textContent = lastPrice.toLocaleString('en-US');
             document.getElementById('fg-value').textContent = fgValue;
             document.getElementById('fg-class').textContent = fgData.data[0].value_classification;
@@ -258,16 +276,42 @@
             document.getElementById('macd-val').textContent = macdHist.toFixed(2);
             document.getElementById('weekly-range').textContent = Math.round(rangePos) + "%";
             document.getElementById('ema200-val').textContent = Math.round(ema200).toLocaleString('en-US');
-            document.getElementById('vol-bar').style.width = volRatio + "%";
+            document.getElementById('vol-bar').style.width = Math.min(100, volRatio) + "%";
             document.getElementById('vol-status').textContent = Math.round(volRatio) + "%";
-            document.getElementById('trend-val').textContent = lastPrice > ema200 ? (rsi > 50 ? "BULLISH" : "STRENGTHENING") : "BEARISH";
 
+            const isBullish = lastPrice > ema200;
+            document.getElementById('trend-val').textContent = isBullish ? (rsi > 55 ? "STRONG BULL" : "BULLISH") : "BEARISH";
+            document.getElementById('trend-val').className = `text-[9px] font-black px-2 py-1 rounded uppercase tracking-widest ${isBullish ? 'bg-emerald-900 text-emerald-400' : 'bg-rose-900 text-rose-400'}`;
+
+            // ==================== ADVANCED SCORING ====================
             let score = 50;
-            if (fgValue < 25) score += 20; else if (fgValue < 40) score += 10;
-            if (rsi < 40) score += 15; else if (rsi < 50) score += 5;
-            if (lastPrice < ema200 * 1.05) score += 15;
-            const finalScore = Math.min(100, Math.round(score));
 
+            // Fear & Greed
+            if (fgValue <= 20) score += 25;
+            else if (fgValue <= 35) score += 15;
+            else if (fgValue >= 80) score -= 25;
+            else if (fgValue >= 70) score -= 15;
+
+            // RSI
+            if (rsi <= 35) score += 20;
+            else if (rsi <= 45) score += 10;
+            else if (rsi >= 78) score -= 25;
+            else if (rsi >= 68) score -= 15;
+
+            // Price Position vs EMA200
+            const discount = (ema200 - lastPrice) / ema200;
+            if (discount > 0.12) score += 22;
+            else if (discount > 0.05) score += 14;
+            else if (discount < -0.25) score -= 20;
+
+            // Volume & Range
+            if (volRatio > 130) score += 8;
+            if (rangePos < 30) score += 12;
+            if (rangePos > 85) score -= 10;
+
+            const finalScore = Math.max(10, Math.min(100, Math.round(score)));
+
+            // Render Verdict
             const box = document.getElementById('verdict-box');
             const dot = document.getElementById('signal-dot');
             const dotPing = document.getElementById('signal-dot-ping');
@@ -278,78 +322,86 @@
 
             sNum.textContent = finalScore;
             sBar.style.width = finalScore + "%";
+
             box.classList.remove('lvl-strong', 'lvl-good', 'lvl-wait', 'lvl-risk');
 
-            if (finalScore >= 80) {
+            if (finalScore >= 82) {
                 box.classList.add('lvl-strong');
                 strat.textContent = "🔥 STRONG DCA SIGNAL";
-                strat.className = "text-xl font-black tracking-tight uppercase italic text-emerald-400 glow-text";
-                verdict.textContent = "Cấu trúc W1 đạt vùng chiết khấu cực đại. Đây là cơ hội tích lũy dài hạn hiếm gặp.";
-                dot.className = "relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-[0_0_10px_#10b981]";
+                strat.className = "text-xl font-black tracking-tight uppercase italic text-emerald-400 glow-emerald";
+                verdict.textContent = "Cơ hội tích lũy dài hạn cực mạnh. Thị trường đang ở vùng chiết khấu sâu trên khung W1.";
+                dot.className = "relative inline-flex rounded-full h-3 w-3 bg-emerald-500";
                 dotPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75";
-                sBar.className = "bar-fill bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.4)]";
-                sNum.className = "text-4xl font-black value-mono tracking-tighter italic leading-none text-emerald-400 glow-text";
+                sBar.className = "bar-fill bg-emerald-500";
+                sNum.className = "text-4xl font-black value-mono tracking-tighter italic leading-none text-emerald-400 glow-emerald";
                 document.getElementById('entry-zone').textContent = "DEEP VALUE AREA";
-                document.getElementById('position-size').textContent = "25-35%";
-            } else if (finalScore >= 65) {
+                document.getElementById('position-size').textContent = "25-40%";
+            } 
+            else if (finalScore >= 65) {
                 box.classList.add('lvl-good');
                 strat.textContent = "✅ SAFE ACCUMULATE";
                 strat.className = "text-xl font-black tracking-tight uppercase italic text-cyan-400";
-                verdict.textContent = "Định giá thị trường đang ở mức rẻ. Phù hợp để gia tăng vị thế DCA đều đặn.";
-                dot.className = "relative inline-flex rounded-full h-3 w-3 bg-cyan-400 shadow-[0_0_10px_#22d3ee]";
+                verdict.textContent = "Điều kiện mua DCA tốt. Nên gia tăng vị thế dần dần.";
+                dot.className = "relative inline-flex rounded-full h-3 w-3 bg-cyan-400";
                 dotPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75";
                 sBar.className = "bar-fill bg-cyan-400";
                 sNum.className = "text-4xl font-black value-mono tracking-tighter italic leading-none text-cyan-400";
-                document.getElementById('entry-zone').textContent = "CONSISTENT DCA";
-                document.getElementById('position-size').textContent = "10-15%";
-            } else if (finalScore >= 45) {
+                document.getElementById('entry-zone').textContent = "GOOD ACCUMULATION";
+                document.getElementById('position-size').textContent = "12-20%";
+            } 
+            else if (finalScore >= 45) {
                 box.classList.add('lvl-wait');
                 strat.textContent = "⏳ HOLD / OBSERVING";
                 strat.className = "text-xl font-black tracking-tight uppercase italic text-slate-500";
-                verdict.textContent = "Chưa có tín hiệu gom hàng rõ ràng. Ưu tiên giữ tiền mặt và quan sát vùng hỗ trợ.";
+                verdict.textContent = "Chưa có tín hiệu rõ ràng. Ưu tiên giữ tiền mặt và chờ thêm xác nhận.";
                 dot.className = "relative inline-flex rounded-full h-3 w-3 bg-slate-600";
                 dotPing.className = "hidden";
                 sBar.className = "bar-fill bg-slate-600";
                 sNum.className = "text-4xl font-black value-mono tracking-tighter italic leading-none text-slate-500";
-                document.getElementById('entry-zone').textContent = "WAIT FOR DIP";
-                document.getElementById('position-size').textContent = "0-5%";
-            } else {
+                document.getElementById('entry-zone').textContent = "WAIT FOR BETTER DIP";
+                document.getElementById('position-size').textContent = "0-8%";
+            } 
+            else {
                 box.classList.add('lvl-risk');
-                strat.textContent = "⚠️ HIGH RISK / CAUTION";
+                strat.textContent = "⚠️ HIGH RISK";
                 strat.className = "text-xl font-black tracking-tight uppercase italic text-rose-500";
-                verdict.textContent = "Thị trường đang hưng phấn quá mức hoặc cấu trúc suy yếu. Tuyệt đối không mua đuổi.";
-                dot.className = "relative inline-flex rounded-full h-3 w-3 bg-rose-500 shadow-[0_0_10px_#f43f5e]";
+                verdict.textContent = "Thị trường đang rủi ro cao. Không nên mua mới lúc này.";
+                dot.className = "relative inline-flex rounded-full h-3 w-3 bg-rose-500";
                 dotPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75";
                 sBar.className = "bar-fill bg-rose-500";
                 sNum.className = "text-4xl font-black value-mono tracking-tighter italic leading-none text-rose-500";
-                document.getElementById('entry-zone').textContent = "OVERBOUGHT";
+                document.getElementById('entry-zone').textContent = "OVERBOUGHT / AVOID";
                 document.getElementById('position-size').textContent = "0%";
             }
 
-            document.getElementById('last-updated').textContent = meta.fromCache ? "Offline (Cache)" : `System Live: ${new Date().toLocaleTimeString('vi-VN')}`;
+            document.getElementById('last-updated').textContent = 
+                meta.fromCache ? "Offline (Cache)" : `Live • ${new Date().toLocaleTimeString('vi-VN')}`;
         }
 
         async function updateData() {
             try {
-                const [w1Res, d1Res, fgRes] = await Promise.all([
+                const [w1Res, fgRes] = await Promise.all([
                     fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1w&limit=300'),
-                    fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=300'),
                     fetch('https://api.alternative.me/fng/')
                 ]);
-                const w1 = await w1Res.json(); const d1 = await d1Res.json(); const fgData = await fgRes.json();
-                localStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), w1, d1, fgData }));
-                applyMarketData(w1, d1, fgData, { fromCache: false });
+                
+                const w1 = await w1Res.json();
+                const fgData = await fgRes.json();
+
+                localStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), w1, fgData }));
+                applyMarketData(w1, fgData, { fromCache: false });
             } catch (e) {
                 const raw = localStorage.getItem(CACHE_KEY);
                 if (raw) {
-                    const c = JSON.parse(raw);
-                    applyMarketData(c.w1, c.d1, c.fgData, { fromCache: true, cacheTs: c.t });
+                    const cached = JSON.parse(raw);
+                    applyMarketData(cached.w1, cached.fgData, { fromCache: true });
                 }
             }
         }
 
+        // Khởi chạy
         updateData();
-        setInterval(updateData, 60000);
+        setInterval(updateData, 90000); // Cập nhật mỗi 1.5 phút
     </script>
 </body>
 </html>
