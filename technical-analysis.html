@@ -283,41 +283,38 @@
             document.getElementById('trend-val').textContent = isBullish ? (rsi > 55 ? "STRONG BULL" : "BULLISH") : "BEARISH";
             document.getElementById('trend-val').className = `text-[9px] font-black px-2 py-1 rounded uppercase tracking-widest ${isBullish ? 'bg-emerald-900 text-emerald-400' : 'bg-rose-900 text-rose-400'}`;
 
-            // ==================== ADVANCED SCORING v2 ====================
-let score = 52;  // base hơi cao hơn một chút
+// ==================== LOGIC VERDICT V3 (Tinh chỉnh) ====================
+let score = 50;
 
-// 1. Psychology - Fear & Greed (weight cao nhất)
+// 1. Psychology - Fear & Greed (weight cao)
 if (fgValue <= 20) score += 28;
-else if (fgValue <= 30) score += 18;
-else if (fgValue <= 45) score += 8;
-else if (fgValue >= 80) score -= 28;
+else if (fgValue <= 30) score += 20;
+else if (fgValue <= 45) score += 10;
+else if (fgValue >= 80) score -= 30;
 else if (fgValue >= 70) score -= 18;
 
-// 2. RSI (14) trên W1
-if (rsi <= 32) score += 22;
-else if (rsi <= 42) score += 14;
-else if (rsi >= 80) score -= 26;
-else if (rsi >= 70) score -= 16;
-else if (rsi >= 62 && rsi < 70) score -= 7;   // vùng overbought nhẹ
+// 2. RSI
+if (rsi <= 32) score += 24;
+else if (rsi <= 42) score += 15;
+else if (rsi >= 78) score -= 26;
+else if (rsi >= 68) score -= 16;
 
-// 3. Valuation - Price vs EMA200
-const discount = (ema200 - lastPrice) / ema200 * 100;
-if (discount > 15) score += 24;           // deep value
-else if (discount > 8) score += 16;
-else if (discount > 3) score += 9;
-else if (discount < -20) score -= 18;     // quá xa khỏi trend
+// 3. Valuation vs EMA200 (quan trọng hơn)
+const premium = (lastPrice - ema200) / ema200 * 100;   // % cao hơn EMA
+if (premium < -12) score += 26;           // deep discount
+else if (premium < -5) score += 16;
+else if (premium > 15) score -= 18;       // premium cao → phạt
+else if (premium > 8) score -= 10;
 
-// 4. Volume Power + Range Position
-if (volRatio > 140) score += 10;
-else if (volRatio > 110) score += 5;
+// 4. Volume & Range
+if (volRatio > 140) score += 9;
+else if (volRatio < 40) score -= 12;      // phạt mạnh volume yếu
+if (rangePos < 25) score += 15;
+else if (rangePos > 80) score -= 14;
 
-if (rangePos < 28) score += 14;           // gần đáy range
-else if (rangePos < 45) score += 7;
-else if (rangePos > 82) score -= 12;
-
-// 5. MACD Momentum (thêm nhẹ)
-if (macdHist > 0) score += 6;
-else if (macdHist < -150) score -= 8;     // macdHist âm mạnh
+// 5. MACD
+if (macdHist > 200) score += 7;
+else if (macdHist < -800) score -= 10;    // phạt MACD âm mạnh
 
 const finalScore = Math.max(10, Math.min(100, Math.round(score)));
 
