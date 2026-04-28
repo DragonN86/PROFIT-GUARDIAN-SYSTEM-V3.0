@@ -177,7 +177,7 @@
         let entryPrice = parseFloat(localStorage.getItem('btc_entry_price')) || 69000;
         document.getElementById('entry-price-display').textContent = 'Avg: $' + entryPrice.toLocaleString('en-US');
 
-        const CACHE_KEY = 'wintrack_w1_v7_pro';
+        const CACHE_KEY = 'wintrack_w1_v8_pro';
 
         function setEntryPrice() {
             const input = prompt("Nhập giá trung bình gom BTC (USD):", String(entryPrice));
@@ -198,14 +198,10 @@
             el.className = `text-3xl font-black value-mono tracking-tight ${pct >= 0 ? 'text-emerald-400' : 'text-rose-500'}`;
         }
 
-        // ==================== INDICATORS ====================
-
         function calculateEMA(prices, period) {
             if (prices.length < period) return prices[prices.length - 1] || 0;
-            
             let ema = prices.slice(0, period).reduce((a, b) => a + b, 0) / period;
             const multiplier = 2 / (period + 1);
-            
             for (let i = period; i < prices.length; i++) {
                 ema = prices[i] * multiplier + ema * (1 - multiplier);
             }
@@ -214,23 +210,19 @@
 
         function calculateRSI(prices, period = 14) {
             if (prices.length < period + 1) return 50;
-
             let gains = 0, losses = 0;
             for (let i = 1; i <= period; i++) {
                 const change = prices[i] - prices[i - 1];
                 if (change > 0) gains += change;
                 else losses -= change;
             }
-
             let avgGain = gains / period;
             let avgLoss = losses / period;
-
             for (let i = period + 1; i < prices.length; i++) {
                 const change = prices[i] - prices[i - 1];
                 avgGain = (avgGain * (period - 1) + Math.max(change, 0)) / period;
                 avgLoss = (avgLoss * (period - 1) + Math.max(-change, 0)) / period;
             }
-
             if (avgLoss === 0) return 100;
             const rs = avgGain / avgLoss;
             return 100 - (100 / (1 + rs));
@@ -240,11 +232,8 @@
             if (prices.length < 35) return 0;
             const ema12 = calculateEMA(prices, 12);
             const ema26 = calculateEMA(prices, 26);
-            const macdLine = ema12 - ema26;
-            return macdLine; // Histogram approximation (có thể mở rộng sau)
+            return ema12 - ema26;
         }
-
-        // ==================== MAIN LOGIC ====================
 
         function applyMarketData(w1, fgData, meta) {
             const closes = w1.map(c => parseFloat(c[4]));
@@ -264,14 +253,14 @@
             
             const recentLows = Math.min(...lows.slice(-20));
             const recentHighs = Math.max(...highs.slice(-20));
-            const rangePos = ((lastPrice - recentLows) / (recentHighs - recentLows)) * 100;
+            const rangePos = ((lastPrice - recentLows) / (recentHighs - recentLows)) * 100 || 50;
 
             const fgValue = parseInt(fgData.data[0].value);
 
             // Update UI
             document.getElementById('current-price').textContent = lastPrice.toLocaleString('en-US');
             document.getElementById('fg-value').textContent = fgValue;
-            document.getElementById('fg-class').textContent = fgData.data[0].value_classification;
+            document.getElementById('fg-class').textContent = fgData.data[0].value_classification || 'FEAR';
             document.getElementById('rsi-val').textContent = rsi.toFixed(1);
             document.getElementById('macd-val').textContent = macdHist.toFixed(2);
             document.getElementById('weekly-range').textContent = Math.round(rangePos) + "%";
@@ -283,42 +272,42 @@
             document.getElementById('trend-val').textContent = isBullish ? (rsi > 55 ? "STRONG BULL" : "BULLISH") : "BEARISH";
             document.getElementById('trend-val').className = `text-[9px] font-black px-2 py-1 rounded uppercase tracking-widest ${isBullish ? 'bg-emerald-900 text-emerald-400' : 'bg-rose-900 text-rose-400'}`;
 
-// ==================== LOGIC VERDICT V3 (Tinh chỉnh) ====================
-let score = 50;
+            // ==================== LOGIC VERDICT V4 - BALANCED ====================
+            let score = 50;
 
-// 1. Psychology - Fear & Greed (weight cao)
-if (fgValue <= 20) score += 28;
-else if (fgValue <= 30) score += 20;
-else if (fgValue <= 45) score += 10;
-else if (fgValue >= 80) score -= 30;
-else if (fgValue >= 70) score -= 18;
+            // 1. Fear & Greed (weight cao)
+            if (fgValue <= 25) score += 26;
+            else if (fgValue <= 35) score += 18;
+            else if (fgValue <= 50) score += 8;
+            else if (fgValue >= 80) score -= 28;
+            else if (fgValue >= 70) score -= 18;
 
-// 2. RSI
-if (rsi <= 32) score += 24;
-else if (rsi <= 42) score += 15;
-else if (rsi >= 78) score -= 26;
-else if (rsi >= 68) score -= 16;
+            // 2. RSI
+            if (rsi <= 35) score += 22;
+            else if (rsi <= 45) score += 12;
+            else if (rsi >= 78) score -= 24;
+            else if (rsi >= 68) score -= 14;
 
-// 3. Valuation vs EMA200 (quan trọng hơn)
-const premium = (lastPrice - ema200) / ema200 * 100;   // % cao hơn EMA
-if (premium < -12) score += 26;           // deep discount
-else if (premium < -5) score += 16;
-else if (premium > 15) score -= 18;       // premium cao → phạt
-else if (premium > 8) score -= 10;
+            // 3. Price vs EMA200
+            const premium = (lastPrice - ema200) / ema200 * 100;
+            if (premium < -12) score += 25;
+            else if (premium < -5) score += 15;
+            else if (premium > 18) score -= 20;
+            else if (premium > 10) score -= 10;
 
-// 4. Volume & Range
-if (volRatio > 140) score += 9;
-else if (volRatio < 40) score -= 12;      // phạt mạnh volume yếu
-if (rangePos < 25) score += 15;
-else if (rangePos > 80) score -= 14;
+            // 4. Volume & Range
+            if (volRatio > 130) score += 9;
+            else if (volRatio < 35) score -= 9;     // phạt vừa phải
+            if (rangePos < 28) score += 14;
+            else if (rangePos > 82) score -= 13;
 
-// 5. MACD
-if (macdHist > 200) score += 7;
-else if (macdHist < -800) score -= 10;    // phạt MACD âm mạnh
+            // 5. MACD
+            if (macdHist > 300) score += 7;
+            else if (macdHist < -1200) score -= 9;
 
-const finalScore = Math.max(10, Math.min(100, Math.round(score)));
+            const finalScore = Math.max(15, Math.min(100, Math.round(score)));
 
-            // Render Verdict
+            // Render
             const box = document.getElementById('verdict-box');
             const dot = document.getElementById('signal-dot');
             const dotPing = document.getElementById('signal-dot-ping');
@@ -329,14 +318,13 @@ const finalScore = Math.max(10, Math.min(100, Math.round(score)));
 
             sNum.textContent = finalScore;
             sBar.style.width = finalScore + "%";
-
             box.classList.remove('lvl-strong', 'lvl-good', 'lvl-wait', 'lvl-risk');
 
-            if (finalScore >= 82) {
+            if (finalScore >= 80) {
                 box.classList.add('lvl-strong');
                 strat.textContent = "🔥 STRONG DCA SIGNAL";
                 strat.className = "text-xl font-black tracking-tight uppercase italic text-emerald-400 glow-emerald";
-                verdict.textContent = "Cơ hội tích lũy dài hạn cực mạnh. Thị trường đang ở vùng chiết khấu sâu trên khung W1.";
+                verdict.textContent = "Cơ hội tích lũy dài hạn cực mạnh. Vùng chiết khấu sâu trên W1.";
                 dot.className = "relative inline-flex rounded-full h-3 w-3 bg-emerald-500";
                 dotPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75";
                 sBar.className = "bar-fill bg-emerald-500";
@@ -348,7 +336,7 @@ const finalScore = Math.max(10, Math.min(100, Math.round(score)));
                 box.classList.add('lvl-good');
                 strat.textContent = "✅ SAFE ACCUMULATE";
                 strat.className = "text-xl font-black tracking-tight uppercase italic text-cyan-400";
-                verdict.textContent = "Điều kiện mua DCA tốt. Nên gia tăng vị thế dần dần.";
+                verdict.textContent = "Điều kiện DCA tốt. Nên gia tăng vị thế dần dần.";
                 dot.className = "relative inline-flex rounded-full h-3 w-3 bg-cyan-400";
                 dotPing.className = "animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75";
                 sBar.className = "bar-fill bg-cyan-400";
@@ -406,9 +394,8 @@ const finalScore = Math.max(10, Math.min(100, Math.round(score)));
             }
         }
 
-        // Khởi chạy
         updateData();
-        setInterval(updateData, 90000); // Cập nhật mỗi 1.5 phút
+        setInterval(updateData, 90000);
     </script>
 </body>
 </html>
