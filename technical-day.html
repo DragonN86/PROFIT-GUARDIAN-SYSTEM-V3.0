@@ -3,29 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WinTrack 2026 - BTC D1 Elite v3.4.1</title>
+    <title>WinTrack 2026 - BTC D1 Elite v3.6.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
-        body { background: #0a0a0f; font-family: 'Inter', sans-serif; color: white; -webkit-font-smoothing: antialiased; }
-        .card { background: #111827; border: 1px solid #1f2937; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4); }
-        .inner-box { background: #1a2333; border-radius: 16px; padding: 12px 14px; border: 1px solid rgba(255,255,255,0.03); transition: all 0.3s; }
-        .text-label { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #64748b; }
-        .value-mono { font-family: 'ui-monospace', monospace; }
-        .loading { opacity: 0.6; pointer-events: none; }
-        @keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-        .sync-pulse { animation: pulse-soft 2s infinite; }
+        body { 
+            background: #0a0a0f; 
+            font-family: 'Inter', sans-serif; 
+            color: white; 
+            -webkit-font-smoothing: antialiased; 
+            overflow-x: hidden;
+        }
+        .card { 
+            background: #111827; 
+            border: 1px solid #1f2937; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4); 
+        }
+        .inner-box { 
+            background: #1a2333; 
+            border-radius: 16px; 
+            padding: 12px 14px; 
+            border: 1px solid rgba(255,255,255,0.03); 
+            transition: all 0.3s ease; 
+        }
+        .inner-box:hover {
+            border-color: rgba(255,255,255,0.1);
+            transform: translateY(-1px);
+        }
+        .text-label { 
+            font-size: 0.65rem; 
+            font-weight: 800; 
+            letter-spacing: 0.08em; 
+            text-transform: uppercase; 
+            color: #64748b; 
+        }
+        .value-mono { 
+            font-family: 'ui-monospace', monospace; 
+        }
+        @keyframes pulse-soft { 
+            0%, 100% { opacity: 1; } 
+            50% { opacity: 0.6; } 
+        }
+        .sync-pulse { 
+            animation: pulse-soft 2s infinite; 
+        }
+        #score-bar { 
+            transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1); 
+        }
+        .glass-effect {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(10px);
+        }
     </style>
 </head>
 <body class="p-4 md:p-6 min-h-screen flex items-center justify-center">
     <div class="max-w-xl w-full space-y-5">
-        <!-- Header -->
-        <div class="flex justify-between items-center px-1">
+        
+        <!-- Header Section -->
+        <div class="flex justify-between items-end px-1">
             <div class="flex items-center gap-3">
                 <div class="w-12 h-12 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-blue-900/30">📈</div>
                 <div>
                     <h1 class="text-2xl font-black tracking-tighter uppercase leading-none">BTC SPOT <span class="text-cyan-400">D1 ELITE</span></h1>
-                    <p id="last-updated" class="text-[10px] text-slate-500 font-bold mt-1 uppercase tracking-widest sync-pulse">Đang đồng bộ...</p>
+                    <p id="last-updated" class="text-[10px] text-slate-500 font-bold mt-1 uppercase tracking-widest sync-pulse">Đang kết nối API...</p>
                 </div>
             </div>
             <div class="text-right">
@@ -34,26 +75,30 @@
             </div>
         </div>
 
-        <!-- On-Chain -->
+        <!-- On-Chain Proxy & Regime -->
         <div class="card p-5">
-            <h3 class="text-label text-purple-400 mb-4 text-center">On-Chain & Market Regime</h3>
+            <h3 class="text-label text-purple-400 mb-4 text-center">On-Chain Proxy & Market Regime</h3>
             <div class="grid grid-cols-3 gap-3">
                 <div class="inner-box text-center">
-                    <p class="text-label">MVRV Z-Score</p>
-                    <p id="mvrv" class="text-2xl font-black mt-1">--</p>
+                    <p class="text-label">MVRV Proxy</p>
+                    <p id="mvrv" class="text-2xl font-black mt-1 value-mono">--</p>
                 </div>
                 <div class="inner-box text-center">
-                    <p class="text-label">Puell Multiple</p>
-                    <p id="puell" class="text-2xl font-black mt-1">--</p>
+                    <p class="text-label">Puell Proxy</p>
+                    <p id="puell" class="text-2xl font-black mt-1 value-mono">--</p>
                 </div>
-                <div id="regime-card" class="inner-box text-center"></div>
+                <div id="regime-card" class="inner-box text-center flex flex-col justify-center border transition-all duration-500">
+                    <p class="text-label">Regime</p>
+                    <p id="regime-text" class="text-[10px] font-black mt-1 uppercase">---</p>
+                </div>
             </div>
         </div>
 
-        <!-- Metrics -->
+        <!-- Technical Metrics Grid -->
         <div class="card p-5">
-            <h3 class="text-label text-amber-400 mb-4">Technical Intelligence</h3>
-            <div id="metrics-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-[11px] font-bold"></div>
+            <div id="metrics-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-[11px] font-bold">
+                <!-- JS will inject metrics here to avoid flickering -->
+            </div>
             
             <div class="grid grid-cols-3 gap-3 mt-5">
                 <div class="inner-box text-center">
@@ -62,34 +107,42 @@
                     <p id="fear-label" class="text-[10px] font-bold uppercase text-slate-500 mt-1"></p>
                 </div>
                 <div class="inner-box text-center">
-                    <p class="text-label text-sky-400">Win Rate (30d)</p>
-                    <p id="backtest-rate" class="text-3xl font-black text-emerald-400 mt-1">--%</p>
+                    <p class="text-label text-sky-400">Vol Ratio</p>
+                    <p id="vol-ratio-val" class="text-3xl font-black mt-1">--x</p>
                 </div>
-                <div id="whale-card" class="inner-box text-center flex flex-col justify-center"></div>
+                <div id="whale-card" class="inner-box text-center flex flex-col justify-center">
+                    <p class="text-label text-slate-500">Whale Activity</p>
+                    <p class="text-[10px] font-black mt-1 uppercase text-slate-400 text-center">Scanning</p>
+                </div>
             </div>
         </div>
 
-        <!-- DCA -->
+        <!-- Strategic DCA Zones -->
         <div class="card p-5">
-            <h3 class="text-label text-emerald-400 mb-4">Vùng Mua Chiến Lược (DCA)</h3>
-            <div id="dca-zones" class="grid grid-cols-3 gap-3"></div>
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-label text-emerald-400">Vùng Mua Chiến Lược (EMA200)</h3>
+                <span class="text-[9px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full font-bold uppercase">Optimal DCA</span>
+            </div>
+            <div id="dca-zones" class="grid grid-cols-3 gap-3">
+                <!-- Zones rendered by JS -->
+            </div>
         </div>
 
-        <!-- Verdict -->
-        <div id="verdict-card" class="card p-6 border-l-8 transition-all duration-500">
-            <div class="flex items-center justify-between mb-4">
+        <!-- Final Verdict Card -->
+        <div id="verdict-card" class="card p-6 border-l-8 transition-all duration-500 relative overflow-hidden">
+            <div class="flex items-center justify-between mb-4 relative z-10">
                 <div class="flex items-center gap-3">
-                    <div id="signal-dot" class="w-10 h-10 rounded-xl flex items-center justify-center text-2xl"></div>
-                    <h2 id="strat-text" class="text-xl font-black uppercase tracking-tighter">Phân tích...</h2>
+                    <div id="signal-dot" class="w-10 h-10 rounded-xl flex items-center justify-center text-2xl bg-slate-800 shadow-inner">⏳</div>
+                    <h2 id="strat-text" class="text-xl font-black uppercase tracking-tighter">Phân tích hệ thống...</h2>
                 </div>
                 <div class="text-right">
                     <span class="text-label block">DCA Score</span>
                     <span id="score-number" class="text-4xl font-black value-mono leading-none">--</span>
                 </div>
             </div>
-            <p id="verdict-text" class="text-slate-400 text-sm leading-relaxed font-medium mb-5 italic"></p>
-            <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
-                <div id="score-bar" class="h-full rounded-full transition-all duration-1000 ease-out"></div>
+            <p id="verdict-text" class="text-slate-400 text-sm leading-relaxed font-medium mb-5 italic relative z-10">Đang tổng hợp dữ liệu từ Binance và thị trường...</p>
+            <div class="h-2 bg-slate-800 rounded-full overflow-hidden relative z-10">
+                <div id="score-bar" class="h-full rounded-full bg-slate-600 w-0"></div>
             </div>
         </div>
     </div>
@@ -99,12 +152,11 @@
         const fmt = val => new Intl.NumberFormat('en-US').format(Math.round(val));
 
         function calculateEMA(prices, period) {
-            if (!prices || prices.length === 0) return 0;
-            if (prices.length < period) return prices[prices.length - 1];
-            let ema = prices.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            if (!prices || prices.length < period) return prices[prices.length - 1];
             const k = 2 / (period + 1);
+            let ema = prices.slice(0, period).reduce((a, b) => a + b, 0) / period;
             for (let i = period; i < prices.length; i++) {
-                ema = prices[i] * k + ema * (1 - k);
+                ema = (prices[i] * k) + (ema * (1 - k));
             }
             return ema;
         }
@@ -118,7 +170,6 @@
             }
             let avgGain = gains / period;
             let avgLoss = losses / period || 0.001;
-
             for (let i = period + 1; i < prices.length; i++) {
                 const diff = prices[i] - prices[i - 1];
                 avgGain = (avgGain * (period - 1) + Math.max(diff, 0)) / period;
@@ -128,110 +179,130 @@
         }
 
         async function updateDashboard() {
-            const status = $('last-updated');
-            status.textContent = "Đang đồng bộ...";
-
             try {
-                // Fetch song song để nhanh hơn
                 const [klinesRes, fgRes] = await Promise.all([
                     fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=365'),
                     fetch('https://api.alternative.me/fng/?limit=1')
                 ]);
 
                 const data = await klinesRes.json();
+                const fgData = await fgRes.json();
                 const closes = data.map(d => parseFloat(d[4]));
                 const volumes = data.map(d => parseFloat(d[5]));
                 const price = closes[closes.length - 1];
-
+                const prevPrice = closes[closes.length - 2] || price;
+                
                 const ema200 = calculateEMA(closes, 200);
                 const rsi = calculateRSI(closes);
-                const volMA20 = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20 || 1;
-                const volRatio = volumes[volumes.length - 1] / volMA20;
-                const isUptrend = price > ema200 * 0.985;
-
-                const last30 = closes.slice(-30);
-                const winRate = Math.round((last30.filter(p => p > ema200).length / 30) * 100);
-
-                // Render
-                $('current-price').textContent = fmt(price);
-                $('mvrv').textContent = (0.9 + Math.random() * 0.8).toFixed(2);
-                $('puell').textContent = (0.6 + Math.random() * 0.6).toFixed(2);
-                $('backtest-rate').textContent = winRate + '%';
-
-                // Whale
-                const whaleCard = $('whale-card');
-                if (volRatio > 1.8) {
-                    whaleCard.innerHTML = `<p class="text-label text-orange-400">🐳 Whale Alert</p><p class="text-xs font-black mt-1 text-orange-400">VOLUME SPIKE</p>`;
-                } else {
-                    whaleCard.innerHTML = `<p class="text-label text-slate-500">Whale Activity</p><p class="text-xs font-black mt-1">STABLE</p>`;
-                }
-
-                // Regime
-                const regimeEl = $('regime-card');
-                regimeEl.className = `inner-box text-center ${isUptrend ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' : 'bg-amber-500/10 border-amber-500/30 text-amber-500'}`;
-                regimeEl.innerHTML = `<p class="text-label">Regime</p><p class="text-xs font-black mt-2 uppercase">${isUptrend ? 'BULLISH' : 'ACCUMULATION'}</p>`;
-
-                // Metrics Grid
-                $('metrics-grid').innerHTML = `
-                    <div class="inner-box flex justify-between"><span>Trend</span><span class="${isUptrend?'text-emerald-400':'text-rose-400'}">● ${isUptrend?'UP':'DOWN'}</span></div>
-                    <div class="inner-box flex justify-between"><span>RSI</span><span class="${rsi < 40 ? 'text-emerald-400' : rsi > 70 ? 'text-rose-400' : 'text-sky-400'}">${rsi}</span></div>
-                    <div class="inner-box flex justify-between"><span>Vol Ratio</span><span class="${volRatio < 0.8 ? 'text-emerald-400' : 'text-slate-300'}">${volRatio.toFixed(1)}x</span></div>
-                    <div class="inner-box flex justify-between"><span>EMA 200</span><span class="text-purple-400">${fmt(ema200)}</span></div>
-                `;
-
-                // Fear & Greed
-                const fgData = await fgRes.json();
                 const fg = parseInt(fgData.data[0].value);
-                $('fear-greed').textContent = fg;
-                $('fear-label').textContent = fgData.data[0].value_classification;
-                $('fear-greed').className = `text-3xl font-black mt-1 ${fg < 35 ? 'text-emerald-400' : 'text-rose-400'}`;
 
-                // DCA Zones
-                const multipliers = [0.94, 0.98, 1.04];
-                $('dca-zones').innerHTML = multipliers.map((mul, i) => `
-                    <div class="inner-box text-center">
-                        <p class="text-[9px] text-slate-500 font-bold uppercase mb-1">Mức ${i+1}</p>
-                        <p class="text-lg font-black text-emerald-400">$${fmt(ema200 * mul)}</p>
+                // Whale & Vol Analysis (Sử dụng nến đóng ngày hôm trước)
+                const avgVol = volumes.slice(-21, -1).reduce((a, b) => a + b, 0) / 20 || 1;
+                const lastClosedVol = volumes[volumes.length - 2];
+                const volRatio = lastClosedVol / avgVol;
+
+                // Proxy Metrics
+                const mvrvProxy = (price / ema200).toFixed(2);
+                const puellProxy = Math.min(3.0, volRatio).toFixed(2);
+
+                // UI: Header & Price
+                $('current-price').textContent = fmt(price);
+                $('current-price').className = `text-4xl font-black value-mono leading-none ${price >= prevPrice ? 'text-emerald-400' : 'text-rose-400'}`;
+                document.title = `$${fmt(price)} | BTC D1 Elite`;
+
+                // UI: On-Chain & Regime
+                $('mvrv').textContent = mvrvProxy;
+                $('puell').textContent = puellProxy;
+                
+                const isUptrend = price > (ema200 * 0.985);
+                const regimeEl = $('regime-card');
+                const rText = $('regime-text');
+                regimeEl.className = `inner-box text-center flex flex-col justify-center border transition-all duration-500 ${isUptrend ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-rose-500/10 border-rose-500/30 text-rose-400'}`;
+                rText.textContent = isUptrend ? "BULLISH PHASE" : "BEARISH/ACCUM";
+
+                // UI: Metrics Grid
+                const change = ((price / prevPrice) - 1) * 100;
+                const metrics = [
+                    { label: 'Trend', val: isUptrend ? 'UP' : 'DOWN', cls: isUptrend ? 'text-emerald-400' : 'text-rose-400' },
+                    { label: 'RSI', val: rsi, cls: rsi < 40 ? 'text-emerald-400' : rsi > 70 ? 'text-rose-400' : 'text-sky-400' },
+                    { label: '24h %', val: (change >= 0 ? '+' : '') + change.toFixed(2) + '%', cls: change >= 0 ? 'text-emerald-400' : 'text-rose-400' },
+                    { label: 'EMA 200', val: fmt(ema200), cls: 'text-purple-400' }
+                ];
+                $('metrics-grid').innerHTML = metrics.map(m => `
+                    <div class="inner-box flex justify-between items-center shadow-inner">
+                        <span class="opacity-50 text-[9px] uppercase tracking-tighter">${m.label}</span>
+                        <span class="${m.cls} tracking-tight">${m.val}</span>
                     </div>
                 `).join('');
 
-                // Score Logic
-                let score = 52;
-                if (isUptrend) score += 12;
-                if (rsi < 40) score += 18;
-                else if (rsi > 72) score -= 22;
-                if (fg < 35) score += 18;
-                if (volRatio < 0.85) score += 8;
-                score = Math.max(15, Math.min(98, Math.round(score)));
+                // UI: Whale Card
+                const whaleCard = $('whale-card');
+                if (volRatio > 1.8) {
+                    whaleCard.innerHTML = `<p class="text-label text-orange-400">🐳 Whale Alert</p><p class="text-[10px] font-black mt-1 text-orange-400 uppercase">High Vol Active</p>`;
+                    whaleCard.classList.add('bg-orange-500/10', 'border-orange-500/30');
+                } else {
+                    whaleCard.innerHTML = `<p class="text-label text-slate-500">Whale Activity</p><p class="text-[10px] font-black mt-1 uppercase text-slate-400">Stable</p>`;
+                    whaleCard.classList.remove('bg-orange-500/10', 'border-orange-500/30');
+                }
+                $('vol-ratio-val').textContent = volRatio.toFixed(1) + "x";
+
+                // UI: Fear & Greed
+                $('fear-greed').textContent = fg;
+                $('fear-label').textContent = fgData.data[0].value_classification;
+                $('fear-greed').className = `text-3xl font-black mt-1 ${fg < 35 ? 'text-emerald-400' : fg > 65 ? 'text-rose-400' : 'text-amber-400'}`;
+
+                // UI: DCA Zones
+                const multipliers = [0.94, 0.99, 1.05];
+                $('dca-zones').innerHTML = multipliers.map((m, i) => `
+                    <div class="inner-box text-center border-b-2 shadow-lg ${i===0?'border-emerald-500':i===1?'border-sky-500':'border-purple-500'}">
+                        <p class="text-[9px] text-slate-500 font-bold uppercase mb-1">Mức ${i+1}</p>
+                        <p class="text-lg font-black text-white value-mono">$${fmt(ema200 * m)}</p>
+                    </div>
+                `).join('');
+
+                // Scoring Logic
+                let score = 50;
+                if (!isUptrend) score += 12;
+                if (rsi < 38) score += 20; else if (rsi > 68) score -= 22;
+                if (fg < 25) score += 18; else if (fg > 75) score -= 15;
+                if (price < ema200) score += 10; else if (price > ema200 * 1.3) score -= 10;
+                score = Math.max(10, Math.min(98, Math.round(score)));
 
                 $('score-number').textContent = score;
                 $('score-bar').style.width = score + "%";
 
                 const vCard = $('verdict-card');
+                const sDot = $('signal-dot');
                 if (score >= 72) {
                     vCard.style.borderLeftColor = "#10b981";
                     $('strat-text').textContent = "CƠ HỘI GOM HÀNG";
-                    $('verdict-text').textContent = "Điều kiện kỹ thuật & on-chain đang rất thuận lợi cho DCA.";
-                    $('signal-dot').innerHTML = "💎";
-                    $('score-bar').className = "h-full bg-emerald-500";
+                    $('verdict-text').textContent = "Chỉ số RSI & Fear cực thấp. Giá đang nằm dưới hoặc sát EMA200. Đây là vùng DCA lý tưởng.";
+                    sDot.innerHTML = "💎"; sDot.className = "w-10 h-10 rounded-xl flex items-center justify-center text-2xl bg-emerald-500/20";
+                    $('score-bar').className = "h-full bg-emerald-500 shadow-[0_0_10px_#10b981]";
+                } else if (score <= 42) {
+                    vCard.style.borderLeftColor = "#f43f5e";
+                    $('strat-text').textContent = "CẢNH BÁO QUÁ NHIỆT";
+                    $('verdict-text').textContent = "Thị trường đang hưng phấn quá mức. Rủi ro điều chỉnh cao, hãy kiên nhẫn chờ đợi điểm vào tốt hơn.";
+                    sDot.innerHTML = "🔥"; sDot.className = "w-10 h-10 rounded-xl flex items-center justify-center text-2xl bg-rose-500/20";
+                    $('score-bar').className = "h-full bg-rose-500 shadow-[0_0_10px_#f43f5e]";
                 } else {
-                    vCard.style.borderLeftColor = "#f59e0b";
-                    $('strat-text').textContent = "KIÊN NHẪN CHỜ DIP";
-                    $('verdict-text').textContent = "Thị trường chưa đạt vùng chiết khấu lý tưởng. Tránh FOMO.";
-                    $('signal-dot').innerHTML = "⏳";
-                    $('score-bar').className = "h-full bg-amber-500";
+                    vCard.style.borderLeftColor = "#3b82f6";
+                    $('strat-text').textContent = "CHẾ ĐỘ THEO DÕI";
+                    $('verdict-text').textContent = "Giá vận hành ổn định trong vùng trung tính. Chưa có tín hiệu đột biến để giải ngân mạnh.";
+                    sDot.innerHTML = "⏳"; sDot.className = "w-10 h-10 rounded-xl flex items-center justify-center text-2xl bg-blue-500/20";
+                    $('score-bar').className = "h-full bg-blue-500 shadow-[0_0_10px_#3b82f6]";
                 }
 
-                status.textContent = `Live • ${new Date().toLocaleTimeString('vi-VN')} • v3.4.1`;
+                $('last-updated').textContent = `Live • ${new Date().toLocaleTimeString('vi-VN')} • v3.6.5`;
 
             } catch (e) {
                 console.error(e);
-                status.textContent = "⚠️ Lỗi kết nối API";
+                $('last-updated').textContent = "⚠️ LỖI KẾT NỐI - ĐANG THỬ LẠI...";
             }
         }
 
         updateDashboard();
-        setInterval(updateDashboard, 60000);
+        setInterval(updateDashboard, 30000);
     </script>
 </body>
 </html>
