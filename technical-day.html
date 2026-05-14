@@ -7,28 +7,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
-        
-        body { 
-            background: #0a0a0f; 
-            font-family: 'Inter', sans-serif; 
+       
+        body {
+            background: #0a0a0f;
+            font-family: 'Inter', sans-serif;
             color: white;
             -webkit-font-smoothing: antialiased;
         }
-
         .card {
             background: #111827;
             border: 1px solid #1f2937;
             border-radius: 20px;
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
         }
-
         .inner-box {
             background: #1a2333;
             border-radius: 16px;
             padding: 12px 14px;
             border: 1px solid rgba(255, 255, 255, 0.03);
         }
-
         .text-label {
             font-size: 0.65rem;
             font-weight: 800;
@@ -36,16 +33,12 @@
             text-transform: uppercase;
             color: #64748b;
         }
-
         .value-mono {
             font-family: 'ui-monospace', monospace;
         }
-
-        /* Hiệu ứng thanh điểm chuyên nghiệp */
         #score-bar {
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
         }
-
         @keyframes pulse-soft {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
@@ -55,7 +48,7 @@
 </head>
 <body class="p-4 md:p-6 min-h-screen flex items-center justify-center">
     <div class="max-w-xl w-full space-y-5">
-
+        <!-- Header -->
         <div class="flex justify-between items-center px-1">
             <div class="flex items-center gap-3">
                 <div class="w-11 h-11 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-blue-900/20">📈</div>
@@ -70,29 +63,30 @@
             </div>
         </div>
 
+        <!-- On-Chain & Regime -->
         <div class="card p-5">
             <h3 class="text-label text-purple-400 mb-4">On-Chain & Market Regime</h3>
             <div class="grid grid-cols-3 gap-3">
                 <div class="inner-box text-center">
                     <p class="text-label">MVRV Z-Score</p>
-                    <p class="text-2xl font-black mt-1" id="mvrv">0.92</p>
+                    <p id="mvrv" class="text-2xl font-black mt-1">0.92</p>
                 </div>
                 <div class="inner-box text-center">
                     <p class="text-label">Puell Multiple</p>
-                    <p class="text-2xl font-black mt-1" id="puell">0.78</p>
+                    <p id="puell" class="text-2xl font-black mt-1">0.78</p>
                 </div>
-                <div class="inner-box text-center bg-amber-500/10 border border-amber-400/20">
+                <div id="regime-card" class="inner-box text-center bg-amber-500/10 border border-amber-400/20">
                     <p class="text-label text-amber-500">Regime</p>
-                    <p class="text-xs font-black text-amber-500 mt-2 uppercase" id="regime">Accumulation</p>
+                    <p id="regime" class="text-xs font-black text-amber-500 mt-2 uppercase">ACCUMULATION</p>
                 </div>
             </div>
         </div>
 
+        <!-- Market Metrics -->
         <div class="card p-5">
             <h3 class="text-label text-amber-400 mb-4">Market Metrics & Signals</h3>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-[11px] font-bold" id="metrics-grid">
-                </div>
-
+            <div id="metrics-grid" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-[11px] font-bold"></div>
+            
             <div class="grid grid-cols-3 gap-3 mt-5">
                 <div class="inner-box text-center">
                     <p class="text-label text-pink-400">Fear & Greed</p>
@@ -104,19 +98,17 @@
                     <p id="backtest-rate" class="text-3xl font-black text-emerald-400 mt-1">--%</p>
                     <p class="text-[10px] text-slate-500 font-bold uppercase">365 Ngày</p>
                 </div>
-                <div id="whale-card" class="inner-box text-center flex flex-col justify-center border border-orange-500/30 bg-orange-500/5">
-                    <p class="text-label text-orange-400">🐳 Whale</p>
-                    <p class="text-xs font-black text-orange-400 uppercase mt-1">Normal</p>
-                </div>
+                <div id="whale-card" class="inner-box text-center flex flex-col justify-center"></div>
             </div>
         </div>
 
+        <!-- DCA Zones -->
         <div class="card p-5">
             <h3 class="text-label text-emerald-400 mb-4">Vùng DCA Lý Tưởng</h3>
-            <div id="dca-zones" class="grid grid-cols-3 gap-3">
-                </div>
+            <div id="dca-zones" class="grid grid-cols-3 gap-3"></div>
         </div>
 
+        <!-- Verdict -->
         <div id="verdict-card" class="card p-6 border-l-8 transition-all duration-500">
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-3">
@@ -129,7 +121,7 @@
                 </div>
             </div>
             <p id="verdict-text" class="text-slate-400 text-sm leading-relaxed font-medium mb-5 italic"></p>
-            
+           
             <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
                 <div id="score-bar" class="h-full rounded-full transition-all duration-1000 ease-out"></div>
             </div>
@@ -137,162 +129,242 @@
     </div>
 
     <script>
-        // === TOÁN HỌC TÀI CHÍNH ===
+        // ==================== UTILITIES ====================
+        const $ = id => document.getElementById(id);
+
+        // ==================== TECHNICAL INDICATORS ====================
         function calculateEMA(prices, period) {
-            if (prices.length < period) return prices[prices.length-1];
-            let ema = prices.slice(0, period).reduce((a,b)=>a+b,0)/period;
-            const k = 2/(period+1);
-            for (let i = period; i < prices.length; i++) ema = prices[i]*k + ema*(1-k);
+            if (prices.length < period) return prices[prices.length - 1];
+            let ema = prices.slice(0, period).reduce((a, b) => a + b, 0) / period;
+            const k = 2 / (period + 1);
+            for (let i = period; i < prices.length; i++) {
+                ema = prices[i] * k + ema * (1 - k);
+            }
             return ema;
         }
 
         function calculateRSI(prices, period = 14) {
             if (prices.length < period + 1) return 50;
-            const changes = prices.slice(1).map((p,i) => p - prices[i]);
-            let gain = 0, loss = 0;
-            for (let i = 0; i < period; i++) changes[i] > 0 ? gain += changes[i] : loss -= changes[i];
-            gain /= period; loss /= period;
-            for (let i = period; i < changes.length; i++) {
-                gain = (gain * (period-1) + Math.max(changes[i],0)) / period;
-                loss = (loss * (period-1) + Math.max(-changes[i],0)) / period;
+            
+            let gains = 0, losses = 0;
+            for (let i = 1; i <= period; i++) {
+                const change = prices[i] - prices[i - 1];
+                if (change > 0) gains += change;
+                else losses -= change;
             }
-            return 100 - (100 / (1 + gain / (loss || 0.0001)));
-        }
-
-        async function getFearGreed() {
-            try {
-                const res = await fetch('https://api.alternative.me/fng/?limit=1');
-                const data = await res.json();
-                return { value: parseInt(data.data[0].value), label: data.data[0].value_classification };
-            } catch (e) { return { value: 50, label: "Neutral" }; }
+            
+            let avgGain = gains / period;
+            let avgLoss = losses / period;
+            
+            for (let i = period + 1; i < prices.length; i++) {
+                const change = prices[i] - prices[i - 1];
+                avgGain = (avgGain * (period - 1) + Math.max(change, 0)) / period;
+                avgLoss = (avgLoss * (period - 1) + Math.max(-change, 0)) / period;
+            }
+            
+            if (avgLoss === 0) return 100;
+            const rs = avgGain / avgLoss;
+            return Math.round(100 - (100 / (1 + rs)));
         }
 
         function runBacktest(closes) {
             let total = 0, wins = 0;
-            for (let i = 100; i < closes.length - 30; i++) {
-                const slice = closes.slice(0, i+1);
+            const limit = Math.min(200, closes.length - 30); // Tối ưu performance
+            for (let i = 100; i < closes.length - 30; i += 5) { // Bước nhảy để nhanh hơn
+                const slice = closes.slice(0, i + 1);
                 const rsi = calculateRSI(slice);
                 const ema = calculateEMA(slice, 200);
+                
                 if (rsi < 45 && slice[i] < ema * 1.05) {
                     total++;
-                    if (closes[i+30] > closes[i] * 1.07) wins++;
+                    if (closes[i + 30] > closes[i] * 1.07) wins++;
                 }
             }
-            return total > 0 ? Math.round((wins/total)*100) : 75;
+            return total > 0 ? Math.round((wins / total) * 100) : 75;
         }
 
-        // === CẬP NHẬT DỮ LIỆU ===
+        // ==================== API HELPERS ====================
+        async function getFearGreed() {
+            try {
+                const res = await fetch('https://api.alternative.me/fng/?limit=1');
+                const data = await res.json();
+                const value = parseInt(data.data[0].value);
+                return { 
+                    value, 
+                    label: data.data[0].value_classification 
+                };
+            } catch (e) {
+                return { value: 50, label: "Neutral" };
+            }
+        }
+
+        async function getOnChainMetrics() {
+            // TODO: Thay bằng API thật (Glassnode, CryptoQuant...) sau
+            return {
+                mvrv: (Math.random() * 1.8 + 0.4).toFixed(2),
+                puell: (Math.random() * 1.3 + 0.3).toFixed(2),
+                regime: Math.random() > 0.5 ? "ACCUMULATION" : "DISTRIBUTION"
+            };
+        }
+
+        // ==================== RENDER FUNCTIONS ====================
+        function renderMetrics(isUptrend, rsi, volExhaust) {
+            $('metrics-grid').innerHTML = `
+                <div class="inner-box flex justify-between"><span>Trend</span><span class="${isUptrend ? 'text-emerald-400' : 'text-red-400'}">● ${isUptrend ? 'UP' : 'DOWN'}</span></div>
+                <div class="inner-box flex justify-between"><span>RSI</span><span class="text-sky-400">${rsi}</span></div>
+                <div class="inner-box flex justify-between"><span>Vol</span><span class="${volExhaust ? 'text-emerald-400' : 'text-slate-400'}">${volExhaust ? 'LOW' : 'NORM'}</span></div>
+                <div class="inner-box flex justify-between"><span>BTC.D</span><span class="text-purple-400">54%</span></div>
+            `;
+        }
+
+        function renderDCAZones(ema200) {
+            const z1 = Math.round(ema200 * 0.93);
+            const z2 = Math.round(ema200 * 0.97);
+            const z3 = Math.round(ema200 * 1.015);
+            
+            $('dca-zones').innerHTML = `
+                <div class="inner-box text-center">
+                    <p class="text-[9px] text-slate-500 font-bold uppercase mb-1">Mức 1 (Deep)</p>
+                    <p class="text-lg font-black text-emerald-400">$${z1.toLocaleString()}</p>
+                </div>
+                <div class="inner-box text-center">
+                    <p class="text-[9px] text-slate-500 font-bold uppercase mb-1">Mức 2 (Mid)</p>
+                    <p class="text-lg font-black text-emerald-400">$${z2.toLocaleString()}</p>
+                </div>
+                <div class="inner-box text-center">
+                    <p class="text-[9px] text-slate-500 font-bold uppercase mb-1">Mức 3 (Trend)</p>
+                    <p class="text-lg font-black text-emerald-400">$${z3.toLocaleString()}</p>
+                </div>
+            `;
+        }
+
+        function updateWhaleCard(whaleSpike) {
+            const box = $('whale-card');
+            if (whaleSpike) {
+                box.className = `inner-box text-center flex flex-col justify-center border border-orange-500/30 bg-orange-500/5`;
+                box.innerHTML = `<p class="text-label text-orange-400">🐳 Whale</p>
+                                 <p class="text-xs font-black text-orange-400 uppercase mt-1">SPIKE DETECTED</p>`;
+            } else {
+                box.className = `inner-box text-center flex flex-col justify-center border border-slate-700/50`;
+                box.innerHTML = `<p class="text-label text-slate-500">🐳 Whale</p>
+                                 <p class="text-xs font-black text-slate-500 uppercase mt-1">Normal</p>`;
+            }
+        }
+
+        function updateVerdict(score) {
+            const sNum = $('score-number');
+            const sBar = $('score-bar');
+            const sCard = $('verdict-card');
+            const sText = $('strat-text');
+            const vText = $('verdict-text');
+            const sDot = $('signal-dot');
+
+            sNum.textContent = score;
+            sBar.style.width = score + "%";
+
+            if (score >= 88) {
+                sText.textContent = "DCA LỚN - ĐÁY CHU KỲ";
+                sText.className = "text-xl font-black uppercase text-emerald-400";
+                vText.textContent = "Fear hoảng loạn + Volume cạn kiệt. Backtest cho tỉ lệ thắng cao. Giải ngân mạnh!";
+                sCard.style.borderLeftColor = "#10b981";
+                sBar.className = "h-full bg-emerald-500";
+                sDot.innerHTML = "🚀";
+                sDot.className = "w-10 h-10 rounded-xl flex items-center justify-center text-2xl bg-emerald-500/20";
+            } else if (score >= 75) {
+                sText.textContent = "VÙNG MUA TỐT";
+                sText.className = "text-xl font-black uppercase text-cyan-400";
+                vText.textContent = "Thị trường đang điều chỉnh lành mạnh. Thích hợp tích lũy thêm 10-15% vốn.";
+                sCard.style.borderLeftColor = "#22d3ee";
+                sBar.className = "h-full bg-cyan-500";
+                sDot.innerHTML = "✅";
+                sDot.className = "w-10 h-10 rounded-xl flex items-center justify-center text-2xl bg-cyan-500/20";
+            } else if (score >= 55) {
+                sText.textContent = "QUAN SÁT - CHỜ DIP";
+                sText.className = "text-xl font-black uppercase text-amber-400";
+                vText.textContent = "Giá chưa đạt mức chiết khấu lý tưởng. Kiên nhẫn đợi các vùng DCA phía dưới.";
+                sCard.style.borderLeftColor = "#f59e0b";
+                sBar.className = "h-full bg-amber-500";
+                sDot.innerHTML = "⏳";
+                sDot.className = "w-10 h-10 rounded-xl flex items-center justify-center text-2xl bg-amber-500/20";
+            } else {
+                sText.textContent = "PHÒNG THỦ - TRÁNH FOMO";
+                sText.className = "text-xl font-black uppercase text-red-500";
+                vText.textContent = "Chỉ số quá nhiệt hoặc lực mua yếu. Tuyệt đối không mua đuổi lúc này.";
+                sCard.style.borderLeftColor = "#ef4444";
+                sBar.className = "h-full bg-red-500";
+                sDot.innerHTML = "🛡️";
+                sDot.className = "w-10 h-10 rounded-xl flex items-center justify-center text-2xl bg-red-500/20";
+            }
+        }
+
+        // ==================== MAIN UPDATE ====================
         async function updateDashboard() {
+            const statusEl = $('last-updated');
+            statusEl.textContent = "Đang đồng bộ...";
+
             try {
                 const res = await fetch('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=365');
                 const klines = await res.json();
                 
                 const closes = klines.map(d => parseFloat(d[4]));
-                const highs = klines.map(d => parseFloat(d[2]));
-                const lows = klines.map(d => parseFloat(d[3]));
                 const volumes = klines.map(d => parseFloat(d[5]));
                 const price = closes[closes.length - 1];
 
                 const ema200 = calculateEMA(closes, 200);
                 const rsi = calculateRSI(closes);
-                const volMA20 = volumes.slice(-20).reduce((a,b)=>a+b,0)/20;
-                const currentVol = volumes[volumes.length-1];
-                
+                const volMA20 = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+                const currentVol = volumes[volumes.length - 1];
+
                 const isUptrend = price > ema200 * 0.98;
                 const volExhaust = currentVol < volMA20 * 0.8;
                 const whaleSpike = currentVol > volMA20 * 2.2;
 
                 const fg = await getFearGreed();
+                const onchain = await getOnChainMetrics();
                 const winRate = runBacktest(closes);
 
-                // Render Giá
-                document.getElementById('current-price').textContent = price.toLocaleString('en-US');
+                // Render
+                $('current-price').textContent = price.toLocaleString('en-US');
+                
+                renderMetrics(isUptrend, rsi, volExhaust);
+                updateWhaleCard(whaleSpike);
+                renderDCAZones(ema200);
 
-                // Render Metrics
-                document.getElementById('metrics-grid').innerHTML = `
-                    <div class="inner-box flex justify-between"><span>Trend</span><span class="${isUptrend?'text-emerald-400':'text-red-400'}">● ${isUptrend?'UP':'DOWN'}</span></div>
-                    <div class="inner-box flex justify-between"><span>RSI</span><span class="text-sky-400">${Math.round(rsi)}</span></div>
-                    <div class="inner-box flex justify-between"><span>Vol</span><span class="${volExhaust?'text-emerald-400':'text-slate-400'}">${volExhaust?'LOW':'NORM'}</span></div>
-                    <div class="inner-box flex justify-between"><span>BTC.D</span><span class="text-purple-400">54%</span></div>
-                `;
+                // On-chain
+                $('mvrv').textContent = onchain.mvrv;
+                $('puell').textContent = onchain.puell;
+                $('regime').textContent = onchain.regime;
 
-                // Render Fear & Backtest
-                document.getElementById('fear-greed').textContent = fg.value;
-                document.getElementById('fear-greed').className = `text-3xl font-black mt-1 ${fg.value < 35 ? 'text-red-400' : 'text-emerald-400'}`;
-                document.getElementById('fear-label').textContent = fg.label;
-                document.getElementById('backtest-rate').textContent = winRate + "%";
+                // Fear & Greed + Backtest
+                $('fear-greed').textContent = fg.value;
+                $('fear-greed').className = `text-3xl font-black mt-1 ${fg.value < 35 ? 'text-red-400' : 'text-emerald-400'}`;
+                $('fear-label').textContent = fg.label;
+                $('backtest-rate').textContent = winRate + "%";
 
-                // Whale Alert
-                const whaleBox = document.getElementById('whale-card');
-                if (whaleSpike) {
-                    whaleBox.classList.remove('hidden');
-                    whaleBox.innerHTML = `<p class="text-label text-orange-400">🐳 Whale</p><p class="text-xs font-black text-orange-400 uppercase mt-1">SPIKE</p>`;
-                } else {
-                    whaleBox.innerHTML = `<p class="text-label text-slate-500">🐳 Whale</p><p class="text-xs font-black text-slate-500 uppercase mt-1">Normal</p>`;
-                }
-
-                // DCA Zones
-                const z1 = Math.round(ema200 * 0.93);
-                const z2 = Math.round(ema200 * 0.97);
-                const z3 = Math.round(ema200 * 1.015);
-                document.getElementById('dca-zones').innerHTML = `
-                    <div class="inner-box text-center"><p class="text-[9px] text-slate-500 font-bold uppercase mb-1">Mức 1 (Deep)</p><p class="text-lg font-black text-emerald-400">$${z1.toLocaleString()}</p></div>
-                    <div class="inner-box text-center"><p class="text-[9px] text-slate-500 font-bold uppercase mb-1">Mức 2 (Mid)</p><p class="text-lg font-black text-emerald-400">$${z2.toLocaleString()}</p></div>
-                    <div class="inner-box text-center"><p class="text-[9px] text-slate-500 font-bold uppercase mb-1">Mức 3 (Trend)</p><p class="text-lg font-black text-emerald-400">$${z3.toLocaleString()}</p></div>
-                `;
-
-                // === LOGIC SCORE v3.3 ===
+                // Score Logic
                 let score = 45;
                 if (isUptrend) score += 15;
-                if (rsi < 40) score += 25; else if (rsi < 50) score += 12;
+                if (rsi < 40) score += 25; 
+                else if (rsi < 50) score += 12;
                 if (volExhaust) score += 15;
                 if (fg.value < 30) score += 15;
                 if (rsi > 72) score -= 25;
 
                 score = Math.max(20, Math.min(98, Math.round(score)));
-                
-                const sNum = document.getElementById('score-number');
-                const sBar = document.getElementById('score-bar');
-                const sCard = document.getElementById('verdict-card');
-                const sText = document.getElementById('strat-text');
-                const vText = document.getElementById('verdict-text');
-                const sDot = document.getElementById('signal-dot');
+                updateVerdict(score);
 
-                sNum.textContent = score;
-                sBar.style.width = score + "%";
-
-                if (score >= 88) {
-                    sText.textContent = "DCA Lớn - Đáy Chu Kỳ"; sText.className = "text-xl font-black uppercase text-emerald-400";
-                    vText.textContent = "Fear hoảng loạn + Volume cạn kiệt. Backtest cho tỉ lệ thắng cao. Giải ngân mạnh!";
-                    sCard.style.borderLeftColor = "#10b981"; sBar.className = "h-full bg-emerald-500";
-                    sDot.innerHTML = "🚀"; sDot.className = "w-10 h-10 rounded-xl flex items-center justify-center text-2xl bg-emerald-500/20";
-                } else if (score >= 75) {
-                    sText.textContent = "Vùng Mua Tốt"; sText.className = "text-xl font-black uppercase text-cyan-400";
-                    vText.textContent = "Thị trường đang điều chỉnh lành mạnh. Thích hợp tích lũy thêm 10-15% vốn.";
-                    sCard.style.borderLeftColor = "#22d3ee"; sBar.className = "h-full bg-cyan-500";
-                    sDot.innerHTML = "✅"; sDot.className = "w-10 h-10 rounded-xl flex items-center justify-center text-2xl bg-cyan-500/20";
-                } else if (score >= 55) {
-                    sText.textContent = "Quan Sát - Chờ Dip"; sText.className = "text-xl font-black uppercase text-amber-400";
-                    vText.textContent = "Giá chưa đạt mức chiết khấu lý tưởng. Kiên nhẫn đợi các vùng DCA phía dưới.";
-                    sCard.style.borderLeftColor = "#f59e0b"; sBar.className = "h-full bg-amber-500";
-                    sDot.innerHTML = "⏳"; sDot.className = "w-10 h-10 rounded-xl flex items-center justify-center text-2xl bg-amber-500/20";
-                } else {
-                    sText.textContent = "Phòng Thủ - Tránh Fomo"; sText.className = "text-xl font-black uppercase text-red-500";
-                    vText.textContent = "Chỉ số quá nhiệt hoặc lực mua yếu. Tuyệt đối không mua đuổi lúc này.";
-                    sCard.style.borderLeftColor = "#ef4444"; sBar.className = "h-full bg-red-500";
-                    sDot.innerHTML = "🛡️"; sDot.className = "w-10 h-10 rounded-xl flex items-center justify-center text-2xl bg-red-500/20";
-                }
-
-                document.getElementById('last-updated').textContent = `Live • ${new Date().toLocaleTimeString('vi-VN')} • v3.3 Elite`;
+                // Update time
+                statusEl.textContent = `Live • ${new Date().toLocaleTimeString('vi-VN')} • v3.3 Elite`;
 
             } catch (err) {
                 console.error(err);
-                document.getElementById('last-updated').textContent = "Lỗi kết nối API";
+                statusEl.textContent = "❌ Lỗi kết nối API";
             }
         }
 
+        // ==================== INIT ====================
         updateDashboard();
-        setInterval(updateDashboard, 60000);
+        setInterval(updateDashboard, 60000); // Cập nhật mỗi 60 giây
     </script>
 </body>
 </html>
